@@ -9,5 +9,8 @@ func EncodeEndian(value uint32, length int) []byte {
 }
 
 func DecodeEndian(byteSlice []byte) uint32 {
-	return binary.LittleEndian.Uint32(byteSlice)
+	buffer := make([]byte, 4)
+	copy(buffer, byteSlice)
+
+	return binary.LittleEndian.Uint32(buffer)
 }
