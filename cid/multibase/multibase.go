@@ -1,4 +1,4 @@
-package cid
+package multibase
 
 import (
 	"errors"
@@ -30,7 +30,7 @@ type Multibase interface {
 
 var _ Multibase = (*multibaseImpl)(nil)
 
-func NewMultibase(encoder Encoder) Multibase {
+func New(encoder Encoder) Multibase {
 	return &multibaseImpl{encoder: encoder}
 }
 

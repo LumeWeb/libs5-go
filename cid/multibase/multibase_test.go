@@ -1,4 +1,4 @@
-package cid
+package multibase
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/testdata"
@@ -17,7 +17,7 @@ func (e *encoder) ToBytes() []byte {
 
 func newEncoder(data []byte) encoder {
 	e := &encoder{data: data}
-	m := NewMultibase(e)
+	m := New(e)
 	e.Multibase = m
 
 	return *e
