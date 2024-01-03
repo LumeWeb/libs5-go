@@ -14,6 +14,8 @@ var (
 	errorNotBase64Url = errors.New("not a base64url string")
 )
 
+type MultihashCode = int
+
 type Multihash struct {
 	FullBytes []byte
 }
@@ -64,7 +66,7 @@ func (m *Multihash) Equals(other *Multihash) bool {
 	return bytes.Equal(m.FullBytes, other.FullBytes)
 }
 
-func (m *Multihash) HashCode() int {
+func (m *Multihash) HashCode() MultihashCode {
 	return int(m.FullBytes[0]) +
 		int(m.FullBytes[1])<<8 +
 		int(m.FullBytes[2])<<16 +
