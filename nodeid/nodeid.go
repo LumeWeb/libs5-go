@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/bases"
+	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/multiformats/go-multibase"
 )
 
@@ -40,13 +41,7 @@ func (nodeId *NodeId) Equals(other interface{}) bool {
 }
 
 func (nodeId *NodeId) HashCode() int {
-	if len(nodeId.Bytes) < 4 {
-		return 0
-	}
-	return int(nodeId.Bytes[0]) +
-		int(nodeId.Bytes[1])<<8 +
-		int(nodeId.Bytes[2])<<16 +
-		int(nodeId.Bytes[3])<<24
+	return utils.HashCode(nodeId.Bytes[:4])
 }
 
 func (nodeId *NodeId) ToBase58() (string, error) {

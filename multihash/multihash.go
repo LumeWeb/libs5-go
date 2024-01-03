@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/bases"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
+	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/multiformats/go-multibase"
 	"unicode/utf8"
 )
@@ -67,6 +68,7 @@ func (m *Multihash) Equals(other *Multihash) bool {
 }
 
 func (m *Multihash) HashCode() MultihashCode {
+	return utils.HashCode(m.FullBytes[:4])
 	return int(m.FullBytes[0]) +
 		int(m.FullBytes[1])<<8 +
 		int(m.FullBytes[2])<<16 +
