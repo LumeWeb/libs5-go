@@ -1,9 +1,7 @@
-package cid
+package encoding
 
 import (
-	"git.lumeweb.com/LumeWeb/libs5-go/cid/multibase"
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/testdata"
-	"git.lumeweb.com/LumeWeb/libs5-go/multihash"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"reflect"
 	"testing"
@@ -11,9 +9,9 @@ import (
 
 func TestCID_CopyWith(t *testing.T) {
 	type fields struct {
-		Multibase multibase.Multibase
+		Multibase Multibase
 		Type      types.CIDType
-		Hash      multihash.Multihash
+		Hash      Multihash
 		Size      uint32
 	}
 	type args struct {
@@ -51,9 +49,9 @@ func TestCID_CopyWith(t *testing.T) {
 
 func TestCID_Equals(t *testing.T) {
 	type fields struct {
-		Multibase multibase.Multibase
+		Multibase Multibase
 		Type      types.CIDType
-		Hash      multihash.Multihash
+		Hash      Multihash
 		Size      uint32
 	}
 	type args struct {
@@ -84,9 +82,9 @@ func TestCID_Equals(t *testing.T) {
 
 func TestCID_HashCode(t *testing.T) {
 	type fields struct {
-		Multibase multibase.Multibase
+		Multibase Multibase
 		Type      types.CIDType
-		Hash      multihash.Multihash
+		Hash      Multihash
 		Size      uint32
 	}
 	tests := []struct {
@@ -112,14 +110,14 @@ func TestCID_HashCode(t *testing.T) {
 }
 
 /*func TestCID_ToBytes(t *testing.T) {
-	FromHash(testdata.RawBase58CID)
+	CIDFromHash(testdata.RawBase58CID)
 
 	println(len(testdata.RawCIDBytes))
 	println(utils.DecodeEndian(testdata.RawCIDBytes[35:]))
 	return
 	type fields struct {
 		Type types.CIDType
-		Hash multihash.Multihash
+		Hash Multihash
 		Size uint32
 	}
 	tests := []struct {
@@ -131,7 +129,7 @@ func TestCID_HashCode(t *testing.T) {
 				name: "Bridge CID",
 				fields: fields{
 					Type: types.CIDTypeBridge,
-					Hash: multihash.New(), // Replace with a valid hash value
+					Hash: NewMultibase(), // Replace with a valid hash value
 				},
 				want: , // Replace with the expected byte output for Bridge CID
 			},
@@ -139,7 +137,7 @@ func TestCID_HashCode(t *testing.T) {
 			name: "Raw CID with Non-Zero Size",
 			fields: fields{
 				Type: types.CIDTypeRaw,
-				Hash: *multihash.New(testdata.RawCIDBytes[1:34]),
+				Hash: *NewMultibase(testdata.RawCIDBytes[1:34]),
 				Size: utils.DecodeEndian(testdata.RawCIDBytes[34:]),
 			},
 			want: testdata.RawCIDBytes,
@@ -169,7 +167,7 @@ func TestCID_HashCode(t *testing.T) {
 				Hash: tt.fields.Hash,
 				Size: tt.fields.Size,
 			}
-			m := multibase.New(cid)
+			m := NewMultibase(cid)
 			cid.Multibase = m
 			if got := cid.ToBytes(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ToBytes() = %v, want %v", got, tt.want)
@@ -180,9 +178,9 @@ func TestCID_HashCode(t *testing.T) {
 
 func TestCID_ToRegistryCID(t *testing.T) {
 	type fields struct {
-		Multibase multibase.Multibase
+		Multibase Multibase
 		Type      types.CIDType
-		Hash      multihash.Multihash
+		Hash      Multihash
 		Size      uint32
 	}
 	tests := []struct {
@@ -215,9 +213,9 @@ func TestCID_ToRegistryCID(t *testing.T) {
 
 func TestCID_ToRegistryEntry(t *testing.T) {
 	type fields struct {
-		Multibase multibase.Multibase
+		Multibase Multibase
 		Type      types.CIDType
-		Hash      multihash.Multihash
+		Hash      Multihash
 		Size      uint32
 	}
 	tests := []struct {
@@ -244,9 +242,9 @@ func TestCID_ToRegistryEntry(t *testing.T) {
 
 func TestCID_ToString(t *testing.T) {
 	type fields struct {
-		Multibase multibase.Multibase
+		Multibase Multibase
 		Type      types.CIDType
-		Hash      multihash.Multihash
+		Hash      Multihash
 		Size      uint32
 	}
 	tests := []struct {
@@ -279,9 +277,9 @@ func TestCID_ToString(t *testing.T) {
 
 func TestCID_getPrefixBytes(t *testing.T) {
 	type fields struct {
-		Multibase multibase.Multibase
+		Multibase Multibase
 		Type      types.CIDType
-		Hash      multihash.Multihash
+		Hash      Multihash
 		Size      uint32
 	}
 	tests := []struct {
@@ -326,19 +324,19 @@ func TestDecode(t *testing.T) {
 		{
 			name:    "Valid Raw Base 58 CID",
 			args:    args{cid: testdata.RawBase58CID},
-			want:    New(types.CIDTypeRaw, *multihash.New(testdata.RawCIDBytes[1:34]), testdata.RawCIDSize),
+			want:    NewCID(types.CIDTypeRaw, *NewMultihash(testdata.RawCIDBytes[1:34]), testdata.RawCIDSize),
 			wantErr: false,
 		},
 		{
 			name:    "Valid Media 58 CID",
 			args:    args{cid: testdata.MediaBase58CID},
-			want:    New(types.CIDTypeMetadataMedia, *multihash.New(testdata.MediaCIDBytes[1:34]), testdata.MediaCIDSize),
+			want:    NewCID(types.CIDTypeMetadataMedia, *NewMultihash(testdata.MediaCIDBytes[1:34]), testdata.MediaCIDSize),
 			wantErr: false,
 		},
 		{
 			name:    "Valid Resolver CID",
 			args:    args{cid: testdata.ResolverBase58CID},
-			want:    New(types.CIDTypeResolver, *multihash.New(testdata.ResolverCIDBytes[1:34]), testdata.ResolverCIDSize),
+			want:    NewCID(types.CIDTypeResolver, *NewMultihash(testdata.ResolverCIDBytes[1:34]), testdata.ResolverCIDSize),
 			wantErr: false,
 		},
 	}
@@ -369,31 +367,31 @@ func TestFromBytes(t *testing.T) {
 		{
 			name:    "Valid Raw Base 58 CID",
 			args:    args{bytes: testdata.RawCIDBytes},
-			want:    New(types.CIDTypeRaw, *multihash.New(testdata.RawCIDBytes[1:34]), testdata.RawCIDSize),
+			want:    NewCID(types.CIDTypeRaw, *NewMultihash(testdata.RawCIDBytes[1:34]), testdata.RawCIDSize),
 			wantErr: false,
 		},
 		{
 			name:    "Valid Media 58 CID",
 			args:    args{bytes: testdata.MediaCIDBytes},
-			want:    New(types.CIDTypeMetadataMedia, *multihash.New(testdata.MediaCIDBytes[1:34]), testdata.MediaCIDSize),
+			want:    NewCID(types.CIDTypeMetadataMedia, *NewMultihash(testdata.MediaCIDBytes[1:34]), testdata.MediaCIDSize),
 			wantErr: false,
 		},
 		{
 			name:    "Valid Resolver CID",
 			args:    args{bytes: testdata.ResolverCIDBytes},
-			want:    New(types.CIDTypeResolver, *multihash.New(testdata.ResolverCIDBytes[1:34]), testdata.ResolverCIDSize),
+			want:    NewCID(types.CIDTypeResolver, *NewMultihash(testdata.ResolverCIDBytes[1:34]), testdata.ResolverCIDSize),
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := FromBytes(tt.args.bytes)
+			got, err := CIDFromBytes(tt.args.bytes)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("FromBytes() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("CIDFromBytes() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FromBytes() got = %v, want %v", got, tt.want)
+				t.Errorf("CIDFromBytes() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -414,31 +412,31 @@ func TestFromHash(t *testing.T) {
 		{
 			name:    "Valid Raw Base 58 CID",
 			args:    args{bytes: testdata.RawCIDBytes[1:34], size: testdata.RawCIDSize, cidType: types.CIDTypeRaw},
-			want:    New(types.CIDTypeRaw, *multihash.New(testdata.RawCIDBytes[1:34]), testdata.RawCIDSize),
+			want:    NewCID(types.CIDTypeRaw, *NewMultihash(testdata.RawCIDBytes[1:34]), testdata.RawCIDSize),
 			wantErr: false,
 		},
 		{
 			name:    "Valid Media 58 CID",
 			args:    args{bytes: testdata.MediaCIDBytes[1:34], size: testdata.MediaCIDSize, cidType: types.CIDTypeMetadataMedia},
-			want:    New(types.CIDTypeMetadataMedia, *multihash.New(testdata.MediaCIDBytes[1:34]), testdata.MediaCIDSize),
+			want:    NewCID(types.CIDTypeMetadataMedia, *NewMultihash(testdata.MediaCIDBytes[1:34]), testdata.MediaCIDSize),
 			wantErr: false,
 		},
 		{
 			name:    "Valid Resolver CID",
 			args:    args{bytes: testdata.ResolverCIDBytes[1:34], size: testdata.ResolverCIDSize, cidType: types.CIDTypeResolver},
-			want:    New(types.CIDTypeResolver, *multihash.New(testdata.ResolverCIDBytes[1:34]), testdata.ResolverCIDSize),
+			want:    NewCID(types.CIDTypeResolver, *NewMultihash(testdata.ResolverCIDBytes[1:34]), testdata.ResolverCIDSize),
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := FromHash(tt.args.bytes, tt.args.size, tt.args.cidType)
+			got, err := CIDFromHash(tt.args.bytes, tt.args.size, tt.args.cidType)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("FromHash() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("CIDFromHash() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FromHash() got = %v, want %v", got, tt.want)
+				t.Errorf("CIDFromHash() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -457,19 +455,19 @@ func TestFromRegistry(t *testing.T) {
 		{
 			name:    "Valid Resolver Data",
 			args:    args{bytes: testdata.ResolverDataBytes},
-			want:    New(types.CIDTypeMetadataWebapp, *multihash.New(testdata.ResolverDataBytes[2:35]), testdata.ResolverDataSize),
+			want:    NewCID(types.CIDTypeMetadataWebapp, *NewMultihash(testdata.ResolverDataBytes[2:35]), testdata.ResolverDataSize),
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := FromRegistry(tt.args.bytes)
+			got, err := CIDFromRegistry(tt.args.bytes)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("FromRegistry() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("CIDFromRegistry() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FromRegistry() got = %v, want %v", got, tt.want)
+				t.Errorf("CIDFromRegistry() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

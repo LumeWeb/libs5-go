@@ -1,4 +1,4 @@
-package multibase
+package encoding
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/testdata"
@@ -17,7 +17,7 @@ func (e *encoder) ToBytes() []byte {
 
 func newEncoder(data []byte) encoder {
 	e := &encoder{data: data}
-	m := New(e)
+	m := NewMultibase(e)
 	e.Multibase = m
 
 	return *e
@@ -84,13 +84,13 @@ func TestDecodeString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotBytes, err := DecodeString(tt.args.data)
+			gotBytes, err := MultibaseDecodeString(tt.args.data)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("DecodeString() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MultibaseDecodeString() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotBytes, tt.wantBytes) {
-				t.Errorf("DecodeString() gotBytes = %v, want %v", gotBytes, tt.wantBytes)
+				t.Errorf("MultibaseDecodeString() gotBytes = %v, want %v", gotBytes, tt.wantBytes)
 			}
 		})
 	}

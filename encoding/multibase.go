@@ -1,4 +1,4 @@
-package multibase
+package encoding
 
 import (
 	"errors"
@@ -30,11 +30,11 @@ type Multibase interface {
 
 var _ Multibase = (*multibaseImpl)(nil)
 
-func New(encoder Encoder) Multibase {
+func NewMultibase(encoder Encoder) Multibase {
 	return &multibaseImpl{encoder: encoder}
 }
 
-func DecodeString(data string) (bytes []byte, err error) {
+func MultibaseDecodeString(data string) (bytes []byte, err error) {
 	if len(data) == 0 {
 		return nil, errMultibaseDecodeZeroLength
 	}

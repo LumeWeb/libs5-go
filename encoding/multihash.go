@@ -1,4 +1,4 @@
-package multihash
+package encoding
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ type Multihash struct {
 	FullBytes []byte
 }
 
-func New(fullBytes []byte) *Multihash {
+func NewMultihash(fullBytes []byte) *Multihash {
 	return &Multihash{FullBytes: fullBytes}
 }
 
@@ -33,7 +33,7 @@ func (m *Multihash) HashBytes() []byte {
 	return m.FullBytes[1:]
 }
 
-func FromBase64Url(hash string) (*Multihash, error) {
+func MultihashFromBase64Url(hash string) (*Multihash, error) {
 	encoder, _ := multibase.EncoderByName("base64url")
 	encoding, err := getEncoding(hash)
 
@@ -45,7 +45,7 @@ func FromBase64Url(hash string) (*Multihash, error) {
 	if err != nil {
 		return nil, err
 	}
-	return New(ret), nil
+	return NewMultihash(ret), nil
 }
 
 func (m *Multihash) ToBase64Url() (string, error) {
@@ -69,10 +69,6 @@ func (m *Multihash) Equals(other *Multihash) bool {
 
 func (m *Multihash) HashCode() MultihashCode {
 	return utils.HashCode(m.FullBytes[:4])
-	return int(m.FullBytes[0]) +
-		int(m.FullBytes[1])<<8 +
-		int(m.FullBytes[2])<<16 +
-		int(m.FullBytes[3])<<24
 }
 
 func getEncoding(hash string) (multibase.Encoding, error) {

@@ -1,4 +1,4 @@
-package multihash
+package encoding
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/testdata"
@@ -57,13 +57,13 @@ func TestFromBase64Url(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := FromBase64Url(tt.args.hash)
+			got, err := MultihashFromBase64Url(tt.args.hash)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("FromBase64Url() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MultihashFromBase64Url() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FromBase64Url() got = %v, want %v", got, tt.want)
+				t.Errorf("MultihashFromBase64Url() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -203,8 +203,8 @@ func TestNewMultihash(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := New(tt.args.fullBytes); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("New() = %v, want %v", got, tt.want)
+			if got := NewMultihash(tt.args.fullBytes); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewMultihash() = %v, want %v", got, tt.want)
 			}
 		})
 	}

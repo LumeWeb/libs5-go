@@ -1,4 +1,4 @@
-package nodeid
+package encoding
 
 import (
 	"bytes"
@@ -16,11 +16,11 @@ type NodeId struct {
 	Bytes []byte
 }
 
-func New(bytes []byte) *NodeId {
+func NewNodeId(bytes []byte) *NodeId {
 	return &NodeId{Bytes: bytes}
 }
 
-func Decode(nodeId string) (*NodeId, error) {
+func NodeIdDecode(nodeId string) (*NodeId, error) {
 	encoding, ret, err := multibase.Decode(nodeId)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func Decode(nodeId string) (*NodeId, error) {
 		return nil, errorNotBase58BTC
 	}
 
-	return New(ret), nil
+	return NewNodeId(ret), nil
 }
 
 func (nodeId *NodeId) Equals(other interface{}) bool {

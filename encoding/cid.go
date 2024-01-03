@@ -1,13 +1,11 @@
-package cid
+package encoding
 
 import (
 	"bytes"
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"git.lumeweb.com/LumeWeb/libs5-go/cid/multibase"
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/bases"
-	"git.lumeweb.com/LumeWeb/libs5-go/multihash"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 )
@@ -18,19 +16,19 @@ var (
 )
 
 type CID struct {
-	multibase.Multibase
+	Multibase
 	Type types.CIDType
-	Hash multihash.Multihash
+	Hash Multihash
 	Size uint32
 }
 
-func New(Type types.CIDType, Hash multihash.Multihash, Size uint32) *CID {
+func NewCID(Type types.CIDType, Hash Multihash, Size uint32) *CID {
 	c := &CID{
 		Type: Type,
 		Hash: Hash,
 		Size: Size,
 	}
-	m := multibase.New(c)
+	m := NewMultibase(c)
 	c.Multibase = m
 
 	return c
@@ -60,7 +58,7 @@ func (cid *CID) ToBytes() []byte {
 }
 
 func Decode(cid string) (*CID, error) {
-	decodedBytes, err := multibase.DecodeString(cid)
+	decodedBytes, err := MultibaseDecodeString(cid)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +72,7 @@ func Decode(cid string) (*CID, error) {
 	return cidInstance, nil
 }
 
-func FromRegistry(bytes []byte) (*CID, error) {
+func CIDFromRegistry(bytes []byte) (*CID, error) {
 	if len(bytes) == 0 {
 		return nil, errEmptyBytes
 	}
@@ -95,11 +93,11 @@ func FromRegistry(bytes []byte) (*CID, error) {
 	return cidInstance, nil
 }
 
-func FromBytes(bytes []byte) (*CID, error) {
+func CIDFromBytes(bytes []byte) (*CID, error) {
 	return initCID(bytes)
 }
 
-func FromHash(bytes interface{}, size uint32, cidType types.CIDType) (*CID, error) {
+func CIDFromHash(bytes interface{}, size uint32, cidType types.CIDType) (*CID, error) {
 	var (
 		byteSlice []byte
 		err       error
@@ -121,10 +119,10 @@ func FromHash(bytes interface{}, size uint32, cidType types.CIDType) (*CID, erro
 		return nil, fmt.Errorf("invalid hash type %d", cidType)
 	}
 
-	return New(cidType, *multihash.New(byteSlice), size), nil
+	return NewCID(cidType, *NewMultihash(byteSlice), size), nil
 }
 
-func Verify(bytes interface{}) bool {
+func CIDVerify(bytes interface{}) bool {
 	var (
 		byteSlice []byte
 		err       error
@@ -132,7 +130,7 @@ func Verify(bytes interface{}) bool {
 
 	switch v := bytes.(type) {
 	case string:
-		byteSlice, err = multibase.DecodeString(v) // Assuming MultibaseDecodeString function is defined
+		byteSlice, err = MultibaseDecodeString(v) // Assuming MultibaseDecodeString function is defined
 		if err != nil {
 			return false
 		}
@@ -155,7 +153,7 @@ func (cid *CID) CopyWith(newType int, newSize uint32) (*CID, error) {
 		return nil, fmt.Errorf("invalid cid type %d", newType)
 	}
 
-	return New(types.CIDType(newType), cid.Hash, newSize), nil
+	return NewCID(types.CIDType(newType), cid.Hash, newSize), nil
 }
 
 func (cid *CID) ToRegistryEntry() []byte {
@@ -197,8 +195,8 @@ func (cid *CID) HashCode() int {
 		int(fullBytes[3])<<24
 }
 
-func FromRegistryPublicKey(pubkey interface{}) (*CID, error) {
-	return FromHash(pubkey, 0, types.CIDTypeResolver)
+func CIDFromRegistryPublicKey(pubkey interface{}) (*CID, error) {
+	return CIDFromHash(pubkey, 0, types.CIDTypeResolver)
 }
 
 func initCID(bytes []byte) (*CID, error) {
@@ -208,12 +206,12 @@ func initCID(bytes []byte) (*CID, error) {
 
 	cidType := types.CIDType(bytes[0])
 	if cidType == types.CIDTypeBridge {
-		hash := multihash.New(bytes[1:35])
-		return New(cidType, *hash, 0), nil
+		hash := NewMultihash(bytes[1:35])
+		return NewCID(cidType, *hash, 0), nil
 	}
 
 	hashBytes := bytes[1:34]
-	hash := multihash.New(hashBytes)
+	hash := NewMultihash(hashBytes)
 
 	var size uint32
 	if len(bytes) > 34 {
@@ -226,5 +224,5 @@ func initCID(bytes []byte) (*CID, error) {
 		return nil, fmt.Errorf("invalid cid type %d", cidType)
 	}
 
-	return New(cidType, *hash, size), nil
+	return NewCID(cidType, *hash, size), nil
 }
