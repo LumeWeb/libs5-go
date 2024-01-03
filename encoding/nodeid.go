@@ -12,6 +12,8 @@ var (
 	errorNotBase58BTC = errors.New("not a base58btc string")
 )
 
+type NodeIdCode = int
+
 type NodeId struct {
 	Bytes []byte
 }
