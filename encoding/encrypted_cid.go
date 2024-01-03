@@ -37,10 +37,10 @@ func DecodeEncryptedCID(cid string) (*EncryptedCID, error) {
 	if err != nil {
 		return nil, err
 	}
-	return FromBytes(data)
+	return EncryptedCIDFromBytes(data)
 }
 
-func FromBytes(data []byte) (*EncryptedCID, error) {
+func EncryptedCIDFromBytes(data []byte) (*EncryptedCID, error) {
 	if types.CIDType(data[0]) != types.CIDTypeEncryptedStatic {
 		return nil, errors.New("Invalid CID type")
 	}
