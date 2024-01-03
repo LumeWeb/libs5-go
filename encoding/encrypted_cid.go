@@ -9,7 +9,7 @@ import (
 type EncryptedCID struct {
 	Multibase
 	encryptedBlobHash   Multihash
-	originalCID         CID
+	OriginalCID         CID
 	encryptionAlgorithm byte
 	padding             uint32
 	chunkSizeAsPowerOf2 int
@@ -19,7 +19,7 @@ type EncryptedCID struct {
 func NewEncryptedCID(encryptedBlobHash Multihash, originalCID CID, encryptionKey []byte, padding uint32, chunkSizeAsPowerOf2 int, encryptionAlgorithm byte) *EncryptedCID {
 	e := &EncryptedCID{
 		encryptedBlobHash:   encryptedBlobHash,
-		originalCID:         originalCID,
+		OriginalCID:         originalCID,
 		encryptionKey:       encryptionKey,
 		padding:             padding,
 		chunkSizeAsPowerOf2: chunkSizeAsPowerOf2,
@@ -72,6 +72,6 @@ func (c *EncryptedCID) ToBytes() []byte {
 	data = append(data, c.encryptedBlobHash.FullBytes...)
 	data = append(data, c.encryptionKey...)
 	data = append(data, utils.EncodeEndian(c.padding, 4)...)
-	data = append(data, c.originalCID.ToBytes()...)
+	data = append(data, c.OriginalCID.ToBytes()...)
 	return data
 }
