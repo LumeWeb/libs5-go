@@ -18,7 +18,7 @@ type Multihash struct {
 	FullBytes []byte
 }
 
-func NewMultihash(fullBytes []byte) *Multihash {
+func New(fullBytes []byte) *Multihash {
 	return &Multihash{FullBytes: fullBytes}
 }
 
@@ -42,7 +42,7 @@ func FromBase64Url(hash string) (*Multihash, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewMultihash(ret), nil
+	return New(ret), nil
 }
 
 func (m *Multihash) ToBase64Url() (string, error) {
