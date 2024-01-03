@@ -12,3 +12,14 @@ const (
 	CIDTypeEncryptedStatic  CIDType = 0xae
 	CIDTypeEncryptedDynamic CIDType = 0xad
 )
+
+var CIDTypeMap = map[CIDType]string{
+	CIDTypeRaw:              "Raw",
+	CIDTypeMetadataMedia:    "MetadataMedia",
+	CIDTypeMetadataWebapp:   "MetadataWebapp",
+	CIDTypeResolver:         "Resolver",
+	CIDTypeUserIdentity:     "UserIdentity",
+	CIDTypeBridge:           "Bridge",
+	CIDTypeEncryptedStatic:  "EncryptedStatic",
+	CIDTypeEncryptedDynamic: "EncryptedDynamic",
+}
