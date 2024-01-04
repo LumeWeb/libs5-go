@@ -2,7 +2,7 @@ package metadata
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
@@ -47,6 +47,10 @@ var namesReverse = map[string]types.MetadataExtension{
 type ExtraMetadata struct {
 	Data map[int]interface{}
 }
+type keyValue struct {
+	Key   interface{}
+	Value interface{}
+}
 
 var _ SerializableMetadata = (*ExtraMetadata)(nil)
 
@@ -66,28 +70,48 @@ func (em ExtraMetadata) MarshalJSON() ([]byte, error) {
 }
 
 func (em *ExtraMetadata) UnmarshalJSON(data []byte) error {
-	// Intermediate representation of the expected JSON structure
-	jsonObject := make(map[string]interface{})
+
+	em.Data = make(map[int]interface{})
+	jsonObject := make(map[int]interface{})
 	if err := json.Unmarshal(data, &jsonObject); err != nil {
 		return err
 	}
 
-	em.Data = make(map[int]interface{})
 	for name, value := range jsonObject {
-		if key, ok := namesReverse[name]; ok {
-			if key == types.MetadataExtensionUpdateCID {
-				// Convert string back to CID bytes
-				cid, err := encoding.Decode(value.(string))
-				if err != nil {
-					return err
-				}
-				em.Data[int(key)] = cid
-			} else {
-				em.Data[int(key)] = value
-			}
-		} else {
-			return errors.New("unknown key in JSON: " + name)
+		err := em.decodeItem(keyValue{Key: name, Value: value})
+		if err != nil {
+			return err
 		}
+	}
+	return nil
+}
+
+func (em *ExtraMetadata) decodeItem(pair keyValue) error {
+	var metadataKey int
+
+	// Determine the type of the key and convert it if necessary
+	switch k := pair.Key.(type) {
+	case string:
+		if val, ok := namesReverse[k]; ok {
+			metadataKey = int(val)
+		} else {
+			return fmt.Errorf("unknown key in JSON: %s", k)
+		}
+	case int8:
+		metadataKey = int(k)
+	default:
+		return fmt.Errorf("unsupported key type")
+	}
+
+	if metadataKey == int(types.MetadataExtensionUpdateCID) {
+		// Convert string to CID bytes for MetadataExtensionUpdateCID
+		cid, err := encoding.Decode(pair.Value.(string))
+		if err != nil {
+			return err
+		}
+		em.Data[metadataKey] = cid
+	} else {
+		em.Data[metadataKey] = pair.Value
 	}
 
 	return nil
@@ -105,13 +129,22 @@ func (em *ExtraMetadata) DecodeMsgpack(dec *msgpack.Decoder) error {
 		if err != nil {
 			return err
 		}
-		value, err := dec.DecodeInterface()
+
+		var value interface{}
+		if key == int8(types.MetadataExtensionUpdateCID) {
+			value, err = dec.DecodeString()
+		} else {
+			value, err = dec.DecodeInterface()
+		}
 		if err != nil {
 			return err
 		}
-		em.Data[int(key)] = value
-	}
 
+		err = em.decodeItem(keyValue{Key: key, Value: value})
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
