@@ -3,6 +3,7 @@ package encoding
 import (
 	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/bases"
@@ -21,6 +22,8 @@ type CID struct {
 	Hash Multihash
 	Size uint32
 }
+
+var _ json.Marshaler = (*CID)(nil)
 
 func NewCID(Type types.CIDType, Hash Multihash, Size uint32) *CID {
 	c := &CID{
@@ -195,6 +198,17 @@ func (cid *CID) HashCode() int {
 		int(fullBytes[3])<<24
 }
 
+func (cid CID) MarshalJSON() ([]byte, error) {
+	// Delegate to the MarshalJSON method of the encoder
+	return json.Marshal(cid.Multibase)
+}
+
+func (cid *CID) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &cid.Multibase); err != nil {
+		return err
+	}
+	return nil
+}
 func CIDFromRegistryPublicKey(pubkey interface{}) (*CID, error) {
 	return CIDFromHash(pubkey, 0, types.CIDTypeResolver)
 }

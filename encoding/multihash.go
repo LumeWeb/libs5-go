@@ -2,6 +2,7 @@ package encoding
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/bases"
@@ -20,6 +21,9 @@ type MultihashCode = int
 type Multihash struct {
 	FullBytes []byte
 }
+
+var _ json.Marshaler = (*Multihash)(nil)
+var _ json.Unmarshaler = (*Multihash)(nil)
 
 func NewMultihash(fullBytes []byte) *Multihash {
 	return &Multihash{FullBytes: fullBytes}
@@ -69,6 +73,25 @@ func (m *Multihash) Equals(other *Multihash) bool {
 
 func (m *Multihash) HashCode() MultihashCode {
 	return utils.HashCode(m.FullBytes[:4])
+}
+
+func (b *Multihash) UnmarshalJSON(data []byte) error {
+	decodedData, err := MultibaseDecodeString(string(data))
+	if err != nil {
+		return err
+	}
+
+	b.FullBytes = decodedData
+	return nil
+}
+func (b Multihash) MarshalJSON() ([]byte, error) {
+	url, err := b.ToBase64Url()
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte(url), nil
+
 }
 
 func getEncoding(hash string) (multibase.Encoding, error) {

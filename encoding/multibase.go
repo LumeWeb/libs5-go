@@ -1,6 +1,7 @@
 package encoding
 
 import (
+	"encoding/json"
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/bases"
 	"github.com/multiformats/go-multibase"
@@ -19,6 +20,8 @@ type multibaseImpl struct {
 	Multibase
 	encoder Encoder
 }
+
+var _ json.Marshaler = (*multibaseImpl)(nil)
 
 type Multibase interface {
 	ToHex() (string, error)
@@ -69,4 +72,13 @@ func (m *multibaseImpl) ToBase58() (string, error) {
 
 func (m *multibaseImpl) ToString() (string, error) {
 	return m.ToBase58()
+}
+func (b multibaseImpl) MarshalJSON() ([]byte, error) {
+	url, err := b.ToBase64Url()
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte(url), nil
+
 }
