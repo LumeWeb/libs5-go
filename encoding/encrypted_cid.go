@@ -95,7 +95,7 @@ func (c EncryptedCID) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Delegate to the MarshalJSON method of the encoder
+	// Delegate to the MarshalJSON method of the Encoder
 	return json.Marshal(str)
 }
 

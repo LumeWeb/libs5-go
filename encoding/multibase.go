@@ -17,7 +17,7 @@ type Encoder interface {
 
 type multibaseImpl struct {
 	Multibase
-	encoder Encoder
+	Encoder Encoder
 }
 
 type Multibase interface {
@@ -31,7 +31,7 @@ type Multibase interface {
 var _ Multibase = (*multibaseImpl)(nil)
 
 func NewMultibase(encoder Encoder) Multibase {
-	return &multibaseImpl{encoder: encoder}
+	return &multibaseImpl{Encoder: encoder}
 }
 
 func MultibaseDecodeString(data string) (bytes []byte, err error) {
@@ -52,19 +52,19 @@ func MultibaseDecodeString(data string) (bytes []byte, err error) {
 }
 
 func (m *multibaseImpl) ToHex() (string, error) {
-	return bases.ToHex(m.encoder.ToBytes())
+	return bases.ToHex(m.Encoder.ToBytes())
 }
 
 func (m *multibaseImpl) ToBase32() (string, error) {
-	return bases.ToBase32(m.encoder.ToBytes())
+	return bases.ToBase32(m.Encoder.ToBytes())
 }
 
 func (m *multibaseImpl) ToBase64Url() (string, error) {
-	return bases.ToBase64Url(m.encoder.ToBytes())
+	return bases.ToBase64Url(m.Encoder.ToBytes())
 }
 
 func (m *multibaseImpl) ToBase58() (string, error) {
-	return bases.ToBase58BTC(m.encoder.ToBytes())
+	return bases.ToBase58BTC(m.Encoder.ToBytes())
 }
 
 func (m *multibaseImpl) ToString() (string, error) {
