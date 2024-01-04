@@ -22,7 +22,7 @@ func (b *Base64UrlBinary) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	*b = (decodedData)
+	*b = Base64UrlBinary(decodedData)
 	return nil
 }
 func (b Base64UrlBinary) MarshalJSON() ([]byte, error) {
