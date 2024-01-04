@@ -31,11 +31,11 @@ func (fv *FileVersion) EncodeMsgpack(enc *msgpack.Encoder) error {
 	}
 
 	if fv.EncryptedCID != nil {
-		data[1] = fv.EncryptedCID.ToBytes()
+		data[1] = fv.EncryptedCID
 	}
 
 	if fv.PlaintextCID != nil {
-		data[2] = fv.PlaintextCID.ToBytes()
+		data[2] = fv.PlaintextCID
 	}
 
 	if len(fv.Hashes) > 0 {
@@ -47,7 +47,7 @@ func (fv *FileVersion) EncodeMsgpack(enc *msgpack.Encoder) error {
 	}
 
 	if fv.Thumbnail != nil {
-		data[10] = fv.Thumbnail.Encode()
+		data[10] = fv.Thumbnail
 	}
 
 	return enc.Encode(data)
