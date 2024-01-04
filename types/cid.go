@@ -11,6 +11,7 @@ const (
 	CIDTypeBridge           CIDType = 0x3a
 	CIDTypeEncryptedStatic  CIDType = 0xae
 	CIDTypeEncryptedDynamic CIDType = 0xad
+	CIDTypeDirectory        CIDType = 0x5d
 )
 
 var CIDTypeMap = map[CIDType]string{
@@ -22,4 +23,5 @@ var CIDTypeMap = map[CIDType]string{
 	CIDTypeBridge:           "Bridge",
 	CIDTypeEncryptedStatic:  "EncryptedStatic",
 	CIDTypeEncryptedDynamic: "EncryptedDynamic",
+	CIDTypeDirectory:        "Directory",
 }
