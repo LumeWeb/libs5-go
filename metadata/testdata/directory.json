@@ -1,0 +1,193 @@
+{
+    "type": "directory",
+    "details": {},
+    "directories": {
+        "arch": {
+            "name": "arch",
+            "created": 1704127624979,
+            "publicKey": "7Vd1kAf0LoYmKKQ9-C8Znl0npyjK2M4-ciiNWShOTpbD",
+            "encryptedWriteKey": "",
+            "encryptionKey": null,
+            "ext": null
+        }
+    },
+    "files": {
+        "archlinux-bootstrap-x86_64.tar.gz": {
+            "name": "archlinux-bootstrap-x86_64.tar.gz",
+            "created": 1704127689514,
+            "modified": 1704127689514,
+            "version": 0,
+            "mimeType": null,
+            "file": {
+                "ts": 1704127689514,
+                "encryptedCID": null,
+                "cid": "z6e5xDpewiueHz6n9HJz21uGmTDvvctawujzYSeu9773k8s9RkG8a",
+                "hashes": null,
+                "thumbnail": null
+            },
+            "ext": null,
+            "history": null
+        },
+        "archlinux-bootstrap-x86_64.tar.gz.sig": {
+            "name": "archlinux-bootstrap-x86_64.tar.gz.sig",
+            "created": 1704127698951,
+            "modified": 1704127698951,
+            "version": 0,
+            "mimeType": "application/pgp-signature",
+            "file": {
+                "ts": 1704127698951,
+                "encryptedCID": null,
+                "cid": "z4odYNo3uQhHhypXze7ThLAKrnSGsJ3cRf1bYsvnt65Mqi9gp",
+                "hashes": null,
+                "thumbnail": null
+            },
+            "ext": null,
+            "history": null
+        },
+        "archlinux-x86_64.iso": {
+            "name": "archlinux-x86_64.iso",
+            "created": 1704127623412,
+            "modified": 1704127623412,
+            "version": 0,
+            "mimeType": "application/x-iso9660-image",
+            "file": {
+                "ts": 1704127623412,
+                "encryptedCID": null,
+                "cid": "z6e5sRB3BeynWLyrzRPLWFetUS7PNDZWZHURnFAyikcRyGTnxjMwC",
+                "hashes": null,
+                "thumbnail": null
+            },
+            "ext": null,
+            "history": null
+        },
+        "archlinux-x86_64.iso.sig": {
+            "name": "archlinux-x86_64.iso.sig",
+            "created": 1704127698648,
+            "modified": 1704127698648,
+            "version": 0,
+            "mimeType": "application/pgp-signature",
+            "file": {
+                "ts": 1704127698648,
+                "encryptedCID": null,
+                "cid": "z4odLKvhW8QPH4dLNqVzU1Zq6nj1MBdU6HYpJmThdzag4RJma",
+                "hashes": null,
+                "thumbnail": null
+            },
+            "ext": null,
+            "history": null
+        },
+        "archlinux-2024.01.01-x86_64.iso": {
+            "name": "archlinux-2024.01.01-x86_64.iso",
+            "created": 1704127623412,
+            "modified": 1704127623412,
+            "version": 0,
+            "mimeType": "application/x-iso9660-image",
+            "file": {
+                "ts": 1704127623412,
+                "encryptedCID": null,
+                "cid": "z6e5sRB3BeynWLyrzRPLWFetUS7PNDZWZHURnFAyikcRyGTnxjMwC",
+                "hashes": null,
+                "thumbnail": null
+            },
+            "ext": null,
+            "history": null
+        },
+        "archlinux-2024.01.01-x86_64.iso.sig": {
+            "name": "archlinux-2024.01.01-x86_64.iso.sig",
+            "created": 1704127698648,
+            "modified": 1704127698648,
+            "version": 0,
+            "mimeType": "application/pgp-signature",
+            "file": {
+                "ts": 1704127698648,
+                "encryptedCID": null,
+                "cid": "z4odLKvhW8QPH4dLNqVzU1Zq6nj1MBdU6HYpJmThdzag4RJma",
+                "hashes": null,
+                "thumbnail": null
+            },
+            "ext": null,
+            "history": null
+        },
+        "archlinux-2024.01.01-x86_64.iso.torrent": {
+            "name": "archlinux-2024.01.01-x86_64.iso.torrent",
+            "created": 1704127703578,
+            "modified": 1704127703578,
+            "version": 0,
+            "mimeType": "application/x-bittorrent",
+            "file": {
+                "ts": 1704127703578,
+                "encryptedCID": null,
+                "cid": "zHnmSZc3qDZMGfhNaZ6iVjkbxeVzMonKtAnTmBtRSwXy7RLYQK",
+                "hashes": null,
+                "thumbnail": null
+            },
+            "ext": null,
+            "history": null
+        },
+        "archlinux-bootstrap-2024.01.01-x86_64.tar.gz": {
+            "name": "archlinux-bootstrap-2024.01.01-x86_64.tar.gz",
+            "created": 1704127689514,
+            "modified": 1704127689514,
+            "version": 0,
+            "mimeType": null,
+            "file": {
+                "ts": 1704127689514,
+                "encryptedCID": null,
+                "cid": "z6e5xDpewiueHz6n9HJz21uGmTDvvctawujzYSeu9773k8s9RkG8a",
+                "hashes": null,
+                "thumbnail": null
+            },
+            "ext": null,
+            "history": null
+        },
+        "archlinux-bootstrap-2024.01.01-x86_64.tar.gz.sig": {
+            "name": "archlinux-bootstrap-2024.01.01-x86_64.tar.gz.sig",
+            "created": 1704127698951,
+            "modified": 1704127698951,
+            "version": 0,
+            "mimeType": "application/pgp-signature",
+            "file": {
+                "ts": 1704127698951,
+                "encryptedCID": null,
+                "cid": "z4odYNo3uQhHhypXze7ThLAKrnSGsJ3cRf1bYsvnt65Mqi9gp",
+                "hashes": null,
+                "thumbnail": null
+            },
+            "ext": null,
+            "history": null
+        },
+        "b2sums.txt": {
+            "name": "b2sums.txt",
+            "created": 1704127703594,
+            "modified": 1704127703594,
+            "version": 0,
+            "mimeType": "text/plain",
+            "file": {
+                "ts": 1704127703594,
+                "encryptedCID": null,
+                "cid": "zHnoyywarEZHWrSMZjL55nXeMAPsYi1mhXQs7ZmWqkpSg5Auz1",
+                "hashes": null,
+                "thumbnail": null
+            },
+            "ext": null,
+            "history": null
+        },
+        "sha256sums.txt": {
+            "name": "sha256sums.txt",
+            "created": 1704127703591,
+            "modified": 1704127703591,
+            "version": 0,
+            "mimeType": "text/plain",
+            "file": {
+                "ts": 1704127703591,
+                "encryptedCID": null,
+                "cid": "zHnnZGvqwnoN2AE342zhrxGWnuJpv79esruhY259TkXYyqmPB6",
+                "hashes": null,
+                "thumbnail": null
+            },
+            "ext": null,
+            "history": null
+        }
+    },
+    "extraMetadata": {}
+}
