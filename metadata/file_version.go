@@ -8,7 +8,7 @@ import (
 type FileVersion struct {
 	Ts           int                    `json:"ts"`
 	EncryptedCID *encoding.EncryptedCID `json:"encryptedCID,string"`
-	PlaintextCID *encoding.CID          `json:"plaintextCID,string"`
+	PlaintextCID *encoding.CID          `json:"cid,string"`
 	Thumbnail    *FileVersionThumbnail  `json:"thumbnail"`
 	Hashes       []*encoding.Multihash  `json:"hashes"`
 	Ext          map[string]interface{} `json:"ext"`
@@ -111,4 +111,24 @@ func (fv *FileVersion) CID() *encoding.CID {
 		return fv.PlaintextCID
 	}
 	return &fv.EncryptedCID.OriginalCID
-}
+} /*
+func (fv *FileVersion) UnmarshalJSON(data []byte) error {
+	type tempFileVersion FileVersion
+
+	tvf := &tempFileVersion{}
+
+	// Initialize your properties, for example, to their zero values
+	tvf.Ts = 0
+	tvf.EncryptedCID = &encoding.EncryptedCID{}
+	tvf.PlaintextCID = &encoding.CID{}
+	tvf.Thumbnail = &FileVersionThumbnail{}
+	tvf.Hashes = []*encoding.Multihash{}
+	tvf.Ext = map[string]interface{}{}
+
+	// Define a temporary struct with the same structure as FileVersion
+
+	var result map[string]interface{}
+	// Unmarshal data into the temporary struct
+	if err := json.Unmarshal(data, &result); err != nil {
+		return err
+	}
