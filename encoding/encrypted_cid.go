@@ -4,6 +4,7 @@ import (
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type EncryptedCID struct {
@@ -15,6 +16,9 @@ type EncryptedCID struct {
 	chunkSizeAsPowerOf2 int
 	encryptionKey       []byte
 }
+
+var _ msgpack.CustomEncoder = (*EncryptedCID)(nil)
+var _ msgpack.CustomDecoder = (*EncryptedCID)(nil)
 
 func NewEncryptedCID(encryptedBlobHash Multihash, originalCID CID, encryptionKey []byte, padding uint32, chunkSizeAsPowerOf2 int, encryptionAlgorithm byte) *EncryptedCID {
 	e := &EncryptedCID{
@@ -74,4 +78,11 @@ func (c *EncryptedCID) ToBytes() []byte {
 	data = append(data, utils.EncodeEndian(c.padding, 4)...)
 	data = append(data, c.OriginalCID.ToBytes()...)
 	return data
+}
+func (cid EncryptedCID) EncodeMsgpack(enc *msgpack.Encoder) error {
+	return enc.EncodeBytes(cid.ToBytes())
+}
+
+func (cid *EncryptedCID) DecodeMsgpack(dec *msgpack.Decoder) error {
+	return decodeMsgpackCID(cid, dec)
 }

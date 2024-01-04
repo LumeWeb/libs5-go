@@ -9,6 +9,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/bases"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 var (
@@ -24,6 +25,8 @@ type CID struct {
 }
 
 var _ json.Marshaler = (*CID)(nil)
+var _ msgpack.CustomEncoder = (*CID)(nil)
+var _ msgpack.CustomDecoder = (*CID)(nil)
 
 func NewCID(Type types.CIDType, Hash Multihash, Size uint32) *CID {
 	c := &CID{
@@ -209,8 +212,44 @@ func (cid *CID) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
+func (cid CID) EncodeMsgpack(enc *msgpack.Encoder) error {
+	return enc.EncodeBytes(cid.ToBytes())
+}
+
+func (cid *CID) DecodeMsgpack(dec *msgpack.Decoder) error {
+	return decodeMsgpackCID(cid, dec)
+}
+
 func CIDFromRegistryPublicKey(pubkey interface{}) (*CID, error) {
 	return CIDFromHash(pubkey, 0, types.CIDTypeResolver)
+}
+
+func decodeMsgpackCID(cid interface{}, dec *msgpack.Decoder) error {
+	byt, err := dec.DecodeBytes()
+	if err != nil {
+		return err
+	}
+
+	switch v := cid.(type) {
+	case *CID:
+		cidInstance, err := CIDFromBytes(byt)
+		if err != nil {
+			return err
+		}
+
+		*v = *cidInstance
+	case *EncryptedCID:
+		cidInstance, err := EncryptedCIDFromBytes(byt)
+		if err != nil {
+			return err
+		}
+
+		*v = *cidInstance
+	default:
+		return errors.New("Unsupported type")
+	}
+
+	return nil
 }
 
 func initCID(bytes []byte) (*CID, error) {

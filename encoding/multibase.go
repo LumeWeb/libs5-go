@@ -5,6 +5,7 @@ import (
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/bases"
 	"github.com/multiformats/go-multibase"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 var (
@@ -32,6 +33,7 @@ type Multibase interface {
 }
 
 var _ Multibase = (*multibaseImpl)(nil)
+var _ msgpack.CustomEncoder = (*multibaseImpl)(nil)
 
 func NewMultibase(encoder Encoder) Multibase {
 	return &multibaseImpl{encoder: encoder}
@@ -81,4 +83,8 @@ func (b multibaseImpl) MarshalJSON() ([]byte, error) {
 
 	return []byte(url), nil
 
+}
+
+func (b multibaseImpl) EncodeMsgpack(enc *msgpack.Encoder) error {
+	return enc.EncodeBytes(b.encoder.ToBytes())
 }
