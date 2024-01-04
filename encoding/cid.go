@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/bases"
-	"git.lumeweb.com/LumeWeb/libs5-go/serialize"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
@@ -213,7 +212,7 @@ func (b CID) MarshalJSON() ([]byte, error) {
 }
 
 func (cid *CID) UnmarshalJSON(data []byte) error {
-	decData, err := serialize.UnmarshalBase64UrlJSON(data)
+	decData, err := UnmarshalBase64UrlJSON(data)
 
 	if err != nil {
 		return err

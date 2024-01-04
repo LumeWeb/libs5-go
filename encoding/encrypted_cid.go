@@ -3,7 +3,6 @@ package encoding
 import (
 	"encoding/json"
 	"errors"
-	"git.lumeweb.com/LumeWeb/libs5-go/serialize"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
@@ -101,7 +100,7 @@ func (c EncryptedCID) MarshalJSON() ([]byte, error) {
 }
 
 func (c *EncryptedCID) UnmarshalJSON(data []byte) error {
-	decData, err := serialize.UnmarshalBase64UrlJSON(data)
+	decData, err := UnmarshalBase64UrlJSON(data)
 
 	if err != nil {
 		return err

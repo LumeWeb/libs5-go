@@ -1,9 +1,6 @@
-package serialize
+package encoding
 
-import (
-	"encoding/base64"
-	"github.com/multiformats/go-multibase"
-)
+import "encoding/base64"
 
 func UnmarshalBase64UrlJSON(data []byte) ([]byte, error) {
 	strData := string(data)
@@ -15,15 +12,16 @@ func UnmarshalBase64UrlJSON(data []byte) ([]byte, error) {
 		return nil, nil
 	}
 
-	if strData[0] == 'u' {
-		_, decoded, err := multibase.Decode(strData)
-		if err != nil {
+	decodedData, err := MultibaseDecodeString(strData)
+	if err != nil {
+		if err != ErrMultibaseEncodingNotSupported {
 			return nil, err
 		}
-		return decoded, nil
+	} else {
+		return decodedData, nil
 	}
 
-	decodedData, err := base64.RawURLEncoding.DecodeString(strData)
+	decodedData, err = base64.RawURLEncoding.DecodeString(strData)
 	if err != nil {
 		return nil, err
 	}
