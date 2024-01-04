@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	errMultibaseEncodingNotSupported = errors.New("multibase encoding not supported")
+	ErrMultibaseEncodingNotSupported = errors.New("multibase encoding not supported")
 	errMultibaseDecodeZeroLength     = errors.New("cannot decode multibase for zero length string")
 )
 
@@ -45,7 +45,7 @@ func MultibaseDecodeString(data string) (bytes []byte, err error) {
 	case ':':
 		bytes = []byte(data)
 	default:
-		err = errMultibaseEncodingNotSupported
+		err = ErrMultibaseEncodingNotSupported
 	}
 
 	return bytes, err
