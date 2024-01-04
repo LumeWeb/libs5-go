@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/internal/bases"
+	"git.lumeweb.com/LumeWeb/libs5-go/serialize"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
@@ -25,6 +26,7 @@ type CID struct {
 }
 
 var _ json.Marshaler = (*CID)(nil)
+var _ json.Unmarshaler = (*CID)(nil)
 var _ msgpack.CustomEncoder = (*CID)(nil)
 var _ msgpack.CustomDecoder = (*CID)(nil)
 
@@ -201,17 +203,32 @@ func (cid *CID) HashCode() int {
 		int(fullBytes[3])<<24
 }
 
-func (cid CID) MarshalJSON() ([]byte, error) {
-	// Delegate to the MarshalJSON method of the encoder
-	return json.Marshal(cid.Multibase)
+func (b CID) MarshalJSON() ([]byte, error) {
+	url, err := b.ToBase64Url()
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(url)
 }
 
 func (cid *CID) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &cid.Multibase); err != nil {
+	decData, err := serialize.UnmarshalBase64UrlJSON(data)
+
+	if err != nil {
 		return err
 	}
+
+	decodedCid, err := CIDFromBytes(decData)
+
+	if err != nil {
+		return err
+	}
+
+	*cid = *decodedCid
 	return nil
 }
+
 func (cid CID) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return enc.EncodeBytes(cid.ToBytes())
 }

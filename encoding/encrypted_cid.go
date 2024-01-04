@@ -1,7 +1,9 @@
 package encoding
 
 import (
+	"encoding/json"
 	"errors"
+	"git.lumeweb.com/LumeWeb/libs5-go/serialize"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
@@ -19,6 +21,8 @@ type EncryptedCID struct {
 
 var _ msgpack.CustomEncoder = (*EncryptedCID)(nil)
 var _ msgpack.CustomDecoder = (*EncryptedCID)(nil)
+var _ json.Marshaler = (*EncryptedCID)(nil)
+var _ json.Unmarshaler = (*EncryptedCID)(nil)
 
 func NewEncryptedCID(encryptedBlobHash Multihash, originalCID CID, encryptionKey []byte, padding uint32, chunkSizeAsPowerOf2 int, encryptionAlgorithm byte) *EncryptedCID {
 	e := &EncryptedCID{
@@ -79,10 +83,36 @@ func (c *EncryptedCID) ToBytes() []byte {
 	data = append(data, c.OriginalCID.ToBytes()...)
 	return data
 }
-func (cid EncryptedCID) EncodeMsgpack(enc *msgpack.Encoder) error {
-	return enc.EncodeBytes(cid.ToBytes())
+func (c EncryptedCID) EncodeMsgpack(enc *msgpack.Encoder) error {
+	return enc.EncodeBytes(c.ToBytes())
 }
 
-func (cid *EncryptedCID) DecodeMsgpack(dec *msgpack.Decoder) error {
-	return decodeMsgpackCID(cid, dec)
+func (c *EncryptedCID) DecodeMsgpack(dec *msgpack.Decoder) error {
+	return decodeMsgpackCID(c, dec)
+}
+func (c EncryptedCID) MarshalJSON() ([]byte, error) {
+	str, err := c.ToString()
+
+	if err != nil {
+		return nil, err
+	}
+	// Delegate to the MarshalJSON method of the encoder
+	return json.Marshal(str)
+}
+
+func (c *EncryptedCID) UnmarshalJSON(data []byte) error {
+	decData, err := serialize.UnmarshalBase64UrlJSON(data)
+
+	if err != nil {
+		return err
+	}
+
+	decodedCid, err := EncryptedCIDFromBytes(decData)
+
+	if err != nil {
+		return err
+	}
+
+	*c = *decodedCid
+	return nil
 }
