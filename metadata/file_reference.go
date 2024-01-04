@@ -57,7 +57,8 @@ func (fr *FileReference) EncodeMsgpack(enc *msgpack.Encoder) error {
 		}
 		data[8] = historyData
 	}
-	return nil
+
+	return enc.Encode(data)
 }
 func (fr *FileReference) DecodeMsgpack(dec *msgpack.Decoder) error {
 	mapLen, err := dec.DecodeMapLen()
