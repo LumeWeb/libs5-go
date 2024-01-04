@@ -15,11 +15,11 @@ import (
 	}
 */
 func InitMarshaller(kind types.MetadataType, enc *msgpack.Encoder) error {
-	err := enc.EncodeUint8(types.MetadataMagicByte)
+	err := enc.EncodeInt(types.MetadataMagicByte)
 	if err != nil {
 		return err
 	}
-	err = enc.EncodeUint8(uint8(kind))
+	err = enc.EncodeInt(int64(kind))
 	if err != nil {
 		return err
 	}
