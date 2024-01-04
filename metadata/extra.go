@@ -8,6 +8,8 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
+type jsonData = map[string]interface{}
+
 var names = map[types.MetadataExtension]string{
 	types.MetadataExtensionLicenses:           "licenses",
 	types.MetadataExtensionDonationKeys:       "donationKeys",
@@ -55,29 +57,12 @@ func NewExtraMetadata(data map[int]interface{}) *ExtraMetadata {
 }
 
 func (em ExtraMetadata) MarshalJSON() ([]byte, error) {
-	jsonObject := make(map[string]interface{})
-	for key, value := range em.Data {
-		name, ok := names[types.MetadataExtension(key)]
-		if ok {
-			if types.MetadataExtension(key) == types.MetadataExtensionUpdateCID {
-				cid, err := encoding.CIDFromBytes(value.([]byte))
-				var cidString string
-				if err == nil {
-					cidString, err = cid.ToString()
-				}
-
-				if err == nil {
-					jsonObject["updateCID"] = cidString
-				} else {
-					jsonObject["updateCID"] = ""
-				}
-			} else {
-				jsonObject[name] = value
-			}
-		}
+	data, err := em.encode()
+	if err != nil {
+		return nil, err
 	}
 
-	return json.Marshal(jsonObject)
+	return json.Marshal(data)
 }
 
 func (em *ExtraMetadata) UnmarshalJSON(data []byte) error {
@@ -131,5 +116,35 @@ func (em *ExtraMetadata) DecodeMsgpack(dec *msgpack.Decoder) error {
 }
 
 func (em ExtraMetadata) EncodeMsgpack(enc *msgpack.Encoder) error {
-	return enc.Encode(em.Data)
+	data, err := em.encode()
+	if err != nil {
+		return err
+	}
+
+	return enc.Encode(data)
+}
+
+func (em ExtraMetadata) encode() (jsonData, error) {
+	jsonObject := make(map[string]interface{})
+	for key, value := range em.Data {
+		name, ok := names[types.MetadataExtension(key)]
+		if ok {
+			if types.MetadataExtension(key) == types.MetadataExtensionUpdateCID {
+				cid, err := encoding.CIDFromBytes(value.([]byte))
+				var cidString string
+				if err == nil {
+					cidString, err = cid.ToString()
+				}
+				if err == nil {
+					jsonObject["updateCID"] = cidString
+				} else {
+					jsonObject["updateCID"] = ""
+				}
+			} else {
+				jsonObject[name] = value
+			}
+		}
+	}
+
+	return jsonObject, nil
 }
