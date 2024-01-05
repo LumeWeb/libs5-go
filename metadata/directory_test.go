@@ -94,7 +94,6 @@ func TestDirectoryMetadata_DecodeMsgpack(t *testing.T) {
 				t.Errorf("DecodeMsgpack() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			fmt.Println(cmp.Diff(jsonDm, dm))
 			if !cmp.Equal(jsonDm, dm) {
 				t.Errorf("DecodeMsgpack() error = %v, wantErr %v", "msgpack does not match json", tt.wantErr)
 			}
