@@ -6,14 +6,6 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-/*
-	func NewSerializer(kind types.MetadataType) *Packer {
-		p := NewPacker()
-		_ = p.PackUint8(types.MetadataMagicByte)
-		_ = p.PackUint8(uint8(types.MetadataTypeDirectory))
-		return p
-	}
-*/
 func InitMarshaller(kind types.MetadataType, enc *msgpack.Encoder) error {
 	err := enc.EncodeInt(types.MetadataMagicByte)
 	if err != nil {
