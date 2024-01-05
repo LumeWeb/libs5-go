@@ -79,9 +79,20 @@ func marshallMapMsgpack(enc *msgpack.Encoder, m *linkedhashmap.Map) error {
 
 	iter := m.Iterator()
 	for iter.Next() {
-		key := iter.Key().(string)
-		if err := enc.EncodeString(key); err != nil {
-			return err
+		key := iter.Key()
+
+		// Determine the type of the key and encode it
+		switch k := key.(type) {
+		case string:
+			if err := enc.EncodeString(k); err != nil {
+				return err
+			}
+		case int:
+			if err := enc.EncodeInt(int64(k)); err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("unsupported key type for encoding")
 		}
 
 		value := iter.Value()
