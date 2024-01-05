@@ -1,6 +1,9 @@
 package metadata
 
-import "github.com/vmihailenco/msgpack/v5"
+import (
+	"github.com/emirpasic/gods/maps/linkedhashmap"
+	"github.com/vmihailenco/msgpack/v5"
+)
 
 var _ SerializableMetadata = (*DirectoryReference)(nil)
 
@@ -31,22 +34,22 @@ func NewDirectoryReference(created uint64, name string, encryptedWriteKey, publi
 }
 
 func (dr *DirectoryReference) EncodeMsgpack(enc *msgpack.Encoder) error {
-	data := map[int]interface{}{
-		1: dr.Name,
-		2: dr.Created,
-		3: dr.PublicKey,
-		4: dr.EncryptedWriteKey,
-	}
+	dmap := &directoryReferenceSerializationMap{*linkedhashmap.New()}
+
+	dmap.Put(1, dr.Name)
+	dmap.Put(2, dr.Created)
+	dmap.Put(3, dr.PublicKey)
+	dmap.Put(4, dr.EncryptedWriteKey)
 
 	if dr.EncryptionKey != nil {
-		data[5] = dr.EncryptionKey
+		dmap.Put(5, dr.EncryptionKey)
 	}
 
 	if dr.Ext != nil {
-		data[6] = dr.Ext
+		dmap.Put(6, dr.Ext)
 	}
 
-	return enc.Encode(data)
+	return enc.Encode(dmap)
 }
 
 func (dr *DirectoryReference) DecodeMsgpack(dec *msgpack.Decoder) error {
