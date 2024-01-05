@@ -1,0 +1,21 @@
+package types
+
+type ProtocolMethod int
+
+const (
+	ProtocolMethodHandshakeOpen ProtocolMethod = 0x1
+	ProtocolMethodHandshakeDone ProtocolMethod = 0x2
+	ProtocolMethodSignedMessage ProtocolMethod = 0xA
+	ProtocolMethodHashQuery     ProtocolMethod = 0x4
+	ProtocolMethodAnnouncePeers ProtocolMethod = 0x8
+	ProtocolMethodRegistryQuery ProtocolMethod = 0xD
+)
+
+var ProtocolMethodMap = map[ProtocolMethod]string{
+	ProtocolMethodHandshakeOpen: "HandshakeOpen",
+	ProtocolMethodHandshakeDone: "HandshakeDone",
+	ProtocolMethodSignedMessage: "SignedMessage",
+	ProtocolMethodHashQuery:     "HashQuery",
+	ProtocolMethodAnnouncePeers: "AnnouncePeers",
+	ProtocolMethodRegistryQuery: "RegistryQuery",
+}
