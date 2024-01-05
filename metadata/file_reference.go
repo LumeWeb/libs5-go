@@ -75,6 +75,9 @@ func (fr *FileReference) DecodeMsgpack(dec *msgpack.Decoder) error {
 		return err
 	}
 
+	hasExt := false
+	hasHistory := false
+
 	for i := 0; i < mapLen; i++ {
 		key, err := dec.DecodeInt8()
 		if err != nil {
@@ -114,6 +117,8 @@ func (fr *FileReference) DecodeMsgpack(dec *msgpack.Decoder) error {
 			if err != nil {
 				return err
 			}
+
+			hasExt = true
 		case int8(8):
 			historyDataLen, err := dec.DecodeMapLen()
 			if err != nil {
@@ -132,10 +137,18 @@ func (fr *FileReference) DecodeMsgpack(dec *msgpack.Decoder) error {
 					return err
 				}
 
-				fr.History[k] = &fileVersion
-			}
+			hasHistory = true
 		}
 	}
+
+	if !hasExt {
+		fr.Ext = extMap{*linkedhashmap.New()}
+	}
+
+	if !hasHistory {
+		fr.History = fileHistoryMap{*linkedhashmap.New()}
+	}
+
 	return nil
 }
 
