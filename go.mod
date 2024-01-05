@@ -3,7 +3,8 @@ module git.lumeweb.com/LumeWeb/libs5-go
 go 1.20
 
 require (
-	github.com/LumeWeb/go-cmp v0.0.0-20240104123650-d1e8aa707339
+	github.com/emirpasic/gods v1.18.1
+	github.com/google/go-cmp v0.6.0
 	github.com/multiformats/go-multibase v0.2.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	go.etcd.io/bbolt v1.3.8
