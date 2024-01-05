@@ -113,6 +113,15 @@ func marshallMapMsgpack(enc *msgpack.Encoder, m *linkedhashmap.Map) error {
 			if err := enc.EncodeInt(int64(v)); err != nil {
 				return err
 			}
+
+		case uint64:
+			if err := enc.EncodeInt(int64(v)); err != nil {
+				return err
+			}
+		case Base64UrlBinary:
+			if err := enc.Encode(&v); err != nil {
+				return err
+			}
 		case FileVersion:
 			if err := enc.Encode(&v); err != nil {
 				return err
