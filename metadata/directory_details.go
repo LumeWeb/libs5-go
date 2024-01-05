@@ -71,5 +71,8 @@ func (dmd *DirectoryMetadataDetails) DecodeMsgpack(dec *msgpack.Decoder) error {
 }
 
 func (dmd DirectoryMetadataDetails) EncodeMsgpack(enc *msgpack.Encoder) error {
+	if dmd.Data == nil {
+		dmd.Data = make(map[int]interface{})
+	}
 	return enc.Encode(dmd.Data)
 }
