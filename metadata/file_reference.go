@@ -47,30 +47,26 @@ func (fr *FileReference) Modified() int {
 }
 
 func (fr *FileReference) EncodeMsgpack(enc *msgpack.Encoder) error {
-	data := map[int]interface{}{
-		1: fr.Name,
-		2: fr.Created,
-		4: fr.File,
-		5: fr.Version,
-	}
+	tempMap := linkedhashmap.New()
+
+	tempMap.Put(1, fr.Name)
+	tempMap.Put(2, fr.Created)
+	tempMap.Put(4, fr.File)
+	tempMap.Put(5, fr.Version)
 
 	if fr.MimeType != "" {
-		data[6] = fr.MimeType
+		tempMap.Put(6, fr.MimeType)
 	}
 
-	if fr.Ext != nil {
-		data[7] = fr.Ext
+	if !fr.Ext.Empty() {
+		tempMap.Put(7, fr.Ext)
 	}
 
-	if fr.History != nil {
-		historyData := make(map[int]interface{})
-		for key, value := range fr.History {
-			historyData[key] = value
-		}
-		data[8] = historyData
+	if !fr.History.Empty() {
+		tempMap.Put(8, fr.History)
 	}
 
-	return enc.Encode(data)
+	return enc.Encode(tempMap)
 }
 func (fr *FileReference) DecodeMsgpack(dec *msgpack.Decoder) error {
 	mapLen, err := dec.DecodeMapLen()
