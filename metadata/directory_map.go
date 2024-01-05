@@ -139,6 +139,14 @@ func marshallMapMsgpack(enc *msgpack.Encoder, m *linkedhashmap.Map) error {
 			if err := enc.Encode(&v); err != nil {
 				return err
 			}
+		case *FileVersion:
+			if err := enc.Encode(&v); err != nil {
+				return err
+			}
+		case *encoding.CID:
+			if err := enc.Encode(&v); err != nil {
+				return err
+			}
 		default:
 			return fmt.Errorf("unsupported type for encoding")
 		}
