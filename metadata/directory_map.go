@@ -18,7 +18,7 @@ type unmarshalNewInstanceFunc func() interface{}
 
 var _ SerializableMetadata = (*directoryReferenceMap)(nil)
 
-func unmarshalMapMsgpack(dec *msgpack.Decoder, m *linkedhashmap.Map, placeholder interface{}) error {
+func unmarshalMapMsgpack(dec *msgpack.Decoder, m *linkedhashmap.Map, placeholder interface{}, intMap bool) error {
 	*m = *linkedhashmap.New()
 
 	l, err := dec.DecodeMapLen()
@@ -27,12 +27,20 @@ func unmarshalMapMsgpack(dec *msgpack.Decoder, m *linkedhashmap.Map, placeholder
 	}
 
 	for i := 0; i < l; i++ {
-		key, err := dec.DecodeString()
-		if err != nil {
-			return err
+		var key interface{}
+		if intMap {
+			intKey, err := dec.DecodeInt()
+			if err != nil {
+				return err
+			}
+			key = intKey
+		} else {
+			strKey, err := dec.DecodeString()
+			if err != nil {
+				return err
+			}
+			key = strKey
 		}
-
-		fmt.Println("dir: ", key)
 
 		switch placeholder.(type) {
 		case *DirectoryReference:
@@ -119,7 +127,7 @@ func unmarshalMapJson(bytes []byte, m *linkedhashmap.Map, newInstance unmarshalN
 			return err
 		}
 
-		err = json.Unmarshal(data, &instance)
+		err = json.Unmarshal(data, instance)
 		if err != nil {
 			return err
 		}
@@ -142,7 +150,7 @@ func (drm directoryReferenceMap) EncodeMsgpack(enc *msgpack.Encoder) error {
 }
 
 func (drm *directoryReferenceMap) DecodeMsgpack(dec *msgpack.Decoder) error {
-	return unmarshalMapMsgpack(dec, &drm.Map, &DirectoryReference{})
+	return unmarshalMapMsgpack(dec, &drm.Map, &DirectoryReference{}, false)
 }
 
 func (frm fileReferenceMap) EncodeMsgpack(enc *msgpack.Encoder) error {
@@ -150,7 +158,7 @@ func (frm fileReferenceMap) EncodeMsgpack(enc *msgpack.Encoder) error {
 }
 
 func (frm *fileReferenceMap) DecodeMsgpack(dec *msgpack.Decoder) error {
-	return unmarshalMapMsgpack(dec, &frm.Map, &FileReference{})
+	return unmarshalMapMsgpack(dec, &frm.Map, &FileReference{}, false)
 }
 
 func (frm *fileReferenceMap) UnmarshalJSON(bytes []byte) error {
