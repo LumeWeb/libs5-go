@@ -22,7 +22,7 @@ func NewNodeId(bytes []byte) *NodeId {
 	return &NodeId{Bytes: bytes}
 }
 
-func NodeIdDecode(nodeId string) (*NodeId, error) {
+func DecodeNodeId(nodeId string) (*NodeId, error) {
 	encoding, ret, err := multibase.Decode(nodeId)
 	if err != nil {
 		return nil, err
