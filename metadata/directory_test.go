@@ -69,12 +69,6 @@ func getDirectoryMeta() *DirectoryMetadata {
 }
 
 func TestDirectoryMetadata_DecodeMsgpack(t *testing.T) {
-	type fields struct {
-		Details       DirectoryMetadataDetails
-		Directories   map[string]DirectoryReference
-		Files         map[string]FileReference
-		ExtraMetadata ExtraMetadata
-	}
 	tests := []struct {
 		name    string
 		wantErr bool
