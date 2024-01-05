@@ -3,14 +3,49 @@ package metadata
 import (
 	"encoding/json"
 	"fmt"
-	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	cmp "github.com/LumeWeb/go-cmp"
+	"github.com/emirpasic/gods/maps/linkedhashmap"
+	cmp "github.com/google/go-cmp/cmp"
 	"github.com/vmihailenco/msgpack/v5"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
 )
+
+func isEqual(sizeFunc1, sizeFunc2 func() int, iteratorFunc1, iteratorFunc2 func() linkedhashmap.Iterator) bool {
+	if sizeFunc1() != sizeFunc2() {
+		return false
+	}
+
+	iter1 := iteratorFunc1()
+	iter2 := iteratorFunc2()
+
+	for iter1.Next() {
+		iter2.Next()
+		if iter1.Key() != iter2.Key() {
+			return false
+		}
+		if !cmp.Equal(iter1.Value(), iter2.Value()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (frm fileReferenceMap) Equal(other fileReferenceMap) bool {
+	return isEqual(frm.Size, other.Size, frm.Iterator, other.Iterator)
+}
+
+func (frm fileHistoryMap) Equal(other fileHistoryMap) bool {
+	return isEqual(frm.Size, other.Size, frm.Iterator, other.Iterator)
+}
+
+func (drm directoryReferenceMap) Equal(other directoryReferenceMap) bool {
+	return isEqual(drm.Size, other.Size, drm.Iterator, other.Iterator)
+}
+func (ext extMap) Equal(other extMap) bool {
+	return isEqual(ext.Size, other.Size, ext.Iterator, other.Iterator)
+}
 
 func readFile(filename string) []byte {
 	filePath := filepath.Join("testdata", filename)
