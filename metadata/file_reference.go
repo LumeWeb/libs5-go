@@ -47,7 +47,7 @@ func (fr *FileReference) Modified() int {
 }
 
 func (fr *FileReference) EncodeMsgpack(enc *msgpack.Encoder) error {
-	tempMap := linkedhashmap.New()
+	tempMap := &fileReferenceSerializationMap{*linkedhashmap.New()}
 
 	tempMap.Put(1, fr.Name)
 	tempMap.Put(2, fr.Created)

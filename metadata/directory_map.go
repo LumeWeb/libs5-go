@@ -3,6 +3,7 @@ package metadata
 import (
 	"encoding/json"
 	"fmt"
+	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"github.com/emirpasic/gods/maps/linkedhashmap"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -13,7 +14,9 @@ type directoryReferenceMap struct {
 type fileReferenceMap struct {
 	linkedhashmap.Map
 }
-
+type fileReferenceSerializationMap struct {
+	linkedhashmap.Map
+}
 type directoryReferenceSerializationMap struct {
 	linkedhashmap.Map
 }
@@ -32,6 +35,7 @@ var _ SerializableMetadata = (*directoryReferenceMap)(nil)
 var _ SerializableMetadata = (*fileReferenceMap)(nil)
 var _ msgpack.CustomEncoder = (*directoryReferenceSerializationMap)(nil)
 var _ msgpack.CustomEncoder = (*fileVersionSerializationMap)(nil)
+var _ msgpack.CustomEncoder = (*fileReferenceSerializationMap)(nil)
 
 func unmarshalMapMsgpack(dec *msgpack.Decoder, m *linkedhashmap.Map, placeholder interface{}, intMap bool) error {
 	*m = *linkedhashmap.New()
@@ -208,6 +212,10 @@ func (drm *directoryReferenceMap) UnmarshalJSON(bytes []byte) error {
 
 func (frm directoryReferenceSerializationMap) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return marshallMapMsgpack(enc, &frm.Map)
+}
+
+func (frt fileReferenceSerializationMap) EncodeMsgpack(enc *msgpack.Encoder) error {
+	return marshallMapMsgpack(enc, &frt.Map)
 }
 
 func (fvs fileVersionSerializationMap) EncodeMsgpack(enc *msgpack.Encoder) error {
