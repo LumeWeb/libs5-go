@@ -2,6 +2,7 @@ package metadata
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
+	"github.com/emirpasic/gods/maps/linkedhashmap"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
@@ -26,16 +27,17 @@ func NewFileVersion(ts int, encryptedCID *encoding.EncryptedCID, plaintextCID *e
 }
 
 func (fv *FileVersion) EncodeMsgpack(enc *msgpack.Encoder) error {
-	data := map[int]interface{}{
-		8: fv.Ts,
-	}
+
+	fmap := &fileVersionSerializationMap{*linkedhashmap.New()}
+
+	fmap.Put(8, fv.Ts)
 
 	if fv.EncryptedCID != nil {
-		data[1] = fv.EncryptedCID
+		fmap.Put(1, fv.EncryptedCID)
 	}
 
 	if fv.PlaintextCID != nil {
-		data[2] = fv.PlaintextCID
+		fmap.Put(2, fv.PlaintextCID)
 	}
 
 	if len(fv.Hashes) > 0 {
@@ -43,14 +45,14 @@ func (fv *FileVersion) EncodeMsgpack(enc *msgpack.Encoder) error {
 		for i, hash := range fv.Hashes {
 			hashesData[i] = hash.FullBytes
 		}
-		data[9] = hashesData
+		fmap.Put(9, hashesData)
 	}
 
 	if fv.Thumbnail != nil {
-		data[10] = fv.Thumbnail
+		fmap.Put(10, fv.Thumbnail)
 	}
 
-	return enc.Encode(data)
+	return enc.Encode(fmap)
 }
 
 func (fv *FileVersion) DecodeMsgpack(dec *msgpack.Decoder) error {

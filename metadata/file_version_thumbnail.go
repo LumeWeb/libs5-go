@@ -2,6 +2,7 @@ package metadata
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
+	"github.com/emirpasic/gods/maps/linkedhashmap"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
@@ -22,20 +23,20 @@ func NewFileVersionThumbnail(imageType string, aspectRatio float64, cid *encodin
 }
 
 func (fvt *FileVersionThumbnail) EncodeMsgpack(enc *msgpack.Encoder) error {
-	data := map[int]interface{}{
-		2: fvt.AspectRatio,
-		3: fvt.CID.ToBytes(),
-	}
+	fmap := &fileVersionThumbnailSerializationMap{*linkedhashmap.New()}
+
+	fmap.Put(2, fvt.AspectRatio)
+	fmap.Put(3, fvt.CID.ToBytes())
 
 	if fvt.ImageType != "" {
-		data[1] = fvt.ImageType
+		fmap.Put(1, fvt.ImageType)
 	}
 
 	if fvt.Thumbhash != nil {
-		data[4] = fvt.Thumbhash
+		fmap.Put(4, fvt.Thumbhash)
 	}
 
-	return enc.Encode(data)
+	return enc.Encode(fmap)
 }
 func (fvt *FileVersionThumbnail) DecodeMsgpack(dec *msgpack.Decoder) error {
 	mapLen, err := dec.DecodeMapLen()

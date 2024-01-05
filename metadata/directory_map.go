@@ -18,11 +18,20 @@ type directoryReferenceSerializationMap struct {
 	linkedhashmap.Map
 }
 
+type fileVersionSerializationMap struct {
+	linkedhashmap.Map
+}
+
+type fileVersionThumbnailSerializationMap struct {
+	linkedhashmap.Map
+}
+
 type unmarshalNewInstanceFunc func() interface{}
 
 var _ SerializableMetadata = (*directoryReferenceMap)(nil)
 var _ SerializableMetadata = (*fileReferenceMap)(nil)
 var _ msgpack.CustomEncoder = (*directoryReferenceSerializationMap)(nil)
+var _ msgpack.CustomEncoder = (*fileVersionSerializationMap)(nil)
 
 func unmarshalMapMsgpack(dec *msgpack.Decoder, m *linkedhashmap.Map, placeholder interface{}, intMap bool) error {
 	*m = *linkedhashmap.New()
@@ -199,4 +208,11 @@ func (drm *directoryReferenceMap) UnmarshalJSON(bytes []byte) error {
 
 func (frm directoryReferenceSerializationMap) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return marshallMapMsgpack(enc, &frm.Map)
+}
+
+func (fvs fileVersionSerializationMap) EncodeMsgpack(enc *msgpack.Encoder) error {
+	return marshallMapMsgpack(enc, &fvs.Map)
+}
+func (fvts fileVersionThumbnailSerializationMap) EncodeMsgpack(enc *msgpack.Encoder) error {
+	return marshallMapMsgpack(enc, &fvts.Map)
 }
