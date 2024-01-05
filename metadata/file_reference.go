@@ -120,22 +120,10 @@ func (fr *FileReference) DecodeMsgpack(dec *msgpack.Decoder) error {
 
 			hasExt = true
 		case int8(8):
-			historyDataLen, err := dec.DecodeMapLen()
+			err := dec.Decode(&fr.History)
 			if err != nil {
 				return err
 			}
-			fr.History = make(map[int]*FileVersion, historyDataLen)
-			for range fr.History {
-				k, err := dec.DecodeInt()
-				if err != nil {
-					return err
-				}
-
-				var fileVersion FileVersion
-				err = dec.Decode(&fileVersion)
-				if err != nil {
-					return err
-				}
 
 			hasHistory = true
 		}
