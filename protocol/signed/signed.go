@@ -29,6 +29,9 @@ func init() {
 	RegisterMessageType(types.ProtocolMethodHandshakeDone, func() IncomingMessage {
 		return NewHandshakeDone()
 	})
+	RegisterMessageType(types.ProtocolMethodAnnouncePeers, func() IncomingMessage {
+		return NewAnnouncePeers()
+	})
 }
 
 func RegisterMessageType(messageType types.ProtocolMethod, factoryFunc func() IncomingMessage) {
