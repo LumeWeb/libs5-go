@@ -25,9 +25,18 @@ type IncomingMessageTyped interface {
 }
 
 type IncomingMessageImpl struct {
-	kind  types.ProtocolMethod
-	data  msgpack.RawMessage
-	known bool
+	kind     types.ProtocolMethod
+	data     msgpack.RawMessage
+	original []byte
+	known    bool
+}
+
+func (i *IncomingMessageImpl) SetOriginal(original []byte) {
+	i.original = original
+}
+
+func (i *IncomingMessageImpl) Original() []byte {
+	return i.original
 }
 
 func (i *IncomingMessageImpl) SetIncomingMessage(msg IncomingMessage) {
