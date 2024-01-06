@@ -15,11 +15,15 @@ var (
 type NodeIdCode = int
 
 type NodeId struct {
-	Bytes []byte
+	bytes []byte
+}
+
+func (nodeId *NodeId) Bytes() []byte {
+	return nodeId.bytes
 }
 
 func NewNodeId(bytes []byte) *NodeId {
-	return &NodeId{Bytes: bytes}
+	return &NodeId{bytes: bytes}
 }
 
 func DecodeNodeId(nodeId string) (*NodeId, error) {
@@ -37,19 +41,23 @@ func DecodeNodeId(nodeId string) (*NodeId, error) {
 
 func (nodeId *NodeId) Equals(other interface{}) bool {
 	if otherNodeId, ok := other.(*NodeId); ok {
-		return bytes.Equal(nodeId.Bytes, otherNodeId.Bytes)
+		return bytes.Equal(nodeId.bytes, otherNodeId.bytes)
 	}
 	return false
 }
 
 func (nodeId *NodeId) HashCode() int {
-	return utils.HashCode(nodeId.Bytes[:4])
+	return utils.HashCode(nodeId.bytes[:4])
 }
 
 func (nodeId *NodeId) ToBase58() (string, error) {
-	return bases.ToBase58BTC(nodeId.Bytes)
+	return bases.ToBase58BTC(nodeId.bytes)
 }
 
 func (nodeId *NodeId) ToString() (string, error) {
 	return nodeId.ToBase58()
+}
+
+func (nodeId *NodeId) Raw() []byte {
+	return nodeId.bytes[1:]
 }
