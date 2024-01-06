@@ -76,7 +76,7 @@ func (c *EncryptedCID) ToBytes() []byte {
 		c.encryptionAlgorithm,
 		byte(c.chunkSizeAsPowerOf2),
 	}
-	data = append(data, c.encryptedBlobHash.FullBytes...)
+	data = append(data, c.encryptedBlobHash.fullBytes...)
 	data = append(data, c.encryptionKey...)
 	data = append(data, utils.EncodeEndian(c.padding, 4)...)
 	data = append(data, c.OriginalCID.ToBytes()...)

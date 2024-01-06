@@ -21,7 +21,7 @@ func TestFromBase64Url(t *testing.T) {
 		{
 			name:    "Valid Base64 URL Encoded String",
 			args:    args{hash: testdata.MediaBase64CID},
-			want:    &Multihash{FullBytes: testdata.MediaCIDBytes},
+			want:    &Multihash{fullBytes: testdata.MediaCIDBytes},
 			wantErr: false,
 		},
 		{
@@ -51,7 +51,7 @@ func TestFromBase64Url(t *testing.T) {
 		{
 			name:    "Long String",
 			args:    args{hash: "uYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh"},
-			want:    &Multihash{FullBytes: []byte(strings.Repeat("a", 750))},
+			want:    &Multihash{fullBytes: []byte(strings.Repeat("a", 750))},
 			wantErr: false,
 		},
 	}
@@ -95,7 +95,7 @@ func TestMultihash_FunctionType(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &Multihash{
-				FullBytes: tt.fields.FullBytes,
+				fullBytes: tt.fields.FullBytes,
 			}
 			if got := m.FunctionType(); got != tt.want {
 				t.Errorf("FunctionType() = %v, want %v", got, tt.want)
@@ -131,7 +131,7 @@ func TestMultihash_ToBase32(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &Multihash{
-				FullBytes: tt.fields.FullBytes,
+				fullBytes: tt.fields.FullBytes,
 			}
 			got, err := m.ToBase32()
 			if (err != nil) != tt.wantErr {
@@ -172,7 +172,7 @@ func TestMultihash_ToBase64Url(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &Multihash{
-				FullBytes: tt.fields.FullBytes,
+				fullBytes: tt.fields.FullBytes,
 			}
 			got, err := m.ToBase64Url()
 			if (err != nil) != tt.wantErr {
@@ -198,7 +198,7 @@ func TestNewMultihash(t *testing.T) {
 		{
 			name: "Valid Base64 URL Encoded String",
 			args: args{fullBytes: testdata.RawCIDBytes},
-			want: &Multihash{FullBytes: testdata.RawCIDBytes},
+			want: &Multihash{fullBytes: testdata.RawCIDBytes},
 		},
 	}
 	for _, tt := range tests {

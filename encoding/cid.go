@@ -47,7 +47,7 @@ func (cid *CID) getPrefixBytes() []byte {
 
 func (cid *CID) ToBytes() []byte {
 	if cid.Type == types.CIDTypeBridge {
-		return cid.Hash.FullBytes
+		return cid.Hash.fullBytes
 	} else if cid.Type == types.CIDTypeRaw {
 		sizeBytes := utils.EncodeEndian(cid.Size, 8)
 
@@ -58,10 +58,10 @@ func (cid *CID) ToBytes() []byte {
 			sizeBytes = []byte{0}
 		}
 
-		return utils.ConcatBytes(cid.getPrefixBytes(), cid.Hash.FullBytes, sizeBytes)
+		return utils.ConcatBytes(cid.getPrefixBytes(), cid.Hash.fullBytes, sizeBytes)
 	}
 
-	return utils.ConcatBytes(cid.getPrefixBytes(), cid.Hash.FullBytes)
+	return utils.ConcatBytes(cid.getPrefixBytes(), cid.Hash.fullBytes)
 }
 
 func Decode(cid string) (*CID, error) {

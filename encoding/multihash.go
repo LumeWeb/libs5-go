@@ -19,22 +19,26 @@ var (
 type MultihashCode = int
 
 type Multihash struct {
-	FullBytes []byte
+	fullBytes []byte
+}
+
+func (m *Multihash) FullBytes() []byte {
+	return m.fullBytes
 }
 
 var _ json.Marshaler = (*Multihash)(nil)
 var _ json.Unmarshaler = (*Multihash)(nil)
 
 func NewMultihash(fullBytes []byte) *Multihash {
-	return &Multihash{FullBytes: fullBytes}
+	return &Multihash{fullBytes: fullBytes}
 }
 
 func (m *Multihash) FunctionType() types.HashType {
-	return types.HashType(m.FullBytes[0])
+	return types.HashType(m.fullBytes[0])
 }
 
 func (m *Multihash) HashBytes() []byte {
-	return m.FullBytes[1:]
+	return m.fullBytes[1:]
 }
 
 func MultihashFromBase64Url(hash string) (*Multihash, error) {
@@ -53,26 +57,26 @@ func MultihashFromBase64Url(hash string) (*Multihash, error) {
 }
 
 func (m *Multihash) ToBase64Url() (string, error) {
-	return bases.ToBase64Url(m.FullBytes)
+	return bases.ToBase64Url(m.fullBytes)
 }
 
 func (m *Multihash) ToBase32() (string, error) {
-	return bases.ToBase32(m.FullBytes)
+	return bases.ToBase32(m.fullBytes)
 }
 
 func (m *Multihash) ToString() (string, error) {
 	if m.FunctionType() == types.HashType(types.CIDTypeBridge) {
-		return string(m.FullBytes), nil // Assumes the bytes are valid UTF-8
+		return string(m.fullBytes), nil // Assumes the bytes are valid UTF-8
 	}
 	return m.ToBase64Url()
 }
 
 func (m *Multihash) Equals(other *Multihash) bool {
-	return bytes.Equal(m.FullBytes, other.FullBytes)
+	return bytes.Equal(m.fullBytes, other.fullBytes)
 }
 
 func (m *Multihash) HashCode() MultihashCode {
-	return utils.HashCode(m.FullBytes[:4])
+	return utils.HashCode(m.fullBytes[:4])
 }
 
 func (b *Multihash) UnmarshalJSON(data []byte) error {
@@ -81,7 +85,7 @@ func (b *Multihash) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	b.FullBytes = decodedData
+	b.fullBytes = decodedData
 	return nil
 }
 func (b Multihash) MarshalJSON() ([]byte, error) {

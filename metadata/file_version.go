@@ -43,7 +43,7 @@ func (fv *FileVersion) EncodeMsgpack(enc *msgpack.Encoder) error {
 	if len(fv.Hashes) > 0 {
 		hashesData := make([][]byte, len(fv.Hashes))
 		for i, hash := range fv.Hashes {
-			hashesData[i] = hash.FullBytes
+			hashesData[i] = hash.FullBytes()
 		}
 		fmap.Put(9, hashesData)
 	}
