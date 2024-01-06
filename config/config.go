@@ -1,4 +1,4 @@
-package libs5_go
+package config
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/ed25519"
