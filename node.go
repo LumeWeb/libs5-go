@@ -104,15 +104,15 @@ func (n *Node) Start() error {
 		return nil
 	}
 */
-func (n *Node) GetCachedStorageLocations(hash *encoding.Multihash, types []int) (map[encoding.NodeIdCode]*StorageLocation, error) {
-	locations := make(map[encoding.NodeIdCode]*StorageLocation)
+func (n *Node) GetCachedStorageLocations(hash *encoding.Multihash, types []int) (map[string]*StorageLocation, error) {
+	locations := make(map[string]*StorageLocation)
 
 	locationMap, err := n.readStorageLocationsFromDB(hash)
 	if err != nil {
 		return nil, err
 	}
 	if len(locationMap) == 0 {
-		return make(map[encoding.NodeIdCode]*StorageLocation), nil
+		return make(map[string]*StorageLocation), nil
 	}
 
 	ts := time.Now().Unix()
@@ -173,11 +173,16 @@ func (n *Node) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.Nod
 		return err
 	}
 
+	nodeIdStr, err := nodeId.ToString()
+	if err != nil {
+		return err
+	}
+
 	// Get or create the inner map for the specific type
 	innerMap, exists := locationDb[location.Type]
 	if !exists {
 		innerMap = make(nodeStorage, 1)
-		innerMap[nodeId.HashCode()] = make(nodeDetailsStorage, 1)
+		innerMap[nodeIdStr] = make(nodeDetailsStorage, 1)
 	}
 
 	// Create location map with new data
@@ -187,7 +192,7 @@ func (n *Node) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.Nod
 	locationMap[4] = message
 
 	// Update the inner map with the new location
-	innerMap[nodeId.HashCode()] = locationMap
+	innerMap[nodeIdStr] = locationMap
 	locationDb[location.Type] = innerMap
 
 	// Serialize the updated map and store it in the database

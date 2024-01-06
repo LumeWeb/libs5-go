@@ -67,7 +67,7 @@ func (ssl *SignedStorageLocation) String() string {
 }
 
 type storageLocationMap map[int]nodeStorage
-type nodeStorage map[encoding.NodeIdCode]nodeDetailsStorage
+type nodeStorage map[string]nodeDetailsStorage
 type nodeDetailsStorage map[int]interface{}
 
 func (s *storageLocationMap) DecodeMsgpack(dec *msgpack.Decoder) error {
@@ -92,11 +92,11 @@ func (s *storageLocationMap) DecodeMsgpack(dec *msgpack.Decoder) error {
 
 func (s storageLocationMap) EncodeMsgpack(enc *msgpack.Encoder) error {
 	// Create a temporary map to hold the encoded data
-	tempMap := make(map[int]map[encoding.NodeIdCode]map[int]interface{})
+	tempMap := make(map[int]map[string]map[int]interface{})
 
 	// Populate the temporary map with data from storageLocationMap
 	for storageKey, nodeStorages := range s {
-		tempNodeStorages := make(map[encoding.NodeIdCode]map[int]interface{})
+		tempNodeStorages := make(map[string]map[int]interface{})
 		for nodeId, nodeDetails := range nodeStorages {
 			tempNodeStorages[nodeId] = nodeDetails
 		}
