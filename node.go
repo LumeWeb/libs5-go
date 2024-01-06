@@ -67,7 +67,7 @@ func (n *Node) Logger() *zap.Logger {
 
 func (n *Node) Db() *bolt.DB {
 	if n.nodeConfig != nil {
-		return &n.nodeConfig.DB
+		return n.nodeConfig.DB
 	}
 	return nil
 }
