@@ -1,26 +1,41 @@
 package libs5_go
 
 import (
+	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
+	"git.lumeweb.com/LumeWeb/libs5-go/utils"
+	"github.com/vmihailenco/msgpack/v5"
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
+	"time"
 )
 
 type Metadata interface {
 	ToJson() map[string]interface{}
 }
 
-type services struct {
+type Services struct {
 	p2p *service.P2P
 }
+
+func (s *Services) P2P() *service.P2P {
+	return s.p2p
+}
+
+const cacheBucketName = "object-cache"
 
 type Node struct {
 	nodeConfig            *NodeConfig
 	metadataCache         *structs.Map
 	started               bool
 	hashQueryRoutingTable *structs.Map
-	services              services
+	services              Services
+	cacheBucket           *bolt.Bucket
+}
+
+func (n *Node) Services() *Services {
+	return &n.services
 }
 
 func NewNode(config *NodeConfig) *Node {
@@ -54,6 +69,20 @@ func (n *Node) Db() *bolt.DB {
 	if n.nodeConfig != nil {
 		return &n.nodeConfig.DB
 	}
+	return nil
+}
+
+func (n *Node) Start() error {
+	err :=
+		utils.CreateBucket(cacheBucketName, n.Db(), func(bucket *bolt.Bucket) {
+			n.cacheBucket = bucket
+		})
+
+	if err != nil {
+		return err
+	}
+
+	n.started = true
 	return nil
 }
 
@@ -117,7 +146,7 @@ func (n *Node) GetCachedStorageLocations(hash *encoding.Multihash, types []int) 
 				}
 			}
 
-			locations[NodeId(key)] = storageLocation
+			locations[key] = storageLocation
 		}
 	}
 	return locations, nil

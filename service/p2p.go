@@ -8,6 +8,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
+	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
@@ -93,16 +94,10 @@ func (p *P2P) Init() error {
 	}
 	p.localNodeID = encoding.NewNodeId(p.nodeKeyPair.PublicKey())
 
-	err := p.Node().Db().Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte(nodeBucketName))
-		if err != nil {
-			return err
-		}
-
+	err := utils.CreateBucket(nodeBucketName, p.Node().Db(), func(bucket *bolt.Bucket) {
 		p.nodesBucket = bucket
-
-		return nil
 	})
+
 	if err != nil {
 		return err
 	}
