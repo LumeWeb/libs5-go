@@ -8,8 +8,8 @@ import (
 
 type NodeConfig struct {
 	P2P     P2PConfig
-	KeyPair ed25519.KeyPairEd25519
-	DB      bolt.DB
+	KeyPair *ed25519.KeyPairEd25519
+	DB      *bolt.DB
 	Logger  *zap.Logger
 }
 type P2PConfig struct {
