@@ -1,9 +1,9 @@
 package signed
 
 import (
-	libs5_go "git.lumeweb.com/LumeWeb/libs5-go"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	libs5_go "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"github.com/vmihailenco/msgpack/v5"
 	"net/url"

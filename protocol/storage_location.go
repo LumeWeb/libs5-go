@@ -3,9 +3,9 @@ package protocol
 import (
 	"crypto/ed25519"
 	"fmt"
-	libs5_go "git.lumeweb.com/LumeWeb/libs5-go"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	"git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/emirpasic/gods/sets/hashset"
@@ -39,7 +39,7 @@ func (s *StorageLocation) DecodeMessage(dec *msgpack.Decoder) error {
 
 	return nil
 }
-func (s *StorageLocation) HandleMessage(node *libs5_go.Node, peer *net.Peer, verifyId bool) error {
+func (s *StorageLocation) HandleMessage(node *node.Node, peer *net.Peer, verifyId bool) error {
 	hash := encoding.NewMultihash(s.raw[1:34]) // Replace NewMultihash with appropriate function
 	fmt.Println("Hash:", hash)
 
@@ -73,7 +73,7 @@ func (s *StorageLocation) HandleMessage(node *libs5_go.Node, peer *net.Peer, ver
 	nodeId := encoding.NewNodeId(publicKey)
 
 	// Assuming `node` is an instance of your Node structure
-	err := node.AddStorageLocation(hash, nodeId, libs5_go.NewStorageLocation(int(typeOfData), parts, int64(expiry)), s.raw, node.Config()) // Implement AddStorageLocation
+	err := node.AddStorageLocation(hash, nodeId, node.NewStorageLocation(int(typeOfData), parts, int64(expiry)), s.raw, node.Config()) // Implement AddStorageLocation
 
 	if err != nil {
 		return fmt.Errorf("Failed to add storage location: %s", err)

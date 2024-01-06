@@ -1,6 +1,7 @@
-package libs5_go
+package node
 
 import (
+	"git.lumeweb.com/LumeWeb/libs5-go"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
@@ -26,7 +27,7 @@ func (s *Services) P2P() *service.P2P {
 const cacheBucketName = "object-cache"
 
 type Node struct {
-	nodeConfig            *NodeConfig
+	nodeConfig            *libs5_go.NodeConfig
 	metadataCache         *structs.Map
 	started               bool
 	hashQueryRoutingTable *structs.Map
@@ -38,7 +39,7 @@ func (n *Node) Services() *Services {
 	return &n.services
 }
 
-func NewNode(config *NodeConfig) *Node {
+func NewNode(config *libs5_go.NodeConfig) *Node {
 	return &Node{
 		nodeConfig:            config,
 		metadataCache:         structs.NewMap(),
@@ -54,7 +55,7 @@ func (n *Node) IsStarted() bool {
 	return n.started
 }
 
-func (n *Node) Config() *NodeConfig {
+func (n *Node) Config() *libs5_go.NodeConfig {
 	return n.nodeConfig
 }
 
@@ -151,8 +152,8 @@ func (n *Node) GetCachedStorageLocations(hash *encoding.Multihash, types []int) 
 	}
 	return locations, nil
 }
-func (n *Node) readStorageLocationsFromDB(hash *encoding.Multihash) (storageLocationMap, error) {
-	locationMap := newStorageLocationMap()
+func (n *Node) readStorageLocationsFromDB(hash *encoding.Multihash) (libs5_go.storageLocationMap, error) {
+	locationMap := libs5_go.newStorageLocationMap()
 
 	bytes := n.cacheBucket.Get(hash.FullBytes())
 	if bytes == nil {
@@ -166,7 +167,7 @@ func (n *Node) readStorageLocationsFromDB(hash *encoding.Multihash) (storageLoca
 
 	return locationMap, nil
 }
-func (n *Node) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location *StorageLocation, message []byte, config *NodeConfig) error {
+func (n *Node) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location *StorageLocation, message []byte, config *libs5_go.NodeConfig) error {
 	// Read existing storage locations
 	locationDb, err := n.readStorageLocationsFromDB(hash)
 	if err != nil {
@@ -181,8 +182,8 @@ func (n *Node) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.Nod
 	// Get or create the inner map for the specific type
 	innerMap, exists := locationDb[location.Type]
 	if !exists {
-		innerMap = make(nodeStorage, 1)
-		innerMap[nodeIdStr] = make(nodeDetailsStorage, 1)
+		innerMap = make(libs5_go.nodeStorage, 1)
+		innerMap[nodeIdStr] = make(libs5_go.nodeDetailsStorage, 1)
 	}
 
 	// Create location map with new data

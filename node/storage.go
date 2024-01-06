@@ -1,4 +1,4 @@
-package libs5_go
+package node
 
 import (
 	"fmt"

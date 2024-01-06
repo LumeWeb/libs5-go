@@ -3,9 +3,9 @@ package protocol
 import (
 	"crypto/ed25519"
 	"errors"
-	libs5_go "git.lumeweb.com/LumeWeb/libs5-go"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	libs5_go "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"

@@ -1,9 +1,9 @@
 package protocol
 
 import (
-	libs5_go "git.lumeweb.com/LumeWeb/libs5-go"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	libs5_go "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.uber.org/zap"

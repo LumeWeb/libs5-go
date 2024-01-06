@@ -2,10 +2,10 @@ package service
 
 import (
 	"errors"
-	libs5_go "git.lumeweb.com/LumeWeb/libs5-go"
 	"git.lumeweb.com/LumeWeb/libs5-go/ed25519"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	"git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
@@ -30,11 +30,11 @@ const nodeBucketName = "nodes"
 
 type P2P struct {
 	logger         *zap.Logger
-	nodeKeyPair    ed25519.KeyPairEd25519
+	nodeKeyPair    *ed25519.KeyPairEd25519
 	localNodeID    *encoding.NodeId
 	networkID      string
 	nodesBucket    *bolt.Bucket
-	node           *libs5_go.Node
+	node           *node.Node
 	inited         bool
 	reconnectDelay *structs.Map
 	peers          *structs.Map
@@ -76,7 +76,7 @@ func (n *nodeVotes) DecodeMsgpack(dec *msgpack.Decoder) error {
 	return nil
 }
 
-func NewP2P(node *libs5_go.Node) *P2P {
+func NewP2P(node *node.Node) *P2P {
 	service := &P2P{
 		logger:         node.Logger(),
 		nodeKeyPair:    node.Config().KeyPair,
@@ -90,7 +90,7 @@ func NewP2P(node *libs5_go.Node) *P2P {
 	return service
 }
 
-func (p *P2P) Node() *libs5_go.Node {
+func (p *P2P) Node() *node.Node {
 	return p.node
 }
 

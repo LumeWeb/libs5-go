@@ -2,8 +2,8 @@ package protocol
 
 import (
 	"errors"
-	"git.lumeweb.com/LumeWeb/libs5-go"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	"git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -55,7 +55,7 @@ func (m HandshakeOpen) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return nil
 }
 
-func (m *HandshakeOpen) HandleMessage(node *libs5_go.Node, peer *net.Peer, verifyId bool) error {
+func (m *HandshakeOpen) HandleMessage(node *node.Node, peer *net.Peer, verifyId bool) error {
 
 	return nil
 }
