@@ -58,45 +58,46 @@ func (n *Node) Db() *bolt.DB {
 }
 
 /*
-func (n *Node) Services() *S5Services {
-	if n.nodeConfig != nil {
-		return n.nodeConfig.Services
+	func (n *Node) Services() *S5Services {
+		if n.nodeConfig != nil {
+			return n.nodeConfig.Services
+		}
+		return nil
 	}
-	return nil
-}
 
+	func (n *Node) Start() error {
+		n.started = true
+		return nil
+	}
 
-func (n *Node) Start() error {
-	n.started = true
-	return nil
-}
+	func (n *Node) Stop() error {
+		n.started = false
+		return nil
+	}
+*/
+func (n *Node) GetCachedStorageLocations(hash *encoding.Multihash, types []int) (map[encoding.NodeIdCode]*StorageLocation, error) {
+	locations := make(map[encoding.NodeIdCode]*StorageLocation)
 
-func (n *Node) Stop() error {
-	n.started = false
-	return nil
-}
-func (n *Node) GetCachedStorageLocations(hash Multihash, types []int) (map[NodeId]*StorageLocation, error) {
-	locations := make(map[NodeId]*StorageLocation)
-
-	mapFromDB, err := n.readStorageLocationsFromDB(hash)
+	locationMap, err := n.readStorageLocationsFromDB(hash)
 	if err != nil {
 		return nil, err
 	}
-	if len(mapFromDB) == 0 {
-		return make(map[NodeId]*StorageLocation), nil
+	if len(locationMap) == 0 {
+		return make(map[encoding.NodeIdCode]*StorageLocation), nil
 	}
 
 	ts := time.Now().Unix()
 
 	for _, t := range types {
-		nodeMap, ok := mapFromDB[t]
+
+		nodeMap, ok := (locationMap)[t]
 		if !ok {
 			continue
 		}
 
 		for key, value := range nodeMap {
 			if len(value) < 4 {
-				continue // or handle error
+				continue
 			}
 
 			expiry, ok := value[3].(int64)
@@ -106,12 +107,12 @@ func (n *Node) GetCachedStorageLocations(hash Multihash, types []int) (map[NodeI
 
 			addresses, ok := value[1].([]string)
 			if !ok {
-				continue // or handle error
+				continue
 			}
 
 			storageLocation := NewStorageLocation(t, addresses, expiry)
 			if len(value) > 4 {
-				if providerMessage, ok := value[4].(string); ok {
+				if providerMessage, ok := value[4].([]byte); ok {
 					storageLocation.ProviderMessage = providerMessage
 				}
 			}
@@ -119,103 +120,60 @@ func (n *Node) GetCachedStorageLocations(hash Multihash, types []int) (map[NodeI
 			locations[NodeId(key)] = storageLocation
 		}
 	}
-
 	return locations, nil
 }
-func (n *Node) ReadStorageLocationsFromDB(hash Multihash) (map[int]map[NodeId]map[int]interface{}, error) {
-	locations := make(map[int]map[NodeId]map[int]interface{})
+func (n *Node) readStorageLocationsFromDB(hash *encoding.Multihash) (storageLocationMap, error) {
+	locationMap := newStorageLocationMap()
 
-	bytes, err := n.config.CacheDb.Get(StringifyHash(hash)) // Assume StringifyHash and CacheDb.Get are implemented
-	if err != nil {
-		return locations, nil
-	}
+	bytes := n.cacheBucket.Get(hash.FullBytes())
 	if bytes == nil {
-		return locations, nil
+		return locationMap, nil
 	}
 
-	unpacker := NewUnpacker(bytes) // Assume NewUnpacker is implemented to handle the unpacking
-	mapLength, err := unpacker.UnpackMapLength()
+	err := msgpack.Unmarshal(bytes, locationMap)
 	if err != nil {
 		return nil, err
 	}
 
-	for i := 0; i < mapLength; i++ {
-		t, err := unpacker.UnpackInt()
-		if err != nil {
-			continue // or handle error
-		}
-
-		innerMap := make(map[NodeId]map[int]interface{})
-		locations[t] = innerMap
-
-		innerMapLength, err := unpacker.UnpackMapLength()
-		if err != nil {
-			continue // or handle error
-		}
-
-		for j := 0; j < innerMapLength; j++ {
-			nodeIdBytes, err := unpacker.UnpackBinary()
-			if err != nil {
-				continue // or handle error
-			}
-			nodeId := NodeId(nodeIdBytes)
-
-			// Assuming unpacker.UnpackMap() returns a map[string]interface{} and is implemented
-			unpackedMap, err := unpacker.UnpackMap()
-			if err != nil {
-				continue // or handle error
-			}
-
-			convertedMap := make(map[int]interface{})
-			for key, value := range unpackedMap {
-				intKey, err := strconv.Atoi(key)
-				if err != nil {
-					continue // or handle error
-				}
-				convertedMap[intKey] = value
-			}
-			innerMap[nodeId] = convertedMap
-		}
-	}
-	return locations, nil
+	return locationMap, nil
 }
-func (n *Node) AddStorageLocation(hash Multihash, nodeId NodeId, location StorageLocation, message []byte, config S5Config) error {
+func (n *Node) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location *StorageLocation, message []byte, config *NodeConfig) error {
 	// Read existing storage locations
-	mapFromDB, err := n.ReadStorageLocationsFromDB(hash)
+	locationDb, err := n.readStorageLocationsFromDB(hash)
 	if err != nil {
 		return err
 	}
 
 	// Get or create the inner map for the specific type
-	innerMap, exists := mapFromDB[location.Type]
+	innerMap, exists := locationDb[location.Type]
 	if !exists {
-		innerMap = make(map[NodeId]map[int]interface{})
-		mapFromDB[location.Type] = innerMap
+		innerMap = make(nodeStorage, 1)
+		innerMap[nodeId.HashCode()] = make(nodeDetailsStorage, 1)
 	}
 
 	// Create location map with new data
-	locationMap := make(map[int]interface{})
+	locationMap := make(map[int]interface{}, 3)
 	locationMap[1] = location.Parts
-	// locationMap[2] = location.BinaryParts // Uncomment if BinaryParts is a field of StorageLocation
 	locationMap[3] = location.Expiry
 	locationMap[4] = message
 
 	// Update the inner map with the new location
-	innerMap[nodeId] = locationMap
+	innerMap[nodeId.HashCode()] = locationMap
+	locationDb[location.Type] = innerMap
 
 	// Serialize the updated map and store it in the database
-	packedBytes, err := NewPacker().Pack(mapFromDB) // Assuming NewPacker and Pack are implemented
+	packedBytes, err := msgpack.Marshal(locationDb)
 	if err != nil {
 		return err
 	}
 
-	err = config.CacheDb.Put(StringifyHash(hash), packedBytes) // Assume CacheDb.Put and StringifyHash are implemented
+	err = n.cacheBucket.Put(hash.FullBytes(), packedBytes)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
+} /*
 
 func (n *Node) DownloadBytesByHash(hash Multihash) ([]byte, error) {
 	dlUriProvider := NewStorageLocationProvider(n, hash, []int{storageLocationTypeFull, storageLocationTypeFile})
