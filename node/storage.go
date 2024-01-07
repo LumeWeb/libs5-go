@@ -65,14 +65,12 @@ func (s *StorageLocationImpl) ProviderMessage() []byte {
 	return s.providerMessage
 }
 
-func NewStorageLocation(Type int, Parts []string, Expiry int64) *interfaces.StorageLocation {
-	sl := &StorageLocationImpl{
+func NewStorageLocation(Type int, Parts []string, Expiry int64) interfaces.StorageLocation {
+	return &StorageLocationImpl{
 		kind:   Type,
 		parts:  Parts,
 		expiry: Expiry,
 	}
-	var location interfaces.StorageLocation = sl
-	return &location
 }
 
 func (s *StorageLocationImpl) BytesURL() string {
