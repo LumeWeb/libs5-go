@@ -1,4 +1,4 @@
-package protocol
+package signed
 
 import (
 	"crypto/ed25519"
@@ -6,14 +6,14 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
 var (
-	_ IncomingMessageTyped  = (*SignedMessage)(nil)
-	_ msgpack.CustomDecoder = (*signedMessagePayoad)(nil)
+	_ base.IncomingMessageTyped = (*SignedMessage)(nil)
+	_ msgpack.CustomDecoder     = (*signedMessagePayoad)(nil)
 )
 
 var (
@@ -24,7 +24,7 @@ type SignedMessage struct {
 	nodeId    *encoding.NodeId
 	signature []byte
 	message   []byte
-	IncomingMessageTypedImpl
+	base.IncomingMessageTypedImpl
 }
 
 type signedMessagePayoad struct {
@@ -62,7 +62,7 @@ func (s *SignedMessage) HandleMessage(node interfaces.Node, peer *net.Peer, veri
 		return err
 	}
 
-	if msgHandler, valid := signed.GetMessageType(types.ProtocolMethod(payload.kind)); valid {
+	if msgHandler, valid := GetMessageType(types.ProtocolMethod(payload.kind)); valid {
 		msgHandler.SetIncomingMessage(s)
 		err := msgpack.Unmarshal(payload.message, &msgHandler)
 		if err != nil {

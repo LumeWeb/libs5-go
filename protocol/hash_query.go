@@ -4,20 +4,21 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.uber.org/zap"
 	"log"
 )
 
-var _ IncomingMessageTyped = (*HashQuery)(nil)
+var _ base.IncomingMessageTyped = (*HashQuery)(nil)
 
 type HashQuery struct {
 	hash  *encoding.Multihash
 	kinds []int
 
-	IncomingMessageTypedImpl
-	IncomingMessageHandler
+	base.IncomingMessageTypedImpl
+	base.IncomingMessageHandler
 }
 
 func (h HashQuery) Hash() *encoding.Multihash {

@@ -7,6 +7,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
@@ -238,7 +239,7 @@ func (p *P2PImpl) OnNewPeerListen(peer *net.Peer, verifyId bool) {
 	})
 
 	(*peer).ListenForMessages(func(message []byte) error {
-		imsg := protocol.NewIncomingMessageUnknown()
+		imsg := base.NewIncomingMessageUnknown()
 
 		err := msgpack.Unmarshal(message, imsg)
 		if err != nil {

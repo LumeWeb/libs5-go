@@ -1,7 +1,7 @@
 package signed
 
 import (
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"sync"
 )
@@ -10,47 +10,43 @@ var (
 	messageTypes sync.Map
 )
 
-var (
-	_ IncomingMessage = (*IncomingMessageImpl)(nil)
-)
-
-type IncomingMessage interface {
-	protocol.IncomingMessage
-}
-
-type IncomingMessageImpl struct {
-	protocol.IncomingMessageImpl
-	message []byte
-}
-
 func init() {
 	messageTypes = sync.Map{}
 
-	RegisterMessageType(types.ProtocolMethodHandshakeDone, func() IncomingMessage {
+	RegisterMessageType(types.ProtocolMethodHandshakeDone, func() base.SignedIncomingMessage {
 		return NewHandshakeDone()
 	})
-	RegisterMessageType(types.ProtocolMethodAnnouncePeers, func() IncomingMessage {
+	RegisterMessageType(types.ProtocolMethodAnnouncePeers, func() base.SignedIncomingMessage {
 		return NewAnnouncePeers()
 	})
 }
 
-func RegisterMessageType(messageType types.ProtocolMethod, factoryFunc func() IncomingMessage) {
+func RegisterMessageType(messageType types.ProtocolMethod, factoryFunc func() base.SignedIncomingMessage) {
 	if factoryFunc == nil {
 		panic("factoryFunc cannot be nil")
 	}
 	messageTypes.Store(messageType, factoryFunc)
 }
 
-func GetMessageType(kind types.ProtocolMethod) (protocol.IncomingMessage, bool) {
+func GetMessageType(kind types.ProtocolMethod) (base.SignedIncomingMessage, bool) {
 	value, ok := messageTypes.Load(kind)
 	if !ok {
 		return nil, false
 	}
 
-	factoryFunc, ok := value.(func() IncomingMessage)
+	factoryFunc, ok := value.(func() base.SignedIncomingMessage)
 	if !ok {
 		return nil, false
 	}
 
 	return factoryFunc(), true
+}
+
+var (
+	_ base.SignedIncomingMessage = (*IncomingMessageImpl)(nil)
+)
+
+type IncomingMessageImpl struct {
+	base.IncomingMessageImpl
+	message []byte
 }

@@ -1,6 +1,10 @@
-package protocol
+package base
 
 import "github.com/vmihailenco/msgpack/v5"
+
+var (
+	_ EncodeableMessage = (*EncodeableMessageImpl)(nil)
+)
 
 type EncodeableMessage interface {
 	ToMessage() (message []byte, err error)

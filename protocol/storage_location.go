@@ -6,6 +6,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
@@ -14,7 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var _ IncomingMessageTyped = (*StorageLocation)(nil)
+var _ base.IncomingMessageTyped = (*StorageLocation)(nil)
 
 type StorageLocation struct {
 	raw       []byte
@@ -25,8 +26,8 @@ type StorageLocation struct {
 	publicKey []byte
 	signature []byte
 
-	IncomingMessageTypedImpl
-	IncomingMessageHandler
+	base.IncomingMessageTypedImpl
+	base.IncomingMessageHandler
 }
 
 func (s *StorageLocation) DecodeMessage(dec *msgpack.Decoder) error {

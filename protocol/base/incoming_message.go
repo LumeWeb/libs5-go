@@ -1,4 +1,4 @@
-package protocol
+package base
 
 import (
 	"fmt"
@@ -9,20 +9,10 @@ import (
 	"net/url"
 )
 
-var (
-	_ EncodeableMessage = (*EncodeableMessageImpl)(nil)
-)
+var _ msgpack.CustomDecoder = (*IncomingMessageImpl)(nil)
+var _ IncomingMessage = (*IncomingMessageImpl)(nil)
 
-type IncomingMessage interface {
-	HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error
-	SetIncomingMessage(msg IncomingMessage)
-	msgpack.CustomDecoder
-}
-
-type IncomingMessageTyped interface {
-	DecodeMessage(dec *msgpack.Decoder) error
-	IncomingMessage
-}
+type IncomingMessageHandler func(node interfaces.Node, peer *net.Peer, u *url.URL, verifyId bool) error
 
 type IncomingMessageImpl struct {
 	kind     types.ProtocolMethod
@@ -42,9 +32,6 @@ func (i *IncomingMessageImpl) Original() []byte {
 func (i *IncomingMessageImpl) SetIncomingMessage(msg IncomingMessage) {
 	*i = interface{}(msg).(IncomingMessageImpl)
 }
-
-var _ msgpack.CustomDecoder = (*IncomingMessageImpl)(nil)
-var _ IncomingMessage = (*IncomingMessageImpl)(nil)
 
 func (i *IncomingMessageImpl) GetKind() types.ProtocolMethod {
 	return i.kind
@@ -88,8 +75,6 @@ func NewIncomingMessageTyped(kind types.ProtocolMethod, data msgpack.RawMessage)
 	known := NewIncomingMessageKnown(kind, data)
 	return &IncomingMessageTypedImpl{*known}
 }
-
-type IncomingMessageHandler func(node interfaces.Node, peer *net.Peer, u *url.URL, verifyId bool) error
 
 func (i *IncomingMessageImpl) DecodeMsgpack(dec *msgpack.Decoder) error {
 	if i.known {

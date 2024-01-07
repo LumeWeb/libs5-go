@@ -4,20 +4,20 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"github.com/vmihailenco/msgpack/v5"
 	"net/url"
 )
 
 var (
-	_ protocol.IncomingMessageTyped = (*AnnouncePeers)(nil)
+	_ base.IncomingMessageTyped = (*AnnouncePeers)(nil)
 )
 
 type AnnouncePeers struct {
 	connected      bool
 	peer           *encoding.NodeId
 	connectionUris []*url.URL
-	protocol.IncomingMessageTypedImpl
+	base.IncomingMessageTypedImpl
 }
 
 func NewAnnouncePeers() *AnnouncePeers {

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -11,8 +12,8 @@ import (
 type HandshakeOpen struct {
 	challenge []byte
 	networkId string
-	IncomingMessageTypedImpl
-	IncomingMessageHandler
+	base.IncomingMessageTypedImpl
+	base.IncomingMessageHandler
 }
 
 func (m HandshakeOpen) Challenge() []byte {
@@ -23,7 +24,7 @@ func (m HandshakeOpen) NetworkId() string {
 	return m.networkId
 }
 
-var _ EncodeableMessage = (*HandshakeOpen)(nil)
+var _ base.EncodeableMessage = (*HandshakeOpen)(nil)
 var (
 	errInvalidChallenge = errors.New("Invalid challenge")
 )
