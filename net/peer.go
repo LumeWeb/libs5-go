@@ -6,6 +6,10 @@ import (
 	"net/url"
 )
 
+var (
+	_ Peer = (*BasePeer)(nil)
+)
+
 // EventCallback type for the callback function
 type EventCallback func(event []byte) error
 
@@ -41,6 +45,22 @@ type BasePeer struct {
 	challenge      []byte
 	socket         interface{}
 	id             *encoding.NodeId
+}
+
+func (b *BasePeer) SendMessage(message []byte) error {
+	panic("must implement in child class")
+}
+
+func (b *BasePeer) RenderLocationURI() string {
+	panic("must implement in child class")
+}
+
+func (b *BasePeer) ListenForMessages(callback EventCallback, options ListenerOptions) {
+	panic("must implement in child class")
+}
+
+func (b *BasePeer) End() error {
+	panic("must implement in child class")
 }
 
 func (b *BasePeer) Challenge() []byte {

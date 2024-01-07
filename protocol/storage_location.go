@@ -41,7 +41,7 @@ func (s *StorageLocation) DecodeMessage(dec *msgpack.Decoder) error {
 
 	return nil
 }
-func (s *StorageLocation) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error {
+func (s *StorageLocation) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
 	hash := encoding.NewMultihash(s.raw[1:34]) // Replace NewMultihash with appropriate function
 	fmt.Println("Hash:", hash)
 

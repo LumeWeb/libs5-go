@@ -48,7 +48,7 @@ func (h *HashQuery) DecodeMessage(dec *msgpack.Decoder) error {
 
 	return nil
 }
-func (h *HashQuery) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error {
+func (h *HashQuery) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
 	mapLocations, err := node.GetCachedStorageLocations(h.hash, h.kinds)
 	if err != nil {
 		log.Printf("Error getting cached storage locations: %v", err)
@@ -79,7 +79,7 @@ func (h *HashQuery) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId
 
 		entry, exists := mapLocations[sortedNodeId]
 		if exists {
-			err := (*peer).SendMessage(entry.ProviderMessage())
+			err := peer.SendMessage(entry.ProviderMessage())
 			if err != nil {
 				return err
 			}
@@ -94,13 +94,13 @@ func (h *HashQuery) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId
 
 	peers = peersVal.(*hashset.Set)
 
-	if exists := peers.Contains((*peer).Id()); !exists {
-		peers.Add((*peer).Id())
+	if exists := peers.Contains(peer.Id()); !exists {
+		peers.Add(peer.Id())
 	}
 
 	for _, val := range node.Services().P2P().Peers().Values() {
 		peerVal := val.(net.Peer)
-		if !peerVal.Id().Equals((*peer).Id()) {
+		if !peerVal.Id().Equals(peer.Id()) {
 			err := peerVal.SendMessage(h.IncomingMessageImpl.Original())
 			if err != nil {
 				node.Logger().Error("Failed to send message", zap.Error(err))

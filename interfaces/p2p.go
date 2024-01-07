@@ -14,8 +14,8 @@ type P2PService interface {
 	Stop() error
 	Init() error
 	ConnectToNode(connectionUris []*url.URL, retried bool) error
-	OnNewPeer(peer *net.Peer, verifyId bool) error
-	OnNewPeerListen(peer *net.Peer, verifyId bool)
+	OnNewPeer(peer net.Peer, verifyId bool) error
+	OnNewPeerListen(peer net.Peer, verifyId bool)
 	ReadNodeScore(nodeId *encoding.NodeId) (NodeVotes, error)
 	GetNodeScore(nodeId *encoding.NodeId) (float64, error)
 	SortNodesByScore(nodes []*encoding.NodeId) ([]*encoding.NodeId, error)

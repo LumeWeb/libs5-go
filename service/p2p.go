@@ -194,15 +194,14 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 		return err
 	}
 
-	(*peer).SetId(id)
+	peer.SetId(id)
 	return p.OnNewPeer(peer, true)
 }
 
-func (p *P2PImpl) OnNewPeer(peer *net.Peer, verifyId bool) error {
+func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
 	challenge := protocol.GenerateChallenge()
 
-	pd := *peer
-	pd.SetChallenge(challenge)
+	peer.SetChallenge(challenge)
 
 	p.OnNewPeerListen(peer, verifyId)
 
@@ -212,15 +211,15 @@ func (p *P2PImpl) OnNewPeer(peer *net.Peer, verifyId bool) error {
 		return err
 	}
 
-	err = pd.SendMessage(handshakeOpenMsg)
+	err = peer.SendMessage(handshakeOpenMsg)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (p *P2PImpl) OnNewPeerListen(peer *net.Peer, verifyId bool) {
+func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 	onDone := net.CloseCallback(func() {
-		peerId, err := (*peer).Id().ToString()
+		peerId, err := peer.Id().ToString()
 		if err != nil {
 			p.logger.Error("failed to get peer id", zap.Error(err))
 			return
@@ -236,7 +235,7 @@ func (p *P2PImpl) OnNewPeerListen(peer *net.Peer, verifyId bool) {
 		p.logger.Error("peer error", zap.Any("args", args))
 	})
 
-	(*peer).ListenForMessages(func(message []byte) error {
+	peer.ListenForMessages(func(message []byte) error {
 		imsg := base.NewIncomingMessageUnknown()
 
 		err := msgpack.Unmarshal(message, imsg)

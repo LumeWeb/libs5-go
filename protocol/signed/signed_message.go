@@ -54,7 +54,7 @@ func NewSignedMessage() *SignedMessage {
 	return &SignedMessage{}
 }
 
-func (s *SignedMessage) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error {
+func (s *SignedMessage) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
 	var payload signedMessagePayoad
 
 	err := msgpack.Unmarshal(s.message, &payload)

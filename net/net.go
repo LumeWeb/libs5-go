@@ -51,7 +51,7 @@ func CreateTransportSocket(peerType string, uri *url.URL) (interface{}, error) {
 	return &t, err
 }
 
-func CreateTransportPeer(peerType string, options *TransportPeerConfig) (*Peer, error) {
+func CreateTransportPeer(peerType string, options *TransportPeerConfig) (Peer, error) {
 	factory, ok := transports.Load(peerType)
 	if !ok {
 		return nil, errors.New("no factory registered for type: " + peerType)
@@ -59,5 +59,5 @@ func CreateTransportPeer(peerType string, options *TransportPeerConfig) (*Peer, 
 
 	t, err := factory.(PeerFactory).NewPeer(options)
 
-	return &t, err
+	return t, err
 }

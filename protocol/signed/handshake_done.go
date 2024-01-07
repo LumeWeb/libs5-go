@@ -31,21 +31,21 @@ func NewHandshakeDone() *HandshakeDone {
 	return &HandshakeDone{challenge: nil, networkId: "", supportedFeatures: -1}
 }
 
-func (h HandshakeDone) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error {
+func (h HandshakeDone) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
 	if !node.IsStarted() {
-		err := (*peer).End()
+		err := peer.End()
 		if err != nil {
 			return nil
 		}
 		return nil
 	}
 
-	if !bytes.Equal((*peer).Challenge(), h.challenge) {
+	if !bytes.Equal(peer.Challenge(), h.challenge) {
 		return errors.New("Invalid challenge")
 	}
 	/*
 		if !verifyId {
-			(*peer).SetId(h)
+			peer.SetId(h)
 		} else {
 			if !peer.ID.Equals(pId) {
 				return errInvalidChallenge

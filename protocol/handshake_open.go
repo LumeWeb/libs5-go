@@ -56,7 +56,7 @@ func (m HandshakeOpen) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return nil
 }
 
-func (m *HandshakeOpen) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error {
+func (m *HandshakeOpen) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
 
 	return nil
 }

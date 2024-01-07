@@ -7,7 +7,7 @@ import (
 )
 
 type IncomingMessage interface {
-	HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error
+	HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error
 	SetIncomingMessage(msg IncomingMessage)
 	msgpack.CustomDecoder
 }
