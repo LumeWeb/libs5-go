@@ -43,7 +43,12 @@ func (i *IncomingMessageImpl) Original() []byte {
 }
 
 func (i *IncomingMessageImpl) SetIncomingMessage(msg IncomingMessage) {
-	*i = interface{}(msg).(IncomingMessageImpl)
+	if msgImpl, ok := msg.(*IncomingMessageImpl); ok {
+		*i = *msgImpl
+	} else {
+		// Handle the error or panic
+		panic("msg is not of type *IncomingMessageImpl")
+	}
 }
 
 func (i *IncomingMessageImpl) GetKind() types.ProtocolMethod {
