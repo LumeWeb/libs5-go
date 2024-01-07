@@ -6,7 +6,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	nodep "git.lumeweb.com/LumeWeb/libs5-go/node"
+	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/emirpasic/gods/sets/hashset"
@@ -74,7 +74,7 @@ func (s *StorageLocation) HandleMessage(node interfaces.Node, peer *net.Peer, ve
 	nodeId := encoding.NewNodeId(publicKey)
 
 	// Assuming `node` is an instance of your NodeImpl structure
-	err := node.AddStorageLocation(hash, nodeId, nodep.NewStorageLocation(int(typeOfData), parts, int64(expiry)), s.raw, node.Config()) // Implement AddStorageLocation
+	err := node.AddStorageLocation(hash, nodeId, storage.NewStorageLocation(int(typeOfData), parts, int64(expiry)), s.raw, node.Config()) // Implement AddStorageLocation
 
 	if err != nil {
 		return fmt.Errorf("Failed to add storage location: %s", err)

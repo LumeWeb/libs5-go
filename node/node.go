@@ -5,6 +5,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
+	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
@@ -144,7 +145,7 @@ func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, types []i
 				continue
 			}
 
-			storageLocation := NewStorageLocation(t, addresses, expiry)
+			storageLocation := storage.NewStorageLocation(t, addresses, expiry)
 			if len(value) > 4 {
 				if providerMessage, ok := value[4].([]byte); ok {
 					(storageLocation).SetProviderMessage(providerMessage)
@@ -156,8 +157,8 @@ func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, types []i
 	}
 	return locations, nil
 }
-func (n *NodeImpl) readStorageLocationsFromDB(hash *encoding.Multihash) (storageLocationMap, error) {
-	locationMap := newStorageLocationMap()
+func (n *NodeImpl) readStorageLocationsFromDB(hash *encoding.Multihash) (storage.storageLocationMap, error) {
+	locationMap := storage.newStorageLocationMap()
 
 	bytes := n.cacheBucket.Get(hash.FullBytes())
 	if bytes == nil {
@@ -186,8 +187,8 @@ func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding
 	// Get or create the inner map for the specific type
 	innerMap, exists := locationDb[location.Type()]
 	if !exists {
-		innerMap = make(nodeStorage, 1)
-		innerMap[nodeIdStr] = make(nodeDetailsStorage, 1)
+		innerMap = make(storage.nodeStorage, 1)
+		innerMap[nodeIdStr] = make(storage.nodeDetailsStorage, 1)
 	}
 
 	// Create location map with new data
