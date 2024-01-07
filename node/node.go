@@ -4,6 +4,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
+	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
@@ -29,13 +30,16 @@ func (n *NodeImpl) Services() interfaces.Services {
 	return n.services
 }
 
-func NewNode(config *config.NodeConfig) *NodeImpl {
-	return &NodeImpl{
+func NewNode(config *config.NodeConfig) interfaces.Node {
+	n := &NodeImpl{
 		nodeConfig:            config,
 		metadataCache:         structs.NewMap(),
 		started:               false,
 		hashQueryRoutingTable: structs.NewMap(),
 	}
+	n.services = NewServices(service.NewP2P(n))
+
+	return n
 }
 func (n *NodeImpl) HashQueryRoutingTable() structs.Map {
 	return n.hashQueryRoutingTable
