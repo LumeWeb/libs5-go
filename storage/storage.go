@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	_ msgpack.CustomDecoder = (*storageLocationMap)(nil)
+	_ msgpack.CustomDecoder = (*StorageLocationMap)(nil)
 
-	_ msgpack.CustomEncoder      = (*storageLocationMap)(nil)
+	_ msgpack.CustomEncoder      = (*StorageLocationMap)(nil)
 	_ interfaces.StorageLocation = (*StorageLocationImpl)(nil)
 )
 
@@ -111,21 +111,21 @@ func (ssl *SignedStorageLocationImpl) String() string {
 	return "SignedStorageLocationImpl(" + ssl.Location.String() + ", " + nodeString + ")"
 }
 
-type storageLocationMap map[int]nodeStorage
-type nodeStorage map[string]nodeDetailsStorage
-type nodeDetailsStorage map[int]interface{}
+type StorageLocationMap map[int]NodeStorage
+type NodeStorage map[string]NodeDetailsStorage
+type NodeDetailsStorage map[int]interface{}
 
-func (s *storageLocationMap) DecodeMsgpack(dec *msgpack.Decoder) error {
+func (s *StorageLocationMap) DecodeMsgpack(dec *msgpack.Decoder) error {
 	temp, err := dec.DecodeUntypedMap()
 	if err != nil {
 		return err
 	}
 
 	if *s == nil {
-		*s = make(map[int]nodeStorage)
+		*s = make(map[int]NodeStorage)
 	}
 
-	tempMap, ok := interface{}(temp).(storageLocationMap)
+	tempMap, ok := interface{}(temp).(StorageLocationMap)
 	if !ok {
 		return fmt.Errorf("unexpected data format from msgpack decoding")
 	}
@@ -135,7 +135,7 @@ func (s *storageLocationMap) DecodeMsgpack(dec *msgpack.Decoder) error {
 	return nil
 }
 
-func (s storageLocationMap) EncodeMsgpack(enc *msgpack.Encoder) error {
+func (s StorageLocationMap) EncodeMsgpack(enc *msgpack.Encoder) error {
 	// Create a temporary map to hold the encoded data
 	tempMap := make(map[int]map[string]map[int]interface{})
 
@@ -152,6 +152,6 @@ func (s storageLocationMap) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return enc.Encode(tempMap)
 }
 
-func newStorageLocationMap() storageLocationMap {
-	return storageLocationMap{}
+func NewStorageLocationMap() StorageLocationMap {
+	return StorageLocationMap{}
 }
