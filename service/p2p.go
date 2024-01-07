@@ -39,50 +39,6 @@ type P2PImpl struct {
 	peers          structs.Map
 }
 
-type NodeVotesImpl struct {
-	good int
-	bad  int
-}
-
-func (n *NodeVotesImpl) Good() int {
-	return n.good
-}
-
-func (n *NodeVotesImpl) Bad() int {
-	return n.bad
-}
-
-func (n NodeVotesImpl) EncodeMsgpack(enc *msgpack.Encoder) error {
-	err := enc.EncodeInt(int64(n.good))
-	if err != nil {
-		return err
-	}
-
-	err = enc.EncodeInt(int64(n.bad))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (n *NodeVotesImpl) DecodeMsgpack(dec *msgpack.Decoder) error {
-	good, err := dec.DecodeInt()
-	if err != nil {
-		return err
-	}
-
-	bad, err := dec.DecodeInt()
-	if err != nil {
-		return err
-	}
-
-	n.good = good
-	n.bad = bad
-
-	return nil
-}
-
 func NewP2P(node interfaces.Node) *P2PImpl {
 	service := &P2PImpl{
 		logger:         node.Logger(),
@@ -317,7 +273,7 @@ func (p *P2PImpl) OnNewPeerListen(peer *net.Peer, verifyId bool) {
 func (p *P2PImpl) ReadNodeScore(nodeId *encoding.NodeId) (interfaces.NodeVotes, error) {
 	node := p.nodesBucket.Get(nodeId.Raw())
 	if node == nil {
-		return &NodeVotesImpl{}, nil
+		return NewNodeVotes(), nil
 	}
 
 	var score interfaces.NodeVotes
