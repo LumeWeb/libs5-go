@@ -19,4 +19,5 @@ type P2PService interface {
 	ReadNodeScore(nodeId *encoding.NodeId) (NodeVotes, error)
 	GetNodeScore(nodeId *encoding.NodeId) (float64, error)
 	SortNodesByScore(nodes []*encoding.NodeId) ([]*encoding.NodeId, error)
+	SignMessageSimple(message []byte) ([]byte, error)
 }

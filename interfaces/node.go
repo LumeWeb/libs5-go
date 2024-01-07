@@ -18,4 +18,5 @@ type Node interface {
 	Start() error
 	GetCachedStorageLocations(hash *encoding.Multihash, types []int) (map[string]StorageLocation, error)
 	AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location StorageLocation, message []byte, config *config.NodeConfig) error
+	NetworkId() string
 }

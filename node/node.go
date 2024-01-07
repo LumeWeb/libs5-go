@@ -27,6 +27,10 @@ type NodeImpl struct {
 	cacheBucket           *bolt.Bucket
 }
 
+func (n *NodeImpl) NetworkId() string {
+	return n.nodeConfig.P2P.Network
+}
+
 func (n *NodeImpl) Services() interfaces.Services {
 	return n.services
 }
