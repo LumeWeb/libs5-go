@@ -48,7 +48,7 @@ func CreateTransportSocket(peerType string, uri *url.URL) (interface{}, error) {
 
 	t, err := static.(PeerStatic).Connect(uri)
 
-	return &t, err
+	return t, err
 }
 
 func CreateTransportPeer(peerType string, options *TransportPeerConfig) (Peer, error) {
