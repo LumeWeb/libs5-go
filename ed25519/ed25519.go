@@ -19,7 +19,9 @@ func (kp *KeyPairEd25519) PublicKey() []byte {
 }
 
 func (kp *KeyPairEd25519) PublicKeyRaw() []byte {
-	return (ed25519.PrivateKey(kp.Bytes).Public()).([]byte)
+	publicKey := ed25519.PrivateKey(kp.Bytes).Public()
+
+	return publicKey.(ed25519.PublicKey)
 }
 
 func (kp *KeyPairEd25519) ExtractBytes() []byte {
