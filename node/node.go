@@ -18,15 +18,15 @@ const cacheBucketName = "object-cache"
 
 type NodeImpl struct {
 	nodeConfig            *config.NodeConfig
-	metadataCache         *structs.Map
+	metadataCache         structs.Map
 	started               bool
-	hashQueryRoutingTable *structs.Map
+	hashQueryRoutingTable structs.Map
 	services              interfaces.Services
 	cacheBucket           *bolt.Bucket
 }
 
-func (n *NodeImpl) Services() *interfaces.Services {
-	return &n.services
+func (n *NodeImpl) Services() interfaces.Services {
+	return n.services
 }
 
 func NewNode(config *config.NodeConfig) *NodeImpl {
@@ -37,7 +37,7 @@ func NewNode(config *config.NodeConfig) *NodeImpl {
 		hashQueryRoutingTable: structs.NewMap(),
 	}
 }
-func (n *NodeImpl) HashQueryRoutingTable() *structs.Map {
+func (n *NodeImpl) HashQueryRoutingTable() structs.Map {
 	return n.hashQueryRoutingTable
 }
 
@@ -95,15 +95,15 @@ func (n *NodeImpl) Start() error {
 		return nil
 	}
 */
-func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, types []int) (map[string]*interfaces.StorageLocation, error) {
-	locations := make(map[string]*interfaces.StorageLocation)
+func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, types []int) (map[string]interfaces.StorageLocation, error) {
+	locations := make(map[string]interfaces.StorageLocation)
 
 	locationMap, err := n.readStorageLocationsFromDB(hash)
 	if err != nil {
 		return nil, err
 	}
 	if len(locationMap) == 0 {
-		return make(map[string]*interfaces.StorageLocation), nil
+		return make(map[string]interfaces.StorageLocation), nil
 	}
 
 	ts := time.Now().Unix()
@@ -133,7 +133,7 @@ func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, types []i
 			storageLocation := NewStorageLocation(t, addresses, expiry)
 			if len(value) > 4 {
 				if providerMessage, ok := value[4].([]byte); ok {
-					(*storageLocation).SetProviderMessage(providerMessage)
+					(storageLocation).SetProviderMessage(providerMessage)
 				}
 			}
 
@@ -157,7 +157,7 @@ func (n *NodeImpl) readStorageLocationsFromDB(hash *encoding.Multihash) (storage
 
 	return locationMap, nil
 }
-func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location *interfaces.StorageLocation, message []byte, config *config.NodeConfig) error {
+func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location interfaces.StorageLocation, message []byte, config *config.NodeConfig) error {
 	// Read existing storage locations
 	locationDb, err := n.readStorageLocationsFromDB(hash)
 	if err != nil {
@@ -170,7 +170,7 @@ func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding
 	}
 
 	// Get or create the inner map for the specific type
-	innerMap, exists := locationDb[(*location).Type()]
+	innerMap, exists := locationDb[location.Type()]
 	if !exists {
 		innerMap = make(nodeStorage, 1)
 		innerMap[nodeIdStr] = make(nodeDetailsStorage, 1)
@@ -178,13 +178,13 @@ func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding
 
 	// Create location map with new data
 	locationMap := make(map[int]interface{}, 3)
-	locationMap[1] = (*location).Parts
-	locationMap[3] = (*location).Expiry
+	locationMap[1] = location.Parts()
+	locationMap[3] = location.Expiry()
 	locationMap[4] = message
 
 	// Update the inner map with the new location
 	innerMap[nodeIdStr] = locationMap
-	locationDb[(*location).Type()] = innerMap
+	locationDb[location.Type()] = innerMap
 
 	// Serialize the updated map and store it in the database
 	packedBytes, err := msgpack.Marshal(locationDb)
