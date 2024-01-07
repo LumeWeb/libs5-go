@@ -59,5 +59,5 @@ func (nodeId *NodeId) ToString() (string, error) {
 }
 
 func (nodeId *NodeId) Raw() []byte {
-	return nodeId.bytes[1:]
+	return nodeId.bytes
 }
