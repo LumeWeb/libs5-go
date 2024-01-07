@@ -9,6 +9,8 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
+var _ base.IncomingMessageTyped = (*HandshakeOpen)(nil)
+
 type HandshakeOpen struct {
 	challenge []byte
 	networkId string
