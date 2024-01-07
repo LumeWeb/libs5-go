@@ -45,6 +45,7 @@ func (i *IncomingMessageImpl) Original() []byte {
 func (i *IncomingMessageImpl) SetIncomingMessage(msg IncomingMessage) {
 	if msgImpl, ok := msg.(*IncomingMessageImpl); ok {
 		*i = *msgImpl
+		i.known = true
 	} else {
 		// Handle the error or panic
 		panic("msg is not of type *IncomingMessageImpl")
