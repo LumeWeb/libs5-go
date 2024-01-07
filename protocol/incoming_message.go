@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 	"net/url"
@@ -90,7 +89,7 @@ func NewIncomingMessageTyped(kind types.ProtocolMethod, data msgpack.RawMessage)
 	return &IncomingMessageTypedImpl{*known}
 }
 
-type IncomingMessageHandler func(node *node.NodeImpl, peer *net.Peer, u *url.URL, verifyId bool) error
+type IncomingMessageHandler func(node interfaces.Node, peer *net.Peer, u *url.URL, verifyId bool) error
 
 func (i *IncomingMessageImpl) DecodeMsgpack(dec *msgpack.Decoder) error {
 	if i.known {
