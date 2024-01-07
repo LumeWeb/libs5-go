@@ -71,8 +71,19 @@ func (h *HandshakeOpen) DecodeMessage(dec *msgpack.Decoder) error {
 
 	h.handshake = handshake
 
-	networkId, err := dec.DecodeString()
+	_, err = dec.PeekCode()
 
+	networkId := ""
+
+	if err != nil {
+		if err.Error() != "EOF" {
+			return err
+		}
+		h.networkId = networkId
+		return nil
+	}
+
+	networkId, err = dec.DecodeString()
 	if err != nil {
 		return err
 	}
