@@ -11,6 +11,7 @@ import (
 
 var _ msgpack.CustomDecoder = (*IncomingMessageImpl)(nil)
 var _ IncomingMessage = (*IncomingMessageImpl)(nil)
+var _ IncomingMessageTyped = (*IncomingMessageImpl)(nil)
 
 type IncomingMessageHandler func(node interfaces.Node, peer *net.Peer, u *url.URL, verifyId bool) error
 
