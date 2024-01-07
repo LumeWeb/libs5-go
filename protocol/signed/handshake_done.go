@@ -6,10 +6,13 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
+	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
+	"net/url"
 )
 
 var _ base.IncomingMessageTyped = (*HandshakeDone)(nil)
+var _ base.EncodeableMessage = (*HandshakeDone)(nil)
 
 type HandshakeDone struct {
 	challenge []byte
@@ -17,6 +20,40 @@ type HandshakeDone struct {
 	base.IncomingMessageTypedImpl
 	base.IncomingMessageHandler
 	supportedFeatures int
+	connectionUris    []*url.URL
+	handshake         []byte
+}
+
+func NewHandshakeDoneRequest(handshake []byte, supportedFeatures int, connectionUris []*url.URL) *HandshakeDone {
+	return &HandshakeDone{
+		handshake:         handshake,
+		supportedFeatures: supportedFeatures,
+		connectionUris:    connectionUris,
+	}
+}
+
+func (m HandshakeDone) EncodeMsgpack(enc *msgpack.Encoder) error {
+	err := enc.EncodeUint(uint64(types.ProtocolMethodHandshakeDone))
+	if err != nil {
+		return err
+	}
+
+	err = enc.EncodeBytes(m.Original())
+	if err != nil {
+		return err
+	}
+
+	err = enc.EncodeString(m.networkId)
+	if err != nil {
+		return err
+	}
+
+	err = enc.EncodeInt(int64(m.supportedFeatures))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (m *HandshakeDone) SetChallenge(challenge []byte) {
@@ -86,7 +123,6 @@ func (h HandshakeDone) HandleMessage(node interfaces.Node, peer net.Peer, verify
 }
 
 func (h HandshakeDone) DecodeMessage(dec *msgpack.Decoder) error {
-
 	challenge, err := dec.DecodeBytes()
 	if err != nil {
 		return err
