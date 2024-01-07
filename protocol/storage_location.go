@@ -39,7 +39,7 @@ func (s *StorageLocation) DecodeMessage(dec *msgpack.Decoder) error {
 
 	return nil
 }
-func (s *StorageLocation) HandleMessage(node *node.Node, peer *net.Peer, verifyId bool) error {
+func (s *StorageLocation) HandleMessage(node *node.NodeImpl, peer *net.Peer, verifyId bool) error {
 	hash := encoding.NewMultihash(s.raw[1:34]) // Replace NewMultihash with appropriate function
 	fmt.Println("Hash:", hash)
 
@@ -72,7 +72,7 @@ func (s *StorageLocation) HandleMessage(node *node.Node, peer *net.Peer, verifyI
 
 	nodeId := encoding.NewNodeId(publicKey)
 
-	// Assuming `node` is an instance of your Node structure
+	// Assuming `node` is an instance of your NodeImpl structure
 	err := node.AddStorageLocation(hash, nodeId, node.NewStorageLocation(int(typeOfData), parts, int64(expiry)), s.raw, node.Config()) // Implement AddStorageLocation
 
 	if err != nil {

@@ -20,7 +20,7 @@ func NewHandshakeDone() *HandshakeDone {
 	return &HandshakeDone{HandshakeOpen: *protocol.NewHandshakeOpen(nil, ""), supportedFeatures: -1}
 }
 
-func (h HandshakeDone) HandleMessage(node *libs5_go.Node, peer *net.Peer, verifyId bool) error {
+func (h HandshakeDone) HandleMessage(node *libs5_go.NodeImpl, peer *net.Peer, verifyId bool) error {
 	if !(*node).IsStarted() {
 		err := (*peer).End()
 		if err != nil {

@@ -5,7 +5,7 @@ import (
 )
 
 type Service interface {
-	Node() *node.Node
+	Node() *node.NodeImpl
 	Start() error
 	Stop() error
 	Init() error

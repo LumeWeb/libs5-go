@@ -47,7 +47,7 @@ func (h *HashQuery) DecodeMessage(dec *msgpack.Decoder) error {
 
 	return nil
 }
-func (h *HashQuery) HandleMessage(node *libs5_go.Node, peer *net.Peer, verifyId bool) error {
+func (h *HashQuery) HandleMessage(node *libs5_go.NodeImpl, peer *net.Peer, verifyId bool) error {
 	mapLocations, err := node.GetCachedStorageLocations(h.hash, h.kinds)
 	if err != nil {
 		log.Printf("Error getting cached storage locations: %v", err)

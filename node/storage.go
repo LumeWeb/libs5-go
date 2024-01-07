@@ -3,6 +3,7 @@ package node
 import (
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
+	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"github.com/vmihailenco/msgpack/v5"
 	"strconv"
 	"time"
@@ -10,60 +11,106 @@ import (
 
 var (
 	_ msgpack.CustomDecoder = (*storageLocationMap)(nil)
+
+	_ msgpack.CustomEncoder      = (*storageLocationMap)(nil)
+	_ interfaces.StorageLocation = (*StorageLocationImpl)(nil)
 )
 
-type StorageLocation struct {
-	Type            int
-	Parts           []string
-	BinaryParts     [][]byte
-	Expiry          int64
-	ProviderMessage []byte
+type StorageLocationImpl struct {
+	kind            int
+	parts           []string
+	binaryParts     [][]byte
+	expiry          int64
+	providerMessage []byte
 }
 
-func NewStorageLocation(Type int, Parts []string, Expiry int64) *StorageLocation {
-	return &StorageLocation{
-		Type:   Type,
-		Parts:  Parts,
-		Expiry: Expiry,
+func (s *StorageLocationImpl) Type() int {
+	return s.kind
+}
+
+func (s *StorageLocationImpl) Parts() []string {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *StorageLocationImpl) BinaryParts() [][]byte {
+	return s.binaryParts
+}
+
+func (s *StorageLocationImpl) Expiry() int64 {
+	return s.expiry
+}
+
+func (s *StorageLocationImpl) SetType(t int) {
+	s.kind = t
+}
+
+func (s *StorageLocationImpl) SetParts(p []string) {
+	s.parts = p
+}
+
+func (s *StorageLocationImpl) SetBinaryParts(bp [][]byte) {
+	s.binaryParts = bp
+}
+
+func (s *StorageLocationImpl) SetExpiry(e int64) {
+	s.expiry = e
+}
+
+func (s *StorageLocationImpl) SetProviderMessage(msg []byte) {
+	s.providerMessage = msg
+}
+
+func (s *StorageLocationImpl) ProviderMessage() []byte {
+	return s.providerMessage
+}
+
+func NewStorageLocation(Type int, Parts []string, Expiry int64) *interfaces.StorageLocation {
+	sl := &StorageLocationImpl{
+		kind:   Type,
+		parts:  Parts,
+		expiry: Expiry,
 	}
+	var location interfaces.StorageLocation = sl
+	return &location
 }
 
-func (s *StorageLocation) BytesURL() string {
-	return s.Parts[0]
+func (s *StorageLocationImpl) BytesURL() string {
+	return s.parts[0]
 }
 
-func (s *StorageLocation) OutboardBytesURL() string {
-	if len(s.Parts) == 1 {
-		return s.Parts[0] + ".obao"
+func (s *StorageLocationImpl) OutboardBytesURL() string {
+	if len(s.parts) == 1 {
+		return s.parts[0] + ".obao"
 	}
-	return s.Parts[1]
+	return s.parts[1]
 }
 
-func (s *StorageLocation) String() string {
-	expiryDate := time.Unix(s.Expiry, 0)
-	return "StorageLocation(" + strconv.Itoa(s.Type) + ", " + fmt.Sprint(s.Parts) + ", expiry: " + expiryDate.Format(time.RFC3339) + ")"
+func (s *StorageLocationImpl) String() string {
+	expiryDate := time.Unix(s.expiry, 0)
+	return "StorageLocationImpl(" + strconv.Itoa(s.Type()) + ", " + fmt.Sprint(s.parts) + ", expiry: " + expiryDate.Format(time.RFC3339) + ")"
 }
 
-type SignedStorageLocation struct {
+type SignedStorageLocationImpl struct {
 	NodeID   encoding.NodeId
-	Location StorageLocation
+	Location StorageLocationImpl
 }
 
-func NewSignedStorageLocation(NodeID encoding.NodeId, Location StorageLocation) *SignedStorageLocation {
-	return &SignedStorageLocation{
+func NewSignedStorageLocation(NodeID encoding.NodeId, Location StorageLocationImpl) *SignedStorageLocationImpl {
+	return &SignedStorageLocationImpl{
 		NodeID:   NodeID,
 		Location: Location,
 	}
 }
 
-func (ssl *SignedStorageLocation) String() string {
+func (ssl *SignedStorageLocationImpl) String() string {
 	nodeString, _ := ssl.NodeID.ToString()
 
 	if nodeString == "" {
 		nodeString = "failed to decode node id"
 	}
 
-	return "SignedStorageLocation(" + ssl.Location.String() + ", " + nodeString + ")"
+	return "SignedStorageLocationImpl(" + ssl.Location.String() + ", " + nodeString + ")"
 }
 
 type storageLocationMap map[int]nodeStorage

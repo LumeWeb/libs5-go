@@ -179,7 +179,7 @@ func unmarshalMapJson(bytes []byte, m *linkedhashmap.Map, newInstance unmarshalN
 			return err
 		}
 
-		// Type switch to handle different types
+		// kind switch to handle different types
 		switch v := instance.(type) {
 		case *DirectoryReference:
 			m.Put(key, *v)

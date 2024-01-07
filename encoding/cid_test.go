@@ -116,7 +116,7 @@ func TestCID_HashCode(t *testing.T) {
 	println(utils.DecodeEndian(testdata.RawCIDBytes[35:]))
 	return
 	type fields struct {
-		Type types.CIDType
+		kind types.CIDType
 		Hash Multihash
 		Size uint32
 	}
@@ -128,7 +128,7 @@ func TestCID_HashCode(t *testing.T) {
 				{
 				name: "Bridge CID",
 				fields: fields{
-					Type: types.CIDTypeBridge,
+					kind: types.CIDTypeBridge,
 					Hash: NewMultibase(), // Replace with a valid hash value
 				},
 				want: , // Replace with the expected byte output for Bridge CID
@@ -136,7 +136,7 @@ func TestCID_HashCode(t *testing.T) {
 		{
 			name: "Raw CID with Non-Zero Size",
 			fields: fields{
-				Type: types.CIDTypeRaw,
+				kind: types.CIDTypeRaw,
 				Hash: *NewMultibase(testdata.RawCIDBytes[1:34]),
 				Size: utils.DecodeEndian(testdata.RawCIDBytes[34:]),
 			},
@@ -145,7 +145,7 @@ func TestCID_HashCode(t *testing.T) {
 			{
 				name: "Raw CID with Zero Size",
 				fields: fields{
-					Type: types.CIDTypeRaw,
+					kind: types.CIDTypeRaw,
 					Hash: yourHashValue, // Replace with a valid hash value
 					Size: 0,             // Zero size
 				},
@@ -154,7 +154,7 @@ func TestCID_HashCode(t *testing.T) {
 			{
 				name: "Default CID",
 				fields: fields{
-					Type: types.CIDTypeDefault,
+					kind: types.CIDTypeDefault,
 					Hash: yourHashValue, // Replace with a valid hash value
 				},
 				want: yourExpectedBytesForDefaultCID, // Replace with the expected byte output for Default CID
@@ -163,7 +163,7 @@ func TestCID_HashCode(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cid := &CID{
-				Type: tt.fields.Type,
+				kind: tt.fields.kind,
 				Hash: tt.fields.Hash,
 				Size: tt.fields.Size,
 			}

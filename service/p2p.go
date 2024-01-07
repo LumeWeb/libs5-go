@@ -34,7 +34,7 @@ type P2P struct {
 	localNodeID    *encoding.NodeId
 	networkID      string
 	nodesBucket    *bolt.Bucket
-	node           *node.Node
+	node           *node.NodeImpl
 	inited         bool
 	reconnectDelay *structs.Map
 	peers          *structs.Map
@@ -76,7 +76,7 @@ func (n *nodeVotes) DecodeMsgpack(dec *msgpack.Decoder) error {
 	return nil
 }
 
-func NewP2P(node *node.Node) *P2P {
+func NewP2P(node *node.NodeImpl) *P2P {
 	service := &P2P{
 		logger:         node.Logger(),
 		nodeKeyPair:    node.Config().KeyPair,
@@ -90,7 +90,7 @@ func NewP2P(node *node.Node) *P2P {
 	return service
 }
 
-func (p *P2P) Node() *node.Node {
+func (p *P2P) Node() *node.NodeImpl {
 	return p.node
 }
 

@@ -60,7 +60,7 @@ func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder) error {
 	return nil
 }
 
-func (a AnnouncePeers) HandleMessage(node *libs5_go.Node, peer *net.Peer, verifyId bool) error {
+func (a AnnouncePeers) HandleMessage(node *libs5_go.NodeImpl, peer *net.Peer, verifyId bool) error {
 	if len(a.connectionUris) > 0 {
 		firstUrl := a.connectionUris[0]
 		uri := new(url.URL)
