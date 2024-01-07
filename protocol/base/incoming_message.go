@@ -22,6 +22,18 @@ type IncomingMessageImpl struct {
 	known    bool
 }
 
+func (i *IncomingMessageImpl) DecodeMessage(dec *msgpack.Decoder) error {
+	panic("child class should implement this method")
+}
+
+func (i *IncomingMessageImpl) Known() bool {
+	return i.known
+}
+
+func (i *IncomingMessageImpl) SetKnown(known bool) {
+	i.known = known
+}
+
 func (i *IncomingMessageImpl) SetOriginal(original []byte) {
 	i.original = original
 }
