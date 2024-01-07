@@ -25,8 +25,8 @@ var (
 
 func init() {
 	transports = sync.Map{}
-	RegisterTransport("ws", WebSocketPeer{})
-	RegisterTransport("wss", WebSocketPeer{})
+	RegisterTransport("ws", &WebSocketPeer{})
+	RegisterTransport("wss", &WebSocketPeer{})
 }
 func RegisterTransport(peerType string, factory interface{}) {
 	if _, ok := factory.(PeerFactory); !ok {
