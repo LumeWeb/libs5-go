@@ -219,8 +219,8 @@ func (p *P2PImpl) OnNewPeer(peer *net.Peer, verifyId bool) error {
 	return nil
 }
 func (p *P2PImpl) OnNewPeerListen(peer *net.Peer, verifyId bool) {
-	onDone := net.DoneCallback(func() {
-		peerId, err := (*peer).GetId().ToString()
+	onDone := net.CloseCallback(func() {
+		peerId, err := (*peer).Id().ToString()
 		if err != nil {
 			p.logger.Error("failed to get peer id", zap.Error(err))
 			return
@@ -262,7 +262,7 @@ func (p *P2PImpl) OnNewPeerListen(peer *net.Peer, verifyId bool) {
 
 		return nil
 	}, net.ListenerOptions{
-		OnDone:  &onDone,
+		OnClose: &onDone,
 		OnError: &onError,
 		Logger:  p.logger,
 	})

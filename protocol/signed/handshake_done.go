@@ -40,7 +40,7 @@ func (h HandshakeDone) HandleMessage(node interfaces.Node, peer *net.Peer, verif
 		return nil
 	}
 
-	if !bytes.Equal((*peer).GetChallenge(), h.challenge) {
+	if !bytes.Equal((*peer).Challenge(), h.challenge) {
 		return errors.New("Invalid challenge")
 	}
 	/*
@@ -52,7 +52,7 @@ func (h HandshakeDone) HandleMessage(node interfaces.Node, peer *net.Peer, verif
 			}
 		}
 
-		peer.IsConnected = true
+		peer.isConnected = true
 
 		supportedFeatures := data.UnpackInt()
 

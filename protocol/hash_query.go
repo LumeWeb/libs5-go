@@ -94,13 +94,13 @@ func (h *HashQuery) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId
 
 	peers = peersVal.(*hashset.Set)
 
-	if exists := peers.Contains((*peer).GetId()); !exists {
-		peers.Add((*peer).GetId())
+	if exists := peers.Contains((*peer).Id()); !exists {
+		peers.Add((*peer).Id())
 	}
 
 	for _, val := range node.Services().P2P().Peers().Values() {
 		peerVal := val.(net.Peer)
-		if !peerVal.GetId().Equals((*peer).GetId()) {
+		if !peerVal.Id().Equals((*peer).Id()) {
 			err := peerVal.SendMessage(h.IncomingMessageImpl.Original())
 			if err != nil {
 				node.Logger().Error("Failed to send message", zap.Error(err))

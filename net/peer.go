@@ -9,15 +9,15 @@ import (
 // EventCallback type for the callback function
 type EventCallback func(event []byte) error
 
-// DoneCallback type for the onDone callback
-type DoneCallback func()
+// CloseCallback type for the OnClose callback
+type CloseCallback func()
 
 // ErrorCallback type for the onError callback
 type ErrorCallback func(args ...interface{})
 
 // ListenerOptions struct for options
 type ListenerOptions struct {
-	OnDone  *DoneCallback
+	OnClose *CloseCallback
 	OnError *ErrorCallback
 	Logger  *zap.Logger
 }
@@ -28,15 +28,41 @@ type Peer interface {
 	ListenForMessages(callback EventCallback, options ListenerOptions)
 	End() error
 	SetId(id *encoding.NodeId)
-	GetId() *encoding.NodeId
+	Id() *encoding.NodeId
 	SetChallenge(challenge []byte)
-	GetChallenge() []byte
+	Challenge() []byte
+	SetSocket(socket interface{})
+	Socket() interface{}
 }
 
 type BasePeer struct {
-	ConnectionURIs []url.URL
-	IsConnected    bool
+	connectionURIs []*url.URL
+	isConnected    bool
 	challenge      []byte
-	Socket         interface{}
-	Id             *encoding.NodeId
+	socket         interface{}
+	id             *encoding.NodeId
+}
+
+func (b *BasePeer) Challenge() []byte {
+	return b.challenge
+}
+
+func (b *BasePeer) SetChallenge(challenge []byte) {
+	b.challenge = challenge
+}
+
+func (b *BasePeer) Socket() interface{} {
+	return b.socket
+}
+
+func (b *BasePeer) SetSocket(socket interface{}) {
+	b.socket = socket
+}
+
+func (b *BasePeer) Id() *encoding.NodeId {
+	return b.id
+}
+
+func (b *BasePeer) SetId(id *encoding.NodeId) {
+	b.id = id
 }
