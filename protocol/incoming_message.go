@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"fmt"
+	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
@@ -14,7 +15,7 @@ var (
 )
 
 type IncomingMessage interface {
-	HandleMessage(node *node.NodeImpl, peer *net.Peer, verifyId bool) error
+	HandleMessage(node *interfaces.Node, peer *net.Peer, verifyId bool) error
 	SetIncomingMessage(msg IncomingMessage)
 	msgpack.CustomDecoder
 }
@@ -54,7 +55,7 @@ func (i *IncomingMessageImpl) ToMessage() (message []byte, err error) {
 	return msgpack.Marshal(i)
 }
 
-func (i *IncomingMessageImpl) HandleMessage(node *node.NodeImpl, peer *net.Peer, verifyId bool) error {
+func (i *IncomingMessageImpl) HandleMessage(node *interfaces.Node, peer *net.Peer, verifyId bool) error {
 	panic("child class should implement this method")
 }
 
