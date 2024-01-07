@@ -5,19 +5,30 @@ import (
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-var _ protocol.IncomingMessageTyped = (*HandshakeDone)(nil)
+var _ base.IncomingMessageTyped = (*HandshakeDone)(nil)
 
 type HandshakeDone struct {
-	protocol.HandshakeOpen
+	challenge []byte
+	networkId string
+	base.IncomingMessageTypedImpl
+	base.IncomingMessageHandler
 	supportedFeatures int
 }
 
+func (m *HandshakeDone) SetChallenge(challenge []byte) {
+	m.challenge = challenge
+}
+
+func (m *HandshakeDone) SetNetworkId(networkId string) {
+	m.networkId = networkId
+}
+
 func NewHandshakeDone() *HandshakeDone {
-	return &HandshakeDone{HandshakeOpen: *protocol.NewHandshakeOpen(nil, ""), supportedFeatures: -1}
+	return &HandshakeDone{challenge: nil, networkId: "", supportedFeatures: -1}
 }
 
 func (h HandshakeDone) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error {
@@ -29,7 +40,7 @@ func (h HandshakeDone) HandleMessage(node interfaces.Node, peer *net.Peer, verif
 		return nil
 	}
 
-	if !bytes.Equal((*peer).GetChallenge(), h.HandshakeOpen.Challenge()) {
+	if !bytes.Equal((*peer).GetChallenge(), h.challenge) {
 		return errors.New("Invalid challenge")
 	}
 	/*
@@ -75,6 +86,14 @@ func (h HandshakeDone) HandleMessage(node interfaces.Node, peer *net.Peer, verif
 }
 
 func (h HandshakeDone) DecodeMessage(dec *msgpack.Decoder) error {
+
+	challenge, err := dec.DecodeBytes()
+	if err != nil {
+		return err
+	}
+
+	h.challenge = challenge
+
 	supportedFeatures, err := dec.DecodeInt()
 
 	if err != nil {
