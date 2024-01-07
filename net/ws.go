@@ -15,7 +15,7 @@ var (
 
 type WebSocketPeer struct {
 	BasePeer
-	Socket *websocket.Conn
+	socket *websocket.Conn
 }
 
 func (p *WebSocketPeer) Connect(uri *url.URL) (interface{}, error) {
@@ -33,14 +33,14 @@ func (p *WebSocketPeer) NewPeer(options *TransportPeerConfig) (Peer, error) {
 			connectionURIs: options.Uris,
 			socket:         options.Socket,
 		},
-		Socket: options.Socket.(*websocket.Conn),
+		socket: options.Socket.(*websocket.Conn),
 	}
 
 	return peer, nil
 }
 
 func (p *WebSocketPeer) SendMessage(message []byte) error {
-	err := p.Socket.Write(context.Background(), websocket.MessageBinary, message)
+	err := p.socket.Write(context.Background(), websocket.MessageBinary, message)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (p *WebSocketPeer) RenderLocationURI() string {
 
 func (p *WebSocketPeer) ListenForMessages(callback EventCallback, options ListenerOptions) {
 	for {
-		_, message, err := p.Socket.Read(context.Background())
+		_, message, err := p.socket.Read(context.Background())
 		if err != nil {
 			if options.OnError != nil {
 				(*options.OnError)(err)
@@ -76,7 +76,7 @@ func (p *WebSocketPeer) ListenForMessages(callback EventCallback, options Listen
 }
 
 func (p *WebSocketPeer) End() error {
-	err := p.Socket.Close(websocket.StatusNormalClosure, "")
+	err := p.socket.Close(websocket.StatusNormalClosure, "")
 	if err != nil {
 		return err
 	}
