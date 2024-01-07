@@ -3,8 +3,8 @@ package signed
 import (
 	"bytes"
 	"errors"
+	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	libs5_go "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -20,8 +20,8 @@ func NewHandshakeDone() *HandshakeDone {
 	return &HandshakeDone{HandshakeOpen: *protocol.NewHandshakeOpen(nil, ""), supportedFeatures: -1}
 }
 
-func (h HandshakeDone) HandleMessage(node *libs5_go.NodeImpl, peer *net.Peer, verifyId bool) error {
-	if !(*node).IsStarted() {
+func (h HandshakeDone) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error {
+	if !node.IsStarted() {
 		err := (*peer).End()
 		if err != nil {
 			return nil

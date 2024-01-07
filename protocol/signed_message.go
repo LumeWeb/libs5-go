@@ -4,8 +4,8 @@ import (
 	"crypto/ed25519"
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
+	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	libs5_go "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
@@ -54,7 +54,7 @@ func NewSignedMessage() *SignedMessage {
 	return &SignedMessage{}
 }
 
-func (s *SignedMessage) HandleMessage(node *libs5_go.NodeImpl, peer *net.Peer, verifyId bool) error {
+func (s *SignedMessage) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error {
 	var payload signedMessagePayoad
 
 	err := msgpack.Unmarshal(s.message, &payload)

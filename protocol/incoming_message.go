@@ -15,7 +15,7 @@ var (
 )
 
 type IncomingMessage interface {
-	HandleMessage(node *interfaces.Node, peer *net.Peer, verifyId bool) error
+	HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error
 	SetIncomingMessage(msg IncomingMessage)
 	msgpack.CustomDecoder
 }
@@ -55,7 +55,7 @@ func (i *IncomingMessageImpl) ToMessage() (message []byte, err error) {
 	return msgpack.Marshal(i)
 }
 
-func (i *IncomingMessageImpl) HandleMessage(node *interfaces.Node, peer *net.Peer, verifyId bool) error {
+func (i *IncomingMessageImpl) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error {
 	panic("child class should implement this method")
 }
 

@@ -2,8 +2,8 @@ package protocol
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
+	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	libs5_go "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.uber.org/zap"
@@ -47,7 +47,7 @@ func (h *HashQuery) DecodeMessage(dec *msgpack.Decoder) error {
 
 	return nil
 }
-func (h *HashQuery) HandleMessage(node *libs5_go.NodeImpl, peer *net.Peer, verifyId bool) error {
+func (h *HashQuery) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error {
 	mapLocations, err := node.GetCachedStorageLocations(h.hash, h.kinds)
 	if err != nil {
 		log.Printf("Error getting cached storage locations: %v", err)
@@ -71,14 +71,14 @@ func (h *HashQuery) HandleMessage(node *libs5_go.NodeImpl, peer *net.Peer, verif
 			return err
 		}
 
-		sortedNodeId, err := score[0].ToString()
+		sortedNodeId, err := (*score[0]).ToString()
 		if err != nil {
 			return err
 		}
 
 		entry, exists := mapLocations[sortedNodeId]
 		if exists {
-			err := (*peer).SendMessage(entry.ProviderMessage)
+			err := (*peer).SendMessage(entry.ProviderMessage())
 			if err != nil {
 				return err
 			}

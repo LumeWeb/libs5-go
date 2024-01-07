@@ -2,8 +2,8 @@ package signed
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
+	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	libs5_go "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"github.com/vmihailenco/msgpack/v5"
 	"net/url"
@@ -60,7 +60,7 @@ func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder) error {
 	return nil
 }
 
-func (a AnnouncePeers) HandleMessage(node *libs5_go.NodeImpl, peer *net.Peer, verifyId bool) error {
+func (a AnnouncePeers) HandleMessage(node interfaces.Node, peer *net.Peer, verifyId bool) error {
 	if len(a.connectionUris) > 0 {
 		firstUrl := a.connectionUris[0]
 		uri := new(url.URL)
