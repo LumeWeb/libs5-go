@@ -8,8 +8,8 @@ import (
 )
 
 type P2PService interface {
-	Node() *Node
-	Peers() *structs.Map
+	Node() Node
+	Peers() structs.Map
 	Start() error
 	Stop() error
 	Init() error

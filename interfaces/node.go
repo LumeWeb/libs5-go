@@ -9,13 +9,13 @@ import (
 )
 
 type Node interface {
-	Services() *Services
-	HashQueryRoutingTable() *structs.Map
+	Services() Services
+	HashQueryRoutingTable() structs.Map
 	IsStarted() bool
 	Config() *config.NodeConfig
 	Logger() *zap.Logger
 	Db() *bolt.DB
 	Start() error
-	GetCachedStorageLocations(hash *encoding.Multihash, types []int) (map[string]*StorageLocation, error)
-	AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location *StorageLocation, message []byte, config *config.NodeConfig) error
+	GetCachedStorageLocations(hash *encoding.Multihash, types []int) (map[string]StorageLocation, error)
+	AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location StorageLocation, message []byte, config *config.NodeConfig) error
 }
