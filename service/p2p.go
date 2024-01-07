@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/ed25519"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
@@ -15,6 +16,7 @@ import (
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
 	"net/url"
+	"reflect"
 	"sort"
 	"time"
 )
@@ -247,9 +249,11 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 		handler, ok := protocol.GetMessageType(imsg.GetKind())
 
 		if ok {
+
 			imsg.SetOriginal(message)
 			handler.SetIncomingMessage(imsg)
-
+			handler.SetSelf(handler)
+			fmt.Println(reflect.TypeOf(handler))
 			err := msgpack.Unmarshal(imsg.Data(), handler)
 			if err != nil {
 				return err

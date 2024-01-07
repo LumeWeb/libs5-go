@@ -20,6 +20,15 @@ type IncomingMessageImpl struct {
 	data     msgpack.RawMessage
 	original []byte
 	known    bool
+	self     IncomingMessage
+}
+
+func (i *IncomingMessageImpl) Self() IncomingMessage {
+	return i.self
+}
+
+func (i *IncomingMessageImpl) SetSelf(self IncomingMessage) {
+	i.self = self
 }
 
 func (i *IncomingMessageImpl) DecodeMessage(dec *msgpack.Decoder) error {
@@ -97,7 +106,7 @@ func NewIncomingMessageTyped(kind types.ProtocolMethod, data msgpack.RawMessage)
 
 func (i *IncomingMessageImpl) DecodeMsgpack(dec *msgpack.Decoder) error {
 	if i.known {
-		if msgTyped, ok := interface{}(i).(IncomingMessageTyped); ok {
+		if msgTyped, ok := interface{}(i.Self()).(IncomingMessageTyped); ok {
 			return msgTyped.DecodeMessage(dec)
 		}
 		return fmt.Errorf("type assertion to IncomingMessageTyped failed")
