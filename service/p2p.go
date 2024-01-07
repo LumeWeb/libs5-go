@@ -63,11 +63,6 @@ func (p *P2PImpl) Peers() structs.Map {
 }
 
 func (p *P2PImpl) Start() error {
-	err := p.Init()
-	if err != nil {
-		return err
-	}
-
 	config := p.Node().Config()
 	if len(config.P2P.Peers.Initial) > 0 {
 		initialPeers := config.P2P.Peers.Initial
