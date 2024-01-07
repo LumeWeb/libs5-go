@@ -4,8 +4,8 @@ import (
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/ed25519"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
+	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
@@ -17,9 +17,8 @@ import (
 	"time"
 )
 
-var _ Service = (*P2P)(nil)
-var _ msgpack.CustomEncoder = (*nodeVotes)(nil)
-var _ msgpack.CustomDecoder = (*nodeVotes)(nil)
+var _ interfaces.P2PService = (*P2PImpl)(nil)
+var _ interfaces.NodeVotes = (*NodeVotesImpl)(nil)
 
 var (
 	errUnsupportedProtocol       = errors.New("unsupported protocol")
@@ -28,24 +27,32 @@ var (
 
 const nodeBucketName = "nodes"
 
-type P2P struct {
+type P2PImpl struct {
 	logger         *zap.Logger
 	nodeKeyPair    *ed25519.KeyPairEd25519
 	localNodeID    *encoding.NodeId
 	networkID      string
 	nodesBucket    *bolt.Bucket
-	node           *node.NodeImpl
+	node           interfaces.Node
 	inited         bool
-	reconnectDelay *structs.Map
-	peers          *structs.Map
+	reconnectDelay structs.Map
+	peers          structs.Map
 }
 
-type nodeVotes struct {
+type NodeVotesImpl struct {
 	good int
 	bad  int
 }
 
-func (n nodeVotes) EncodeMsgpack(enc *msgpack.Encoder) error {
+func (n *NodeVotesImpl) Good() int {
+	return n.good
+}
+
+func (n *NodeVotesImpl) Bad() int {
+	return n.bad
+}
+
+func (n NodeVotesImpl) EncodeMsgpack(enc *msgpack.Encoder) error {
 	err := enc.EncodeInt(int64(n.good))
 	if err != nil {
 		return err
@@ -59,7 +66,7 @@ func (n nodeVotes) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return nil
 }
 
-func (n *nodeVotes) DecodeMsgpack(dec *msgpack.Decoder) error {
+func (n *NodeVotesImpl) DecodeMsgpack(dec *msgpack.Decoder) error {
 	good, err := dec.DecodeInt()
 	if err != nil {
 		return err
@@ -76,8 +83,8 @@ func (n *nodeVotes) DecodeMsgpack(dec *msgpack.Decoder) error {
 	return nil
 }
 
-func NewP2P(node *node.NodeImpl) *P2P {
-	service := &P2P{
+func NewP2P(node interfaces.Node) *P2PImpl {
+	service := &P2PImpl{
 		logger:         node.Logger(),
 		nodeKeyPair:    node.Config().KeyPair,
 		networkID:      node.Config().P2P.Network,
@@ -90,15 +97,15 @@ func NewP2P(node *node.NodeImpl) *P2P {
 	return service
 }
 
-func (p *P2P) Node() *node.NodeImpl {
+func (p *P2PImpl) Node() interfaces.Node {
 	return p.node
 }
 
-func (p *P2P) Peers() *structs.Map {
+func (p *P2PImpl) Peers() structs.Map {
 	return p.peers
 }
 
-func (p *P2P) Start() error {
+func (p *P2PImpl) Start() error {
 	err := p.Init()
 	if err != nil {
 		return err
@@ -123,11 +130,11 @@ func (p *P2P) Start() error {
 	return nil
 }
 
-func (p *P2P) Stop() error {
+func (p *P2PImpl) Stop() error {
 	panic("implement me")
 }
 
-func (p *P2P) Init() error {
+func (p *P2PImpl) Init() error {
 	if p.inited {
 		return nil
 	}
@@ -143,7 +150,7 @@ func (p *P2P) Init() error {
 
 	return nil
 }
-func (p *P2P) ConnectToNode(connectionUris []*url.URL, retried bool) error {
+func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 	if !p.Node().IsStarted() {
 		return nil
 	}
@@ -233,16 +240,16 @@ func (p *P2P) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 	}
 
 	(*peer).SetId(id)
-	return p.onNewPeer(peer, true)
+	return p.OnNewPeer(peer, true)
 }
 
-func (p *P2P) onNewPeer(peer *net.Peer, verifyId bool) error {
+func (p *P2PImpl) OnNewPeer(peer *net.Peer, verifyId bool) error {
 	challenge := protocol.GenerateChallenge()
 
 	pd := *peer
 	pd.SetChallenge(challenge)
 
-	p.onNewPeerListen(peer, verifyId)
+	p.OnNewPeerListen(peer, verifyId)
 
 	handshakeOpenMsg, err := protocol.NewHandshakeOpen(challenge, p.networkID).ToMessage()
 
@@ -256,7 +263,7 @@ func (p *P2P) onNewPeer(peer *net.Peer, verifyId bool) error {
 	}
 	return nil
 }
-func (p *P2P) onNewPeerListen(peer *net.Peer, verifyId bool) {
+func (p *P2PImpl) OnNewPeerListen(peer *net.Peer, verifyId bool) {
 	onDone := net.DoneCallback(func() {
 		peerId, err := (*peer).GetId().ToString()
 		if err != nil {
@@ -307,13 +314,13 @@ func (p *P2P) onNewPeerListen(peer *net.Peer, verifyId bool) {
 
 }
 
-func (p *P2P) readNodeScore(nodeId *encoding.NodeId) (nodeVotes, error) {
+func (p *P2PImpl) ReadNodeScore(nodeId *encoding.NodeId) (interfaces.NodeVotes, error) {
 	node := p.nodesBucket.Get(nodeId.Raw())
 	if node == nil {
-		return nodeVotes{}, nil
+		return &NodeVotesImpl{}, nil
 	}
 
-	var score nodeVotes
+	var score interfaces.NodeVotes
 	err := msgpack.Unmarshal(node, &score)
 	if err != nil {
 
@@ -322,25 +329,25 @@ func (p *P2P) readNodeScore(nodeId *encoding.NodeId) (nodeVotes, error) {
 	return score, nil
 }
 
-func (p *P2P) getNodeScore(nodeId *encoding.NodeId) (float64, error) {
+func (p *P2PImpl) GetNodeScore(nodeId *encoding.NodeId) (float64, error) {
 	if nodeId.Equals(p.localNodeID) {
 		return 1, nil
 	}
 
-	score, err := p.readNodeScore(nodeId)
+	score, err := p.ReadNodeScore(nodeId)
 	if err != nil {
 		return 0.5, err
 	}
 
-	return protocol.CalculateNodeScore(score.good, score.bad), nil
+	return protocol.CalculateNodeScore(score.Good(), score.Bad()), nil
 
 }
-func (p *P2P) SortNodesByScore(nodes []*encoding.NodeId) ([]*encoding.NodeId, error) {
+func (p *P2PImpl) SortNodesByScore(nodes []*encoding.NodeId) ([]*encoding.NodeId, error) {
 	scores := make(map[encoding.NodeIdCode]float64)
 	var errOccurred error
 
 	for _, nodeId := range nodes {
-		score, err := p.getNodeScore(nodeId)
+		score, err := p.GetNodeScore(nodeId)
 		if err != nil {
 			errOccurred = err
 			scores[nodeId.HashCode()] = 0 // You may choose a different default value for error cases
