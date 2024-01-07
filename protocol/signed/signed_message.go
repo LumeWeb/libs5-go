@@ -14,6 +14,7 @@ import (
 var (
 	_ base.IncomingMessageTyped = (*SignedMessage)(nil)
 	_ msgpack.CustomDecoder     = (*signedMessagePayoad)(nil)
+	_ msgpack.CustomEncoder     = (*SignedMessage)(nil)
 )
 
 var (
@@ -25,6 +26,22 @@ type SignedMessage struct {
 	signature []byte
 	message   []byte
 	base.IncomingMessageTypedImpl
+}
+
+func (s *SignedMessage) SetNodeId(nodeId *encoding.NodeId) {
+	s.nodeId = nodeId
+}
+
+func (s *SignedMessage) SetSignature(signature []byte) {
+	s.signature = signature
+}
+
+func (s *SignedMessage) SetMessage(message []byte) {
+	s.message = message
+}
+
+func NewSignedMessageRequest(message []byte) *SignedMessage {
+	return &SignedMessage{message: message}
 }
 
 type signedMessagePayoad struct {
@@ -105,5 +122,44 @@ func (s *SignedMessage) DecodeMessage(dec *msgpack.Decoder) error {
 	}
 
 	return nil
+}
+func (s *SignedMessage) EncodeMsgpack(enc *msgpack.Encoder) error {
+	err := enc.EncodeInt(int64(types.ProtocolMethodSignedMessage))
 
+	if err != nil {
+		return err
+	}
+
+	err = enc.EncodeBytes(s.nodeId.Raw())
+
+	if err != nil {
+		return err
+	}
+
+	err = enc.EncodeBytes(s.signature)
+
+	if err != nil {
+		return err
+	}
+
+	err = enc.EncodeBytes(s.message)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func (s *SignedMessage) Sign(node interfaces.Node) error {
+	if s.nodeId == nil {
+		panic("nodeId is nil")
+	}
+
+	if s.message == nil {
+		panic("message is nil")
+	}
+
+	s.signature = ed25519.Sign(node.Config().KeyPair.ExtractBytes(), s.message)
+
+	return nil
 }

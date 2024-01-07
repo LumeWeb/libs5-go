@@ -8,6 +8,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
@@ -315,4 +316,22 @@ func (p *P2PImpl) SortNodesByScore(nodes []*encoding.NodeId) ([]*encoding.NodeId
 	})
 
 	return nodes, errOccurred
+}
+func (p *P2PImpl) SignMessageSimple(message []byte) ([]byte, error) {
+	signedMessage := signed.NewSignedMessageRequest(message)
+	signedMessage.SetNodeId(p.localNodeID)
+
+	err := signedMessage.Sign(p.Node())
+
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := msgpack.Marshal(signedMessage)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
