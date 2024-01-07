@@ -105,6 +105,8 @@ func (p *P2PImpl) Init() error {
 		return err
 	}
 
+	p.inited = true
+
 	return nil
 }
 func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
