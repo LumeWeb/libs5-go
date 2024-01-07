@@ -115,7 +115,7 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 	var connectionUri *url.URL
 
 	for _, uri := range connectionUris {
-		if uri.Scheme == "ws:" || uri.Scheme == "wss:" {
+		if uri.Scheme == "ws" || uri.Scheme == "wss" {
 			connectionUri = uri
 			break
 		}
@@ -123,7 +123,7 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 
 	if connectionUri == nil {
 		for _, uri := range connectionUris {
-			if uri.Scheme == "tcp:" {
+			if uri.Scheme == "tcp" {
 				connectionUri = uri
 				break
 			}
