@@ -157,7 +157,8 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 
 	reconnectDelay := p.reconnectDelay.GetInt(idString)
 	if reconnectDelay == nil {
-		*reconnectDelay = 1
+		delay := 1
+		reconnectDelay = &delay
 	}
 
 	if id.Equals(p.localNodeID) {
