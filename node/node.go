@@ -78,6 +78,8 @@ func (n *NodeImpl) Start() error {
 		return err
 	}
 
+	n.started = true
+
 	err = n.Services().P2P().Init()
 	if err != nil {
 		return err
