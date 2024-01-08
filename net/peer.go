@@ -39,6 +39,8 @@ type Peer interface {
 	Challenge() []byte
 	SetSocket(socket interface{})
 	Socket() interface{}
+	SetConnected(isConnected bool)
+	IsConnected() bool
 }
 
 type BasePeer struct {
@@ -47,6 +49,14 @@ type BasePeer struct {
 	challenge      []byte
 	socket         interface{}
 	id             *encoding.NodeId
+}
+
+func (b *BasePeer) IsConnected() bool {
+	return b.isConnected
+}
+
+func (b *BasePeer) SetConnected(isConnected bool) {
+	b.isConnected = isConnected
 }
 
 func (b *BasePeer) SendMessage(message []byte) error {
