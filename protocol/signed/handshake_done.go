@@ -7,6 +7,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
+	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
 	"net/url"
 )
@@ -44,6 +45,11 @@ func (m HandshakeDone) EncodeMsgpack(enc *msgpack.Encoder) error {
 	}
 
 	err = enc.EncodeInt(int64(m.supportedFeatures))
+	if err != nil {
+		return err
+	}
+
+	err = utils.EncodeMsgpackArray(enc, m.connectionUris)
 	if err != nil {
 		return err
 	}
