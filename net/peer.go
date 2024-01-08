@@ -41,6 +41,8 @@ type Peer interface {
 	Socket() interface{}
 	SetConnected(isConnected bool)
 	IsConnected() bool
+	SetConnectionURIs(uris []*url.URL)
+	ConnectionURIs() []*url.URL
 }
 
 type BasePeer struct {
@@ -97,4 +99,10 @@ func (b *BasePeer) Id() *encoding.NodeId {
 
 func (b *BasePeer) SetId(id *encoding.NodeId) {
 	b.id = id
+}
+func (b *BasePeer) SetConnectionURIs(uris []*url.URL) {
+	b.connectionURIs = uris
+}
+func (b *BasePeer) ConnectionURIs() []*url.URL {
+	return b.connectionURIs
 }
