@@ -22,6 +22,7 @@ type IncomingMessageImpl struct {
 	original []byte
 	known    bool
 	self     IncomingMessage
+	incoming IncomingMessage
 }
 
 func (i *IncomingMessageImpl) Self() IncomingMessage {
@@ -53,13 +54,12 @@ func (i *IncomingMessageImpl) Original() []byte {
 }
 
 func (i *IncomingMessageImpl) SetIncomingMessage(msg IncomingMessage) {
-	if msgImpl, ok := msg.(*IncomingMessageImpl); ok {
-		*i = *msgImpl
-		i.known = true
-	} else {
-		// Handle the error or panic
-		panic("msg is not of type *IncomingMessageImpl")
-	}
+	i.incoming = msg
+	i.known = true
+}
+
+func (i *IncomingMessageImpl) IncomingMessage() IncomingMessage {
+	return i.incoming
 }
 
 func (i *IncomingMessageImpl) GetKind() types.ProtocolMethod {

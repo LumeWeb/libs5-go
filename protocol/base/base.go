@@ -9,6 +9,7 @@ import (
 type IncomingMessage interface {
 	HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error
 	SetIncomingMessage(msg IncomingMessage)
+	IncomingMessage() IncomingMessage
 	Self() IncomingMessage
 	SetSelf(self IncomingMessage)
 	msgpack.CustomDecoder
