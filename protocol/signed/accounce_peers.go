@@ -5,6 +5,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
+	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 	"net/url"
 )
@@ -14,14 +15,26 @@ var (
 )
 
 type AnnouncePeers struct {
-	connected      bool
-	peer           *encoding.NodeId
+	peer           net.Peer
 	connectionUris []*url.URL
+	peersToSend    []net.Peer
 	base.IncomingMessageTypedImpl
 }
 
+func (a *AnnouncePeers) PeersToSend() []net.Peer {
+	return a.peersToSend
+}
+
+func (a *AnnouncePeers) SetPeersToSend(peersToSend []net.Peer) {
+	a.peersToSend = peersToSend
+}
+
+func NewAnnounceRequest(peer net.Peer, peersToSend []net.Peer) *AnnouncePeers {
+	return &AnnouncePeers{peer: peer, connectionUris: nil, peersToSend: peersToSend}
+}
+
 func NewAnnouncePeers() *AnnouncePeers {
-	return &AnnouncePeers{connected: false, peer: nil, connectionUris: nil}
+	return &AnnouncePeers{peer: nil, connectionUris: nil}
 }
 
 func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder) error {
