@@ -56,11 +56,9 @@ func (h HandshakeOpen) EncodeMsgpack(enc *msgpack.Encoder) error {
 		return err
 	}
 
-	if h.networkId != "" {
-		err = enc.EncodeString(h.networkId)
-		if err != nil {
-			return err
-		}
+	err = enc.EncodeString(h.networkId)
+	if err != nil {
+		return err
 	}
 
 	return nil
