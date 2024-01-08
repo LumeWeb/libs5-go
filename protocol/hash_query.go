@@ -21,6 +21,10 @@ type HashQuery struct {
 	base.IncomingMessageHandler
 }
 
+func NewHashQuery() *HashQuery {
+	return &HashQuery{}
+}
+
 func (h HashQuery) Hash() *encoding.Multihash {
 	return h.hash
 }
@@ -87,16 +91,24 @@ func (h *HashQuery) HandleMessage(node interfaces.Node, peer net.Peer, verifyId 
 	}
 
 	var peers *hashset.Set
-	peersVal, ok := node.HashQueryRoutingTable().Get(h.hash.HashCode()) // Implement HashQueryRoutingTable method
-	if !ok {
-		peers = hashset.New()
+	hashString, err := h.hash.ToString()
+	if err != nil {
+		return err
+	}
+	peersVal, ok := node.HashQueryRoutingTable().Get(hashString) // Implement HashQueryRoutingTable method
+	if ok {
+		peers = peersVal.(*hashset.Set)
+		if !peers.Contains(peer.Id()) {
+			peers.Add(peer.Id())
+		}
+
+		return nil
 	}
 
-	peers = peersVal.(*hashset.Set)
+	peerList := hashset.New()
+	peerList.Add(peer.Id())
 
-	if exists := peers.Contains(peer.Id()); !exists {
-		peers.Add(peer.Id())
-	}
+	node.HashQueryRoutingTable().Put(hashString, peerList)
 
 	for _, val := range node.Services().P2P().Peers().Values() {
 		peerVal := val.(net.Peer)
