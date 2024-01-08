@@ -6,6 +6,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
+	"io"
 	"net/url"
 )
 
@@ -119,7 +120,8 @@ func (i *IncomingMessageImpl) DecodeMsgpack(dec *msgpack.Decoder) error {
 
 	i.kind = types.ProtocolMethod(kind)
 
-	raw, err := dec.DecodeRaw()
+	raw, err := io.ReadAll(dec.Buffered())
+
 	if err != nil {
 		return err
 	}
