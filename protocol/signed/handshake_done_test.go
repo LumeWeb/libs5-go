@@ -2,6 +2,7 @@ package signed
 
 import (
 	"bytes"
+	"encoding/base64"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/vmihailenco/msgpack/v5"
@@ -88,4 +89,46 @@ func TestHandshakeDone_EncodeMsgpack(t *testing.T) {
 			assert.EqualValues(t, supportedFeatures, tt.fields.supportedFeatures)
 		})
 	}
+}
+
+func TestHandshakeDone_DecodeMessage_Success(t *testing.T) {
+	data := "xBFleGFtcGxlX2NoYWxsZW5nZQM="
+
+	h := HandshakeDone{}
+
+	dataDec, err := base64.StdEncoding.DecodeString(data)
+	assert.NoError(t, err)
+
+	enc := msgpack.NewDecoder(bytes.NewReader(dataDec))
+	err = h.DecodeMessage(enc)
+	assert.NoError(t, err)
+
+	assert.EqualValues(t, types.SupportedFeatures, h.supportedFeatures)
+	assert.EqualValues(t, []byte("example_challenge"), h.challenge)
+}
+func TestHandshakeDone_DecodeMessage_InvalidFeatures(t *testing.T) {
+	data := "xBFleGFtcGxlX2NoYWxsZW5nZSo="
+
+	h := HandshakeDone{}
+
+	dataDec, err := base64.StdEncoding.DecodeString(data)
+	assert.NoError(t, err)
+
+	enc := msgpack.NewDecoder(bytes.NewReader(dataDec))
+	err = h.DecodeMessage(enc)
+	assert.NotEqualValues(t, types.SupportedFeatures, h.supportedFeatures)
+	assert.EqualValues(t, []byte("example_challenge"), h.challenge)
+}
+func TestHandshakeDone_DecodeMessage_BadChallenge(t *testing.T) {
+	data := "xA1iYWRfY2hhbGxlbmdlAw=="
+
+	h := HandshakeDone{}
+
+	dataDec, err := base64.StdEncoding.DecodeString(data)
+	assert.NoError(t, err)
+
+	enc := msgpack.NewDecoder(bytes.NewReader(dataDec))
+	err = h.DecodeMessage(enc)
+	assert.EqualValues(t, types.SupportedFeatures, h.supportedFeatures)
+	assert.NotEqualValues(t, []byte("example_challenge"), h.challenge)
 }
