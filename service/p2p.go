@@ -180,10 +180,15 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 
 		p.logger.Error("failed to connect", zap.String("node", connectionUri.String()), zap.Error(err))
 
-		delay := *p.reconnectDelay.GetInt(idString)
-		p.reconnectDelay.PutInt(idString, delay*2)
+		delay := p.reconnectDelay.GetInt(idString)
+		if delay == nil {
+			tmp := 1
+			delay = &tmp
+		}
+		delayDeref := *delay
+		p.reconnectDelay.PutInt(idString, delayDeref*2)
 
-		time.Sleep(time.Duration(delay) * time.Second)
+		time.Sleep(time.Duration(delayDeref) * time.Second)
 
 		return p.ConnectToNode(connectionUris, retried)
 	}
@@ -338,4 +343,34 @@ func (p *P2PImpl) SignMessageSimple(message []byte) ([]byte, error) {
 	}
 
 	return result, nil
+}
+
+func (p *P2PImpl) AddPeer(peer net.Peer) error {
+	peerId, err := peer.Id().ToString()
+	if err != nil {
+		return err
+	}
+	p.peers.Put(peerId, peer)
+	p.reconnectDelay.Put(peerId, 1)
+
+	return nil
+}
+func (p *P2PImpl) SendPublicPeersToPeer(peer net.Peer, peersToSend []net.Peer) error {
+	announceRequest := signed.NewAnnounceRequest(peer, peersToSend)
+
+	message, err := msgpack.Marshal(announceRequest)
+
+	if err != nil {
+		return err
+	}
+
+	signedMessage, err := p.SignMessageSimple(message)
+
+	if err != nil {
+		return err
+	}
+
+	err = peer.SendMessage(signedMessage)
+
+	return nil
 }
