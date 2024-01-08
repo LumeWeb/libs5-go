@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"github.com/vmihailenco/msgpack/v5"
 	"net/url"
 )
@@ -59,4 +60,33 @@ func DecodeMsgpackArray(dec *msgpack.Decoder) ([]interface{}, error) {
 	}
 
 	return array, nil
+}
+func DecodeMsgpackURLArray(dec *msgpack.Decoder) ([]*url.URL, error) {
+	arrayLen, err := dec.DecodeInt()
+	if err != nil {
+		return nil, err
+	}
+
+	urlArray := make([]*url.URL, arrayLen)
+
+	for i := 0; i < int(arrayLen); i++ {
+		item, err := dec.DecodeInterface()
+		if err != nil {
+			return nil, err
+		}
+
+		// Type assert each item to *url.URL
+		urlItem, ok := item.(string)
+		if !ok {
+			// Handle the case where the item is not a *url.URL
+			return nil, fmt.Errorf("expected string, got %T", item)
+		}
+
+		urlArray[i], err = url.Parse(urlItem)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return urlArray, nil
 }
