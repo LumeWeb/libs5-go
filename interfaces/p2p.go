@@ -22,4 +22,6 @@ type P2PService interface {
 	GetNodeScore(nodeId *encoding.NodeId) (float64, error)
 	SortNodesByScore(nodes []*encoding.NodeId) ([]*encoding.NodeId, error)
 	SignMessageSimple(message []byte) ([]byte, error)
+	AddPeer(peer net.Peer) error
+	SendPublicPeersToPeer(peer net.Peer, peersToSend []net.Peer) error
 }
