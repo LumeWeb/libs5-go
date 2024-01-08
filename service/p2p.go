@@ -18,6 +18,7 @@ import (
 	"net/url"
 	"reflect"
 	"sort"
+	"sync"
 	"time"
 )
 
@@ -207,11 +208,16 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 }
 
 func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
-	challenge := protocol.GenerateChallenge()
+	var wg sync.WaitGroup
 
+	challenge := protocol.GenerateChallenge()
 	peer.SetChallenge(challenge)
 
-	p.OnNewPeerListen(peer, verifyId)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		p.OnNewPeerListen(peer, verifyId)
+	}()
 
 	handshakeOpenMsg, err := protocol.NewHandshakeOpen(challenge, p.networkID).ToMessage()
 
@@ -223,6 +229,8 @@ func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
 	if err != nil {
 		return err
 	}
+
+	wg.Wait() // Wait for OnNewPeerListen goroutine to finish
 	return nil
 }
 func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
