@@ -3,6 +3,7 @@ package signed
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
@@ -81,45 +82,42 @@ func (h HandshakeDone) HandleMessage(node interfaces.Node, peer net.Peer, verify
 	if !bytes.Equal(peer.Challenge(), h.challenge) {
 		return errors.New("Invalid challenge")
 	}
-	/*
-		if !verifyId {
-			peer.SetId(h)
-		} else {
-			if !peer.ID.Equals(pId) {
-				return errInvalidChallenge
-			}
+
+	nodeId := h.IncomingMessage().(*SignedMessage).NodeId()
+
+	if !verifyId {
+		peer.SetId(nodeId)
+	} else {
+		if !peer.Id().Equals(nodeId) {
+			return fmt.Errorf("Invalid transports id on initial list")
 		}
+	}
 
-		peer.isConnected = true
+	peer.SetConnected(true)
 
-		supportedFeatures := data.UnpackInt()
+	if h.supportedFeatures != types.SupportedFeatures {
+		return fmt.Errorf("Remote node does not support required features")
+	}
+	err := node.Services().P2P().AddPeer(peer)
+	if err != nil {
+		return err
+	}
 
-		if supportedFeatures != 3 {
-			return errors.New("Remote node does not support required features")
-		}
+	peer.SetConnectionURIs(h.connectionUris)
 
-		node.Services.P2P.Peers[peer.ID.String()] = peer
-		node.Services.P2P.ReconnectDelay[peer.ID.String()] = 1
+	peerId, err := peer.Id().ToString()
 
-		connectionUrisCount := data.UnpackInt()
+	if err != nil {
+		return err
+	}
 
-		peer.ConnectionUris = make([]*url.URL, 0)
-		for i := 0; i < connectionUrisCount; i++ {
-			uriStr := data.UnpackString()
-			uri, err := url.Parse(uriStr)
-			if err != nil {
-				return err
-			}
-			peer.ConnectionUris = append(peer.ConnectionUris, uri)
-		}
+	node.Logger().Info(fmt.Sprintf("[+] %s (%s)", peerId, peer.RenderLocationURI()))
 
-		// Log information - Assuming a logging method exists
-		node.Logger.Info(fmt.Sprintf("[+] %s (%s)", peer.ID.String(), peer.RenderLocationUri().String()))
+	err = node.Services().P2P().SendPublicPeersToPeer(peer, []net.Peer{peer})
+	if err != nil {
+		return err
+	}
 
-		// Send peer lists and emit 'peerConnected' event
-		// Assuming appropriate methods exist in node.Services.P2P
-		node.Services.P2P.SendPublicPeersToPeer(peer)
-	*/
 	return nil
 }
 
