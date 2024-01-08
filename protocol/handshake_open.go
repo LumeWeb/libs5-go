@@ -22,6 +22,10 @@ type HandshakeOpen struct {
 	base.IncomingMessageHandler
 }
 
+func (h *HandshakeOpen) SetHandshake(handshake []byte) {
+	h.handshake = handshake
+}
+
 func (h HandshakeOpen) Challenge() []byte {
 	return h.challenge
 }
