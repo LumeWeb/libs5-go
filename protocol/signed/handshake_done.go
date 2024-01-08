@@ -123,7 +123,7 @@ func (h HandshakeDone) HandleMessage(node interfaces.Node, peer net.Peer, verify
 	return nil
 }
 
-func (h HandshakeDone) DecodeMessage(dec *msgpack.Decoder) error {
+func (h *HandshakeDone) DecodeMessage(dec *msgpack.Decoder) error {
 	challenge, err := dec.DecodeBytes()
 	if err != nil {
 		return err
