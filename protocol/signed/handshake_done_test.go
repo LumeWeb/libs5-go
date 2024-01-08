@@ -1,0 +1,91 @@
+package signed
+
+import (
+	"bytes"
+	"git.lumeweb.com/LumeWeb/libs5-go/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/vmihailenco/msgpack/v5"
+	"net/url"
+	"testing"
+)
+
+func TestHandshakeDone_EncodeMsgpack(t *testing.T) {
+	type fields struct {
+		supportedFeatures int
+		connectionUris    []*url.URL
+		handshake         []byte
+	}
+	tests := []struct {
+		name        string
+		fields      fields
+		wantErr     bool
+		wantErrFunc assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Empty Fields",
+			fields: fields{
+				supportedFeatures: 0,
+				connectionUris:    []*url.URL{},
+				handshake:         []byte{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Valid Fields",
+			fields: fields{
+				supportedFeatures: 1,
+				connectionUris:    []*url.URL{{ /* initialize with valid URL data */ }},
+				handshake:         []byte{0x01, 0x02},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid URL",
+			fields: fields{
+				supportedFeatures: 1,
+				connectionUris:    []*url.URL{&url.URL{Host: "invalid-url"}},
+				handshake:         []byte{0x01},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := HandshakeDone{
+				supportedFeatures: tt.fields.supportedFeatures,
+				connectionUris:    tt.fields.connectionUris,
+				handshake:         tt.fields.handshake,
+			}
+
+			if tt.wantErr {
+				tt.wantErrFunc = assert.Error
+			} else {
+				tt.wantErrFunc = assert.NoError
+			}
+
+			enc := msgpack.NewEncoder(new(bytes.Buffer))
+			err := m.EncodeMsgpack(enc)
+
+			assert.NoError(t, err)
+
+			encodedData := enc.Writer().(*bytes.Buffer).Bytes()
+
+			if len(encodedData) == 0 && tt.wantErr {
+				t.Errorf("Expected non-empty encoded data, got empty")
+			}
+
+			dec := msgpack.NewDecoder(bytes.NewReader(encodedData))
+			protocol, err := dec.DecodeUint()
+
+			assert.EqualValues(t, protocol, types.ProtocolMethodHandshakeDone)
+
+			handshake, err := dec.DecodeBytes()
+
+			assert.EqualValues(t, handshake, tt.fields.handshake)
+
+			supportedFeatures, err := dec.DecodeInt()
+
+			assert.EqualValues(t, supportedFeatures, tt.fields.supportedFeatures)
+		})
+	}
+}
