@@ -8,6 +8,8 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=node.go -destination=../mocks/interfaces/node.go -package=interfaces
+
 type Node interface {
 	Services() Services
 	HashQueryRoutingTable() structs.Map

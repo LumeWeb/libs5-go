@@ -1,5 +1,7 @@
 package interfaces
 
+//go:generate mockgen -source=storage.go -destination=../mocks/interfaces/storage.go -package=interfaces
+
 type StorageLocation interface {
 	BytesURL() string
 	OutboardBytesURL() string

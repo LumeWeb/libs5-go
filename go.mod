@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/emirpasic/gods v1.18.1
+	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.6.0
 	github.com/multiformats/go-multibase v0.2.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1

@@ -7,6 +7,8 @@ import (
 	"net/url"
 )
 
+//go:generate mockgen -source=p2p.go -destination=../mocks/interfaces/p2p.go -package=interfaces
+
 type P2PService interface {
 	Node() Node
 	Peers() structs.Map
