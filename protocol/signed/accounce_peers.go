@@ -5,6 +5,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
+	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
 	"net/url"
 )
@@ -40,7 +41,7 @@ func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder) error {
 	}
 
 	a.connected = connected
-	connectionUriVal, err := dec.DecodeSlice()
+	connectionUriVal, err := utils.DecodeMsgpackArray(dec)
 
 	if err != nil {
 		return err
