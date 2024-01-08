@@ -38,7 +38,7 @@ func (m HandshakeDone) EncodeMsgpack(enc *msgpack.Encoder) error {
 		return err
 	}
 
-	err = enc.EncodeBytes(m.Original())
+	err = enc.EncodeBytes(m.handshake)
 	if err != nil {
 		return err
 	}
