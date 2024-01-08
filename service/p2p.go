@@ -219,8 +219,7 @@ func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
 		p.OnNewPeerListen(peer, verifyId)
 	}()
 
-	handshakeOpenMsg, err := protocol.NewHandshakeOpen(challenge, p.networkID).ToMessage()
-
+	handshakeOpenMsg, err := msgpack.Marshal(protocol.NewHandshakeOpen(challenge, p.networkID))
 	if err != nil {
 		return err
 	}
