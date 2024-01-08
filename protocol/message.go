@@ -22,9 +22,13 @@ func init() {
 	RegisterMessageType(types.ProtocolMethodHandshakeOpen, func() base.IncomingMessage {
 		return NewHandshakeOpen([]byte{}, "")
 	})
+	RegisterMessageType(types.ProtocolMethodHashQuery, func() base.IncomingMessage {
+		return NewHashQuery()
+	})
 	RegisterMessageType(types.ProtocolMethodSignedMessage, func() base.IncomingMessage {
 		return signed.NewSignedMessage()
 	})
+
 }
 
 func RegisterMessageType(messageType types.ProtocolMethod, factoryFunc func() base.IncomingMessage) {
