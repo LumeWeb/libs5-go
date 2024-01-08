@@ -112,3 +112,46 @@ func (a AnnouncePeers) HandleMessage(node interfaces.Node, peer net.Peer, verify
 
 	return nil
 }
+
+func (a AnnouncePeers) EncodeMsgpack(enc *msgpack.Encoder) error {
+	err := enc.EncodeUint(uint64(types.ProtocolMethodAnnouncePeers))
+	if err != nil {
+		return err
+	}
+
+	// Encode the number of peers.
+	err = enc.EncodeInt(int64(len(a.peersToSend)))
+	if err != nil {
+		return err
+	}
+
+	// Loop through each peer.
+	for _, peer := range a.peersToSend {
+		err = enc.EncodeBytes(peer.Id().Raw())
+		if err != nil {
+			return err
+		}
+
+		// Encode connection status.
+		err = enc.EncodeBool(peer.IsConnected())
+		if err != nil {
+			return err
+		}
+
+		// Encode the number of connection URIs for this peer.
+		err = enc.EncodeInt(int64(len(peer.ConnectionURIs())))
+		if err != nil {
+			return err
+		}
+
+		// Encode each connection URI for this peer.
+		for _, uri := range peer.ConnectionURIs() {
+			err = enc.EncodeString(uri.String())
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
