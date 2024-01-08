@@ -2,6 +2,8 @@ package protocol
 
 import (
 	"bytes"
+	"encoding/base64"
+	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/vmihailenco/msgpack/v5"
@@ -91,6 +93,50 @@ func TestHandshakeOpen_EncodeMsgpack(t *testing.T) {
 			}
 
 			assert.EqualValues(t, tt.fields.networkId, networkId)
+		})
+	}
+}
+func TestHandshakeOpen_DecodeMessage(t *testing.T) {
+	type fields struct {
+		challenge []byte
+		networkId string
+		handshake []byte
+	}
+	type args struct {
+		base64EncodedData string // Base64 encoded msgpack data
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:   "Valid Handshake and NetworkID",
+			fields: fields{}, // Fields are now empty
+			args: args{
+				base64EncodedData: "xBNzYW1wbGVIYW5kc2hha2VEYXRhr3NhbXBsZU5ldHdvcmtJRA==",
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name:   "Valid Handshake and Empty NetworkID",
+			fields: fields{}, // Fields are now empty
+			args: args{
+				base64EncodedData: "xBNzYW1wbGVIYW5kc2hha2VEYXRh",
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &HandshakeOpen{}
+
+			decodedData, _ := base64.StdEncoding.DecodeString(tt.args.base64EncodedData)
+			reader := bytes.NewReader(decodedData)
+			dec := msgpack.NewDecoder(reader)
+
+			tt.wantErr(t, h.DecodeMessage(dec), fmt.Sprintf("DecodeMessage(%v)", tt.args.base64EncodedData))
 		})
 	}
 }
