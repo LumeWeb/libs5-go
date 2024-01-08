@@ -83,6 +83,7 @@ func (s *SignedMessage) HandleMessage(node interfaces.Node, peer net.Peer, verif
 
 	if msgHandler, valid := GetMessageType(types.ProtocolMethod(payload.kind)); valid {
 		msgHandler.SetIncomingMessage(s)
+		msgHandler.SetSelf(msgHandler)
 		err := msgpack.Unmarshal(payload.message, &msgHandler)
 		if err != nil {
 			return err
