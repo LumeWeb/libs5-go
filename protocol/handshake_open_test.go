@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/vmihailenco/msgpack/v5"
 	"testing"
@@ -139,4 +140,77 @@ func TestHandshakeOpen_DecodeMessage(t *testing.T) {
 			tt.wantErr(t, h.DecodeMessage(dec), fmt.Sprintf("DecodeMessage(%v)", tt.args.base64EncodedData))
 		})
 	}
+}
+
+func TestHandshakeOpen_HandleMessage_Success(t *testing.T) {
+	setup(t)
+	testResultEncoded := "AsQWZXhhbXBsZSBoYW5kc2hha2UgZGF0YQMA"
+	testResult, err := base64.StdEncoding.DecodeString(testResultEncoded)
+	assert.NoError(t, err)
+
+	node.EXPECT().Services().Return(services).Times(1)
+	node.EXPECT().NetworkId().Return("").Times(1)
+	services.EXPECT().P2P().Return(p2p).Times(1)
+	p2p.EXPECT().SignMessageSimple(testResult).Return(testResult, nil).Times(1)
+	peer.EXPECT().SendMessage(testResult).Return(nil).Times(1)
+
+	handshake := []byte("example handshake data")
+	handshakeOpen := NewHandshakeOpen([]byte{}, "")
+	handshakeOpen.SetHandshake(handshake)
+
+	assert.NoError(t, handshakeOpen.HandleMessage(node, peer, false))
+}
+func TestHandshakeOpen_HandleMessage_DifferentNetworkID(t *testing.T) {
+	setup(t) // Assuming setup initializes the mocks and any required objects
+
+	// Define a network ID that is different from the one in handshakeOpen
+	differentNetworkID := "differentNetworkID"
+
+	// Setup expectations for the mock objects
+	node.EXPECT().NetworkId().Return(differentNetworkID).Times(1)
+	// No other method calls are expected after the NetworkId check fails
+
+	// Create a HandshakeOpen instance with a specific network ID that differs from `differentNetworkID`
+	networkIDForHandshakeOpen := "expectedNetworkID"
+	handshakeOpen := NewHandshakeOpen([]byte{}, networkIDForHandshakeOpen)
+	handshakeOpen.SetHandshake([]byte("example handshake data"))
+
+	// Invoke HandleMessage and expect an error
+	err := handshakeOpen.HandleMessage(node, peer, false)
+	assert.Error(t, err)
+
+	// Optionally, assert that the error message is as expected
+	expectedErrorMessage := fmt.Sprintf("Peer is in different network: %s", networkIDForHandshakeOpen)
+	assert.Equal(t, expectedErrorMessage, err.Error())
+}
+
+func TestHandshakeOpen_HandleMessage_MarshalError(t *testing.T) {
+	setup(t)
+
+	node.EXPECT().Services().Return(services).Times(1)
+	node.EXPECT().NetworkId().Return("").Times(1)
+	services.EXPECT().P2P().Return(p2p).Times(1)
+	p2p.EXPECT().SignMessageSimple(gomock.Any()).Return(nil, fmt.Errorf("marshal error")).Times(1)
+
+	handshake := []byte("example handshake data")
+	handshakeOpen := NewHandshakeOpen([]byte{}, "")
+	handshakeOpen.SetHandshake(handshake)
+
+	assert.Error(t, handshakeOpen.HandleMessage(node, peer, false))
+}
+
+func TestHandshakeOpen_HandleMessage_SendMessageError(t *testing.T) {
+	setup(t)
+
+	node.EXPECT().Services().Return(services).Times(1)
+	node.EXPECT().NetworkId().Return("").Times(1)
+	services.EXPECT().P2P().Return(p2p).Times(1)
+	p2p.EXPECT().SignMessageSimple(gomock.Any()).Return([]byte{}, nil).Times(1)
+	peer.EXPECT().SendMessage(gomock.Any()).Return(fmt.Errorf("send message error")).Times(1)
+
+	handshake := []byte("example handshake data")
+	handshakeOpen := NewHandshakeOpen([]byte{}, "")
+	handshakeOpen.SetHandshake(handshake)
+
+	assert.Error(t, handshakeOpen.HandleMessage(node, peer, false))
 }
