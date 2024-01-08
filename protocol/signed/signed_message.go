@@ -29,6 +29,10 @@ type SignedMessage struct {
 	base.IncomingMessageTypedImpl
 }
 
+func (s *SignedMessage) NodeId() *encoding.NodeId {
+	return s.nodeId
+}
+
 func (s *SignedMessage) SetNodeId(nodeId *encoding.NodeId) {
 	s.nodeId = nodeId
 }
