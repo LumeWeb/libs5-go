@@ -43,11 +43,6 @@ func (m HandshakeDone) EncodeMsgpack(enc *msgpack.Encoder) error {
 		return err
 	}
 
-	err = enc.EncodeString(m.networkId)
-	if err != nil {
-		return err
-	}
-
 	err = enc.EncodeInt(int64(m.supportedFeatures))
 	if err != nil {
 		return err
