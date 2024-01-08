@@ -9,6 +9,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
+	"io"
 )
 
 var (
@@ -57,7 +58,8 @@ func (s *signedMessagePayoad) DecodeMsgpack(dec *msgpack.Decoder) error {
 
 	s.kind = kind
 
-	message, err := dec.DecodeRaw()
+	message, err := io.ReadAll(dec.Buffered())
+
 	if err != nil {
 		return err
 	}
