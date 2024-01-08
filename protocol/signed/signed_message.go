@@ -117,7 +117,7 @@ func (s *SignedMessage) DecodeMessage(dec *msgpack.Decoder) error {
 
 	s.message = message
 
-	if !ed25519.Verify(s.nodeId.Raw(), s.message, s.signature) {
+	if !ed25519.Verify(s.nodeId.Raw()[1:], s.message, s.signature) {
 		return errInvalidSignature
 	}
 
