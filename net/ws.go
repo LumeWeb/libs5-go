@@ -53,6 +53,8 @@ func (p *WebSocketPeer) RenderLocationURI() string {
 }
 
 func (p *WebSocketPeer) ListenForMessages(callback EventCallback, options ListenerOptions) {
+	errChan := make(chan error, 10)
+
 	for {
 		_, message, err := p.socket.Read(context.Background())
 		if err != nil {
@@ -62,16 +64,34 @@ func (p *WebSocketPeer) ListenForMessages(callback EventCallback, options Listen
 			break
 		}
 
-		err = callback(message)
-		if err != nil {
+		// Process each message in a separate goroutine
+		go func(msg []byte) {
+			// Call the callback and send any errors to the error channel
+			if err := callback(msg); err != nil {
+				errChan <- err
+			}
+		}(message)
+
+		// Non-blocking error check
+		select {
+		case err := <-errChan:
 			if options.OnError != nil {
 				(*options.OnError)(err)
 			}
+		default:
 		}
 	}
 
 	if options.OnClose != nil {
 		(*options.OnClose)()
+	}
+
+	// Handle remaining errors
+	close(errChan)
+	for err := range errChan {
+		if options.OnError != nil {
+			(*options.OnError)(err)
+		}
 	}
 }
 
