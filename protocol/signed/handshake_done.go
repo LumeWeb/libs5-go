@@ -136,5 +136,13 @@ func (h *HandshakeDone) DecodeMessage(dec *msgpack.Decoder) error {
 	}
 
 	h.supportedFeatures = supportedFeatures
+
+	connectionUris, err := utils.DecodeMsgpackURLArray(dec)
+
+	if err != nil {
+		return err
+	}
+
+	h.connectionUris = connectionUris
 	return nil
 }
