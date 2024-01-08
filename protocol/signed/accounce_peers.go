@@ -5,7 +5,6 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
-	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
 	"net/url"
 )
@@ -26,59 +25,75 @@ func NewAnnouncePeers() *AnnouncePeers {
 }
 
 func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder) error {
-	peerId, err := dec.DecodeBytes()
-
+	// Decode the number of peers.
+	numPeers, err := dec.DecodeInt()
 	if err != nil {
 		return err
 	}
 
-	a.peer = encoding.NewNodeId(peerId)
+	// Initialize the slice for storing connection URIs.
+	var connectionURIs []*url.URL
 
-	connected, err := dec.DecodeBool()
-
-	if err != nil {
-		return err
-	}
-
-	a.connected = connected
-	connectionUriVal, err := utils.DecodeMsgpackArray(dec)
-
-	if err != nil {
-		return err
-	}
-
-	a.connectionUris = make([]*url.URL, 0, len(connectionUriVal))
-	connectionUris := interface{}(connectionUriVal).([]string)
-
-	for _, connectionUri := range connectionUris {
-		uri, err := url.Parse(connectionUri)
+	// Loop through each peer.
+	for i := 0; i < numPeers; i++ {
+		// Decode peer ID.
+		peerIdBytes, err := dec.DecodeBytes()
 		if err != nil {
 			return err
 		}
-		a.connectionUris = append(a.connectionUris, uri)
+		peerId := encoding.NewNodeId(peerIdBytes)
+
+		// Skip decoding connection status as it is not used.
+		_, err = dec.DecodeBool() // Connection status, not used.
+		if err != nil {
+			return err
+		}
+
+		// Decode the number of connection URIs for this peer.
+		numUris, err := dec.DecodeInt()
+		if err != nil {
+			return err
+		}
+
+		// Decode each connection URI for this peer.
+		for j := 0; j < numUris; j++ {
+			uriStr, err := dec.DecodeString()
+			if err != nil {
+				return err
+			}
+
+			uri, err := url.Parse(uriStr)
+			if err != nil {
+				return err
+			}
+
+			pid, err := peerId.ToString()
+			if err != nil {
+				return err
+			}
+
+			passwd, empty := uri.User.Password()
+			if empty {
+				passwd = ""
+			}
+
+			// Incorporate the peer ID into the URI.
+			uri.User = url.UserPassword(pid, passwd)
+
+			connectionURIs = append(connectionURIs, uri)
+		}
 	}
+
+	a.connectionUris = connectionURIs
 
 	return nil
 }
 
 func (a AnnouncePeers) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
 	if len(a.connectionUris) > 0 {
-		firstUrl := a.connectionUris[0]
-		uri := new(url.URL)
-		*uri = *firstUrl
-
-		if firstUrl.User != nil {
-			passwd, empty := firstUrl.User.Password()
-			if empty {
-				passwd = ""
-			}
-
-			nodeId, err := a.peer.ToString()
-			if err != nil {
-				return err
-			}
-
-			uri.User = url.UserPassword(nodeId, passwd)
+		err := node.Services().P2P().ConnectToNode([]*url.URL{a.connectionUris[0]}, false)
+		if err != nil {
+			return err
 		}
 	}
 
