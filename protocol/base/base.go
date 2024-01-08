@@ -6,7 +6,7 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-//go:generate mockgen -source=incoming_message.go -destination=../mocks/base/incoming_message.go -package=base
+//go:generate mockgen -source=base.go -destination=../mocks/base/base.go -package=base
 
 type IncomingMessage interface {
 	HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error

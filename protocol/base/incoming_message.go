@@ -10,6 +10,8 @@ import (
 	"net/url"
 )
 
+//go:generate mockgen -source=incoming_message.go -destination=../../mocks/base/incoming_message.go -package=base
+
 var _ msgpack.CustomDecoder = (*IncomingMessageImpl)(nil)
 var _ IncomingMessage = (*IncomingMessageImpl)(nil)
 var _ IncomingMessageTyped = (*IncomingMessageImpl)(nil)
