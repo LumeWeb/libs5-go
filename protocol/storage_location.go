@@ -81,13 +81,18 @@ func (s *StorageLocation) HandleMessage(node interfaces.Node, peer net.Peer, ver
 		return fmt.Errorf("Failed to add storage location: %s", err)
 	}
 
-	var list *hashset.Set
-	listVal, ok := node.HashQueryRoutingTable().Get(hash.HashCode()) // Implement HashQueryRoutingTable method
-	if !ok {
-		list = hashset.New()
+	hashStr, err := hash.ToString()
+	if err != nil {
+		return err
 	}
 
-	list = listVal.(*hashset.Set)
+	var list *hashset.Set
+	listVal, ok := node.HashQueryRoutingTable().Get(hashStr) // Implement HashQueryRoutingTable method
+	if !ok {
+		list = hashset.New()
+	} else {
+		list = listVal.(*hashset.Set)
+	}
 
 	for _, peerIdVal := range list.Values() {
 		peerId := peerIdVal.(*encoding.NodeId)
@@ -95,7 +100,11 @@ func (s *StorageLocation) HandleMessage(node interfaces.Node, peer net.Peer, ver
 		if peerId.Equals(nodeId) || peerId.Equals(peer) {
 			continue
 		}
-		if peerVal, ok := node.Services().P2P().Peers().Get(peerId.HashCode()); ok {
+		peerIdStr, err := peerId.ToString()
+		if err != nil {
+			return err
+		}
+		if peerVal, ok := node.Services().P2P().Peers().Get(peerIdStr); ok {
 			foundPeer := peerVal.(net.Peer)
 			err := foundPeer.SendMessage(s.raw)
 			if err != nil {
