@@ -293,7 +293,7 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 			return err
 		}
 
-		handler, ok := protocol.GetMessageType(imsg.GetKind())
+		handler, ok := protocol.GetMessageType(imsg.Kind())
 
 		if ok {
 
