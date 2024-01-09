@@ -4,6 +4,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
+	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
 )
@@ -18,7 +19,7 @@ type Node interface {
 	Logger() *zap.Logger
 	Db() *bolt.DB
 	Start() error
-	GetCachedStorageLocations(hash *encoding.Multihash, types []int) (map[string]StorageLocation, error)
+	GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType) (map[string]StorageLocation, error)
 	AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location StorageLocation, message []byte, config *config.NodeConfig) error
 	NetworkId() string
 }

@@ -7,6 +7,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
+	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
 	bolt "go.etcd.io/bbolt"
@@ -116,7 +117,7 @@ func (n *NodeImpl) Start() error {
 		return nil
 	}
 */
-func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, types []int) (map[string]interfaces.StorageLocation, error) {
+func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType) (map[string]interfaces.StorageLocation, error) {
 	locations := make(map[string]interfaces.StorageLocation)
 
 	locationMap, err := n.readStorageLocationsFromDB(hash)
@@ -129,9 +130,9 @@ func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, types []i
 
 	ts := time.Now().Unix()
 
-	for _, t := range types {
+	for _, t := range kinds {
 
-		nodeMap, ok := (locationMap)[t]
+		nodeMap, ok := (locationMap)[int(t)]
 		if !ok {
 			continue
 		}
@@ -151,7 +152,7 @@ func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, types []i
 				continue
 			}
 
-			storageLocation := storage.NewStorageLocation(t, addresses, expiry)
+			storageLocation := storage.NewStorageLocation(int(t), addresses, expiry)
 			if len(value) > 4 {
 				if providerMessage, ok := value[4].([]byte); ok {
 					(storageLocation).SetProviderMessage(providerMessage)
