@@ -17,6 +17,10 @@ type DirectoryMetadata struct {
 
 var _ SerializableMetadata = (*DirectoryMetadata)(nil)
 
+func NewEmptyDirectoryMetadata() *DirectoryMetadata {
+	return &DirectoryMetadata{}
+}
+
 func NewDirectoryMetadata(details DirectoryMetadataDetails, directories directoryReferenceMap, files fileReferenceMap, extraMetadata ExtraMetadata) *DirectoryMetadata {
 	dirMetadata := &DirectoryMetadata{
 		Details:       details,

@@ -310,6 +310,13 @@ func (n *NodeImpl) GetMetadataByCID(cid *encoding.CID) (md metadata.Metadata, er
 		if err != nil {
 			return nil, err
 		}
+	case types.CIDTypeDirectory:
+		md = metadata.NewEmptyDirectoryMetadata()
+
+		err = msgpack.Unmarshal(bytes, md)
+		if err != nil {
+			return nil, err
+		}
 	default:
 		return nil, errors.New("unsupported metadata format")
 	}
