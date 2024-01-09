@@ -13,6 +13,7 @@ import (
 )
 
 var _ base.IncomingMessageTyped = (*HashQuery)(nil)
+var _ base.EncodeableMessage = (*HashQuery)(nil)
 
 type HashQuery struct {
 	hash  *encoding.Multihash
@@ -63,6 +64,28 @@ func (h *HashQuery) DecodeMessage(dec *msgpack.Decoder) error {
 
 	return nil
 }
+
+func (h HashQuery) EncodeMsgpack(enc *msgpack.Encoder) error {
+	err := enc.EncodeInt(int64(types.ProtocolMethodHashQuery))
+	if err != nil {
+		return err
+	}
+
+	err = enc.EncodeBytes(h.hash.FullBytes())
+
+	if err != nil {
+		return err
+	}
+
+	err = enc.Encode(h.kinds)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (h *HashQuery) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
 	mapLocations, err := node.GetCachedStorageLocations(h.hash, h.kinds)
 	if err != nil {
