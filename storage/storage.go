@@ -1,20 +1,29 @@
 package storage
 
 import (
+	"bytes"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
+	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
+	"go.uber.org/zap"
 	"strconv"
+	"sync"
 	"time"
 )
 
 var (
-	_ msgpack.CustomDecoder = (*StorageLocationMap)(nil)
-
-	_ msgpack.CustomEncoder      = (*StorageLocationMap)(nil)
-	_ interfaces.StorageLocation = (*StorageLocationImpl)(nil)
+	_ msgpack.CustomDecoder              = (*StorageLocationMap)(nil)
+	_ msgpack.CustomEncoder              = (*StorageLocationMap)(nil)
+	_ interfaces.StorageLocation         = (*StorageLocationImpl)(nil)
+	_ interfaces.StorageLocationProvider = (*StorageLocationProviderImpl)(nil)
+	_ interfaces.SignedStorageLocation   = (*SignedStorageLocationImpl)(nil)
 )
+
+type StorageLocationMap map[int]NodeStorage
+type NodeStorage map[string]NodeDetailsStorage
+type NodeDetailsStorage map[int]interface{}
 
 type StorageLocationImpl struct {
 	kind            int
@@ -90,30 +99,30 @@ func (s *StorageLocationImpl) String() string {
 }
 
 type SignedStorageLocationImpl struct {
-	NodeID   encoding.NodeId
-	Location StorageLocationImpl
+	nodeID   *encoding.NodeId
+	location interfaces.StorageLocation
 }
 
-func NewSignedStorageLocation(NodeID encoding.NodeId, Location StorageLocationImpl) *SignedStorageLocationImpl {
+func NewSignedStorageLocation(NodeID *encoding.NodeId, Location interfaces.StorageLocation) interfaces.SignedStorageLocation {
 	return &SignedStorageLocationImpl{
-		NodeID:   NodeID,
-		Location: Location,
+		nodeID:   NodeID,
+		location: Location,
 	}
 }
 
 func (ssl *SignedStorageLocationImpl) String() string {
-	nodeString, _ := ssl.NodeID.ToString()
+	nodeString, _ := ssl.nodeID.ToString()
 
 	if nodeString == "" {
 		nodeString = "failed to decode node id"
 	}
 
-	return "SignedStorageLocationImpl(" + ssl.Location.String() + ", " + nodeString + ")"
+	return "SignedStorageLocationImpl(" + ssl.location.String() + ", " + nodeString + ")"
 }
 
-type StorageLocationMap map[int]NodeStorage
-type NodeStorage map[string]NodeDetailsStorage
-type NodeDetailsStorage map[int]interface{}
+func (ssl *SignedStorageLocationImpl) NodeId() *encoding.NodeId {
+	return ssl.nodeID
+}
 
 func (s *StorageLocationMap) DecodeMsgpack(dec *msgpack.Decoder) error {
 	temp, err := dec.DecodeUntypedMap()

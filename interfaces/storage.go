@@ -1,5 +1,7 @@
 package interfaces
 
+import "git.lumeweb.com/LumeWeb/libs5-go/encoding"
+
 //go:generate mockgen -source=storage.go -destination=../mocks/interfaces/storage.go -package=interfaces
 
 type StorageLocationProvider interface {
@@ -26,4 +28,5 @@ type StorageLocation interface {
 }
 type SignedStorageLocation interface {
 	String() string
+	NodeId() *encoding.NodeId
 }
