@@ -26,6 +26,16 @@ func NewHashQuery() *HashQuery {
 	return &HashQuery{}
 }
 
+func NewHashRequest(hash *encoding.Multihash, kinds []types.StorageLocationType) *HashQuery {
+	if len(kinds) == 0 {
+		kinds = []types.StorageLocationType{types.StorageLocationTypeFile}
+	}
+	return &HashQuery{
+		hash:  hash,
+		kinds: kinds,
+	}
+}
+
 func (h HashQuery) Hash() *encoding.Multihash {
 	return h.hash
 }
