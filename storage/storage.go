@@ -127,21 +127,37 @@ func (ssl *SignedStorageLocationImpl) Location() interfaces.StorageLocation {
 }
 
 func (s *StorageLocationMap) DecodeMsgpack(dec *msgpack.Decoder) error {
-	temp, err := dec.DecodeUntypedMap()
-	if err != nil {
-		return err
-	}
-
 	if *s == nil {
-		*s = make(map[int]NodeStorage)
+		*s = make(StorageLocationMap)
 	}
 
-	tempMap, ok := interface{}(temp).(StorageLocationMap)
-	if !ok {
-		return fmt.Errorf("unexpected data format from msgpack decoding")
+	// Decode directly into a temp map
+	temp := make(map[int]map[string]map[int]interface{})
+	err := dec.Decode(&temp)
+	if err != nil {
+		return fmt.Errorf("error decoding msgpack: %w", err)
 	}
 
-	*s = tempMap
+	// Convert temp map to StorageLocationMap
+	for k, v := range temp {
+		nodeStorage, exists := (*s)[k]
+		if !exists {
+			nodeStorage = make(NodeStorage, len(v)) // preallocate if size is known
+			(*s)[k] = nodeStorage
+		}
+
+		for nk, nv := range v {
+			nodeDetailsStorage, exists := nodeStorage[nk]
+			if !exists {
+				nodeDetailsStorage = make(NodeDetailsStorage, len(nv)) // preallocate if size is known
+				nodeStorage[nk] = nodeDetailsStorage
+			}
+
+			for ndk, ndv := range nv {
+				nodeDetailsStorage[ndk] = ndv
+			}
+		}
+	}
 
 	return nil
 }
@@ -225,7 +241,9 @@ func (s *StorageLocationProviderImpl) Start() error {
 				break
 			}
 
+			//s.node.Logger().Debug("New URIs", zap.Any("uris", newUris), zap.Any("availableNodes", s.availableNodes), zap.Any("timeout", s.timeout), zap.Any("isTimedOut", s.isTimedOut), zap.Any("isWaitingForUri", s.isWaitingForUri), zap.Any("requestSent", requestSent))
 			if len(s.availableNodes) == 0 && len(newUris) < 2 && !requestSent {
+				s.node.Logger().Debug("Sending hash request")
 				err := s.node.Services().P2P().SendHashRequest(s.hash, s.types)
 				if err != nil {
 					s.node.Logger().Error("Error sending hash request", zap.Error(err))
