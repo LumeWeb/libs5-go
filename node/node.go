@@ -127,10 +127,6 @@ func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, kinds []t
 		}
 
 		for key, value := range nodeMap {
-			if len(value) < 4 {
-				continue
-			}
-
 			expiry, ok := value[3].(int64)
 			if !ok || expiry < ts {
 				continue
@@ -155,10 +151,9 @@ func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, kinds []t
 			}
 
 			storageLocation := storage.NewStorageLocation(int(t), addresses, expiry)
-			if len(value) > 4 {
-				if providerMessage, ok := value[4].([]byte); ok {
-					(storageLocation).SetProviderMessage(providerMessage)
-				}
+
+			if providerMessage, ok := value[4].([]byte); ok {
+				(storageLocation).SetProviderMessage(providerMessage)
 			}
 
 			locations[key] = storageLocation
