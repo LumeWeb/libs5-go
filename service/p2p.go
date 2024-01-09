@@ -205,7 +205,15 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 	}
 
 	peer.SetId(id)
-	return p.OnNewPeer(peer, true)
+
+	go func() {
+		err := p.OnNewPeer(peer, true)
+		if err != nil {
+			p.logger.Error("failed to add peer", zap.Error(err))
+		}
+	}()
+	return nil
+
 }
 
 func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
