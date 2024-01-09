@@ -123,6 +123,9 @@ func (ssl *SignedStorageLocationImpl) String() string {
 func (ssl *SignedStorageLocationImpl) NodeId() *encoding.NodeId {
 	return ssl.nodeID
 }
+func (ssl *SignedStorageLocationImpl) Location() interfaces.StorageLocation {
+	return ssl.location
+}
 
 func (s *StorageLocationMap) DecodeMsgpack(dec *msgpack.Decoder) error {
 	temp, err := dec.DecodeUntypedMap()

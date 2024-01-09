@@ -29,4 +29,5 @@ type StorageLocation interface {
 type SignedStorageLocation interface {
 	String() string
 	NodeId() *encoding.NodeId
+	Location() StorageLocation
 }
