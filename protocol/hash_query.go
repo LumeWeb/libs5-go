@@ -5,6 +5,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
+	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.uber.org/zap"
@@ -15,7 +16,7 @@ var _ base.IncomingMessageTyped = (*HashQuery)(nil)
 
 type HashQuery struct {
 	hash  *encoding.Multihash
-	kinds []int
+	kinds []types.StorageLocationType
 
 	base.IncomingMessageTypedImpl
 	base.IncomingMessageHandler
@@ -29,7 +30,7 @@ func (h HashQuery) Hash() *encoding.Multihash {
 	return h.hash
 }
 
-func (h HashQuery) Kinds() []int {
+func (h HashQuery) Kinds() []types.StorageLocationType {
 	return h.kinds
 }
 
@@ -42,7 +43,7 @@ func (h *HashQuery) DecodeMessage(dec *msgpack.Decoder) error {
 
 	h.hash = encoding.NewMultihash(hash)
 
-	var kinds []int
+	var kinds []types.StorageLocationType
 	err = dec.Decode(&kinds)
 	if err != nil {
 		return err
