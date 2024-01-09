@@ -99,9 +99,7 @@ func (p *P2PImpl) Init() error {
 	}
 	p.localNodeID = encoding.NewNodeId(p.nodeKeyPair.PublicKey())
 
-	err := utils.CreateBucket(nodeBucketName, p.Node().Db(), func(bucket *bolt.Bucket) {
-		p.nodesBucket = bucket
-	})
+	err := utils.CreateBucket(nodeBucketName, p.Node().Db())
 
 	if err != nil {
 		return err
