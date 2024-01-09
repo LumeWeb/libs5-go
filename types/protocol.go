@@ -9,6 +9,8 @@ const (
 	ProtocolMethodHashQuery     ProtocolMethod = 0x4
 	ProtocolMethodAnnouncePeers ProtocolMethod = 0x8
 	ProtocolMethodRegistryQuery ProtocolMethod = 0xD
+	RecordTypeStorageLocation   ProtocolMethod = 0x05
+	RecordTypeStreamEvent       ProtocolMethod = 0x09
 )
 
 var ProtocolMethodMap = map[ProtocolMethod]string{
@@ -18,4 +20,6 @@ var ProtocolMethodMap = map[ProtocolMethod]string{
 	ProtocolMethodHashQuery:     "HashQuery",
 	ProtocolMethodAnnouncePeers: "AnnouncePeers",
 	ProtocolMethodRegistryQuery: "RegistryQuery",
+	RecordTypeStorageLocation:   "StorageLocation",
+	RecordTypeStreamEvent:       "StreamEvent",
 }
