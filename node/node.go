@@ -269,6 +269,15 @@ func (n *NodeImpl) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error)
 	}
 }
 
+func (n *NodeImpl) DownloadBytesByCID(cid *encoding.CID) (bytes []byte, err error) {
+	bytes, err = n.DownloadBytesByHash(&cid.Hash)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes, nil
+}
+
 func (n *NodeImpl) GetMetadataByCID(cid *encoding.CID) (md metadata.Metadata, err error) {
 	hashStr, err := cid.Hash.ToString()
 	if err != nil {

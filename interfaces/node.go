@@ -25,6 +25,7 @@ type Node interface {
 	AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location StorageLocation, message []byte, config *config.NodeConfig) error
 	NetworkId() string
 	DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error)
+	DownloadBytesByCID(cid *encoding.CID) (bytes []byte, err error)
 	GetMetadataByCID(cid *encoding.CID) (metadata.Metadata, error)
 	WaitOnConnectedPeers()
 	ConnectionTracker() *sync.WaitGroup
