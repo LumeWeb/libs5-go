@@ -2,6 +2,13 @@ package interfaces
 
 //go:generate mockgen -source=storage.go -destination=../mocks/interfaces/storage.go -package=interfaces
 
+type StorageLocationProvider interface {
+	Start() error
+	Next() (SignedStorageLocation, error)
+	Upvote(uri SignedStorageLocation) error
+	Downvote(uri SignedStorageLocation) error
+}
+
 type StorageLocation interface {
 	BytesURL() string
 	OutboardBytesURL() string
