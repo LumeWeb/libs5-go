@@ -24,3 +24,6 @@ func NewMediaMetadata(name string, details MediaMetadataDetails, parents []Metad
 		ExtraMetadata: extraMetadata,
 	}
 }
+func NewEmptyMediaMetadata() *MediaMetadata {
+	return &MediaMetadata{}
+}

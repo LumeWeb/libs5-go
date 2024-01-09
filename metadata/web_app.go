@@ -22,3 +22,6 @@ func NewWebAppMetadata(name string, tryFiles []string, extraMetadata ExtraMetada
 		Paths:         paths,
 	}
 }
+func NewEmptyWebAppMetadata() *WebAppMetadata {
+	return &WebAppMetadata{}
+}
