@@ -226,8 +226,7 @@ func (n *NodeImpl) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error)
 			return nil, err
 		}
 
-		// Log the attempt
-		log.Printf("[try] %s", dlUri.Location().BytesURL())
+		n.Logger().Debug("Trying to download from", zap.String("url", dlUri.Location().BytesURL()))
 
 		res, err := n.httpClient.R().Get(dlUri.Location().BytesURL())
 		if err != nil {
