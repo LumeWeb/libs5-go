@@ -1,7 +1,11 @@
 package metadata
 
+var (
+	_ Metadata = (*WebAppMetadata)(nil)
+)
+
 type WebAppMetadata struct {
-	Metadata
+	BaseMetadata
 	Name          string
 	TryFiles      []string
 	ErrorPages    map[int]string
