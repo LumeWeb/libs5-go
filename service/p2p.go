@@ -502,6 +502,11 @@ func (p *P2PImpl) vote(nodeId *encoding.NodeId, upvote bool) error {
 		votes.Downvote()
 	}
 
+	err = p.saveNodeVotes(nodeId, votes)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 func (p *P2PImpl) NodeId() *encoding.NodeId {
