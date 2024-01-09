@@ -15,7 +15,6 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
-	"log"
 	"sync"
 	"time"
 )
@@ -213,7 +212,7 @@ func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding
 
 func (n *NodeImpl) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error) {
 	// Initialize the download URI provider
-	dlUriProvider := storage.NewStorageLocationProvider(n, hash)
+	dlUriProvider := storage.NewStorageLocationProvider(n, hash, types.StorageLocationTypeFull, types.StorageLocationTypeFile)
 	err := dlUriProvider.Start()
 	if err != nil {
 		return nil, err

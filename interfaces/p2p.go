@@ -27,4 +27,5 @@ type P2PService interface {
 	SendHashRequest(hash *encoding.Multihash, kinds []types.StorageLocationType) error
 	UpVote(nodeId *encoding.NodeId) error
 	DownVote(nodeId *encoding.NodeId) error
+	NodeId() *encoding.NodeId
 }
