@@ -17,7 +17,6 @@ import (
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
 	"net/url"
-	"reflect"
 	"sort"
 	"sync"
 	"time"
@@ -298,7 +297,6 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 			imsg.SetOriginal(message)
 			handler.SetIncomingMessage(imsg)
 			handler.SetSelf(handler)
-			fmt.Println(reflect.TypeOf(handler))
 			err := msgpack.Unmarshal(imsg.Data(), handler)
 			if err != nil {
 				return err

@@ -41,7 +41,6 @@ func (s *StorageLocation) HandleMessage(node interfaces.Node, peer net.Peer, ver
 	msg := s.IncomingMessage().Original()
 
 	hash := encoding.NewMultihash(msg[1:34]) // Replace NewMultihash with appropriate function
-	fmt.Println("Hash:", hash)
 
 	typeOfData := msg[34]
 
