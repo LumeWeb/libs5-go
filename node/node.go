@@ -6,6 +6,8 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/metadata"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
@@ -81,6 +83,8 @@ func (n *NodeImpl) Db() *bolt.DB {
 }
 
 func (n *NodeImpl) Start() error {
+	protocol.Init()
+	signed.Init()
 	err :=
 		utils.CreateBucket(cacheBucketName, n.Db(), func(bucket *bolt.Bucket) {
 			n.cacheBucket = bucket
