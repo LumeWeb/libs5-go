@@ -38,8 +38,7 @@ func (s *StorageLocationImpl) Type() int {
 }
 
 func (s *StorageLocationImpl) Parts() []string {
-	//TODO implement me
-	panic("implement me")
+	return s.parts
 }
 
 func (s *StorageLocationImpl) BinaryParts() [][]byte {
