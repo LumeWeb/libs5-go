@@ -10,7 +10,7 @@ var (
 	messageTypes sync.Map
 )
 
-func init() {
+func Init() {
 	messageTypes = sync.Map{}
 
 	RegisterMessageType(int(types.ProtocolMethodHandshakeDone), func() base.SignedIncomingMessage {

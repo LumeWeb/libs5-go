@@ -9,6 +9,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
+	"go.uber.org/zap"
 	"io"
 )
 
@@ -85,7 +86,8 @@ func (s *SignedMessage) HandleMessage(node interfaces.Node, peer net.Peer, verif
 		return err
 	}
 
-	if msgHandler, valid := GetMessageType(types.ProtocolMethod(payload.kind)); valid {
+	if msgHandler, valid := GetMessageType(payload.kind); valid {
+		node.Logger().Debug("SignedMessage", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
 		msgHandler.SetIncomingMessage(s)
 		msgHandler.SetSelf(msgHandler)
 		err := msgpack.Unmarshal(payload.message, &msgHandler)

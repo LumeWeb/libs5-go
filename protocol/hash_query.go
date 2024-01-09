@@ -126,6 +126,7 @@ func (h *HashQuery) HandleMessage(node interfaces.Node, peer net.Peer, verifyId 
 
 	var peers *hashset.Set
 	hashString, err := h.hash.ToString()
+	node.Logger().Debug("HashQuery", zap.Any("hashString", hashString))
 	if err != nil {
 		return err
 	}
@@ -147,7 +148,7 @@ func (h *HashQuery) HandleMessage(node interfaces.Node, peer net.Peer, verifyId 
 	for _, val := range node.Services().P2P().Peers().Values() {
 		peerVal := val.(net.Peer)
 		if !peerVal.Id().Equals(peer.Id()) {
-			err := peerVal.SendMessage(h.IncomingMessageImpl.Original())
+			err := peerVal.SendMessage(h.IncomingMessage().Original())
 			if err != nil {
 				node.Logger().Error("Failed to send message", zap.Error(err))
 			}

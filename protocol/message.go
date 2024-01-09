@@ -15,7 +15,7 @@ var (
 	_ base.IncomingMessage = (*base.IncomingMessageImpl)(nil)
 )
 
-func init() {
+func Init() {
 	messageTypes = sync.Map{}
 
 	// Register factory functions instead of instances

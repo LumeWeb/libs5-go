@@ -14,6 +14,7 @@ type IncomingMessage interface {
 	IncomingMessage() IncomingMessage
 	Self() IncomingMessage
 	SetSelf(self IncomingMessage)
+	Kind() int
 	msgpack.CustomDecoder
 }
 
