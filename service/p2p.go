@@ -285,7 +285,7 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 
 }
 
-func (p *P2PImpl) ReadNodeScore(nodeId *encoding.NodeId) (interfaces.NodeVotes, error) {
+func (p *P2PImpl) readNodeVotes(nodeId *encoding.NodeId) (interfaces.NodeVotes, error) {
 	node := p.nodesBucket.Get(nodeId.Raw())
 	if node == nil {
 		return NewNodeVotes(), nil
@@ -305,7 +305,7 @@ func (p *P2PImpl) GetNodeScore(nodeId *encoding.NodeId) (float64, error) {
 		return 1, nil
 	}
 
-	score, err := p.ReadNodeScore(nodeId)
+	score, err := p.readNodeVotes(nodeId)
 	if err != nil {
 		return 0.5, err
 	}
