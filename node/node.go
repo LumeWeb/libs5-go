@@ -121,7 +121,6 @@ func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, kinds []t
 	ts := time.Now().Unix()
 
 	for _, t := range kinds {
-
 		nodeMap, ok := (locationMap)[int(t)]
 		if !ok {
 			continue
@@ -137,9 +136,22 @@ func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, kinds []t
 				continue
 			}
 
-			addresses, ok := value[1].([]string)
+			addressesInterface, ok := value[1].([]interface{})
 			if !ok {
 				continue
+			}
+
+			// Create a slice to hold the strings
+			addresses := make([]string, len(addressesInterface))
+
+			// Convert each element to string
+			for i, v := range addressesInterface {
+				str, ok := v.(string)
+				if !ok {
+					// Handle the error, maybe skip this element or set a default value
+					continue
+				}
+				addresses[i] = str
 			}
 
 			storageLocation := storage.NewStorageLocation(int(t), addresses, expiry)
