@@ -1,17 +1,21 @@
 package node
 
 import (
+	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
+	"git.lumeweb.com/LumeWeb/libs5-go/metadata"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
+	"github.com/go-resty/resty/v2"
 	"github.com/vmihailenco/msgpack/v5"
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
+	"log"
 	"time"
 )
 
@@ -26,6 +30,7 @@ type NodeImpl struct {
 	hashQueryRoutingTable structs.Map
 	services              interfaces.Services
 	cacheBucket           *bolt.Bucket
+	httpClient            *resty.Client
 }
 
 func (n *NodeImpl) NetworkId() string {
@@ -42,6 +47,7 @@ func NewNode(config *config.NodeConfig) interfaces.Node {
 		metadataCache:         structs.NewMap(),
 		started:               false,
 		hashQueryRoutingTable: structs.NewMap(),
+		httpClient:            resty.New(),
 	}
 	n.services = NewServices(service.NewP2P(n))
 
@@ -98,25 +104,6 @@ func (n *NodeImpl) Start() error {
 	n.started = true
 	return nil
 }
-
-/*
-	func (n *NodeImpl) Services() *S5Services {
-		if n.nodeConfig != nil {
-			return n.nodeConfig.Services
-		}
-		return nil
-	}
-
-	func (n *NodeImpl) Start() error {
-		n.started = true
-		return nil
-	}
-
-	func (n *NodeImpl) Stop() error {
-		n.started = false
-		return nil
-	}
-*/
 func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType) (map[string]interfaces.StorageLocation, error) {
 	locations := make(map[string]interfaces.StorageLocation)
 
@@ -220,11 +207,15 @@ func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding
 	}
 
 	return nil
-} /*
+}
 
-func (n *NodeImpl) DownloadBytesByHash(hash Multihash) ([]byte, error) {
-	dlUriProvider := NewStorageLocationProvider(n, hash, []int{storageLocationTypeFull, storageLocationTypeFile})
-	dlUriProvider.Start()
+func (n *NodeImpl) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error) {
+	// Initialize the download URI provider
+	dlUriProvider := storage.NewStorageLocationProvider(n, hash)
+	err := dlUriProvider.Start()
+	if err != nil {
+		return nil, err
+	}
 
 	retryCount := 0
 	for {
@@ -233,69 +224,63 @@ func (n *NodeImpl) DownloadBytesByHash(hash Multihash) ([]byte, error) {
 			return nil, err
 		}
 
-		n.Logger.Verbose(fmt.Sprintf("[try] %s", dlUri.Location.BytesUrl))
+		// Log the attempt
+		log.Printf("[try] %s", dlUri.Location().BytesURL())
 
-		client := &http.Client{
-			Timeout: 30 * time.Second,
-		}
-		res, err := client.Get(dlUri.Location.BytesUrl)
+		res, err := n.httpClient.R().Get(dlUri.Location().BytesURL())
 		if err != nil {
-			n.Logger.Catched(err)
-
-			dlUriProvider.Downvote(dlUri)
-
+			err := dlUriProvider.Downvote(dlUri)
+			if err != nil {
+				return nil, err
+			}
 			retryCount++
 			if retryCount > 32 {
 				return nil, errors.New("too many retries")
 			}
 			continue
 		}
-		defer res.Body.Close()
 
-		data, err := ioutil.ReadAll(res.Body)
+		bodyBytes := res.Body()
+
+		return bodyBytes, nil
+	}
+}
+
+func (n *NodeImpl) GetMetadataByCID(cid *encoding.CID) (metadata.Metadata, error) {
+	var md metadata.Metadata
+
+	hashStr, err := cid.Hash.ToString()
+	if err != nil {
+		return nil, err
+	}
+
+	if n.metadataCache.Contains(hashStr) {
+		bytes, err := n.DownloadBytesByHash(&cid.Hash)
 		if err != nil {
 			return nil, err
 		}
 
-		// Assuming blake3 and equalBytes functions are available
-		resHash := blake3(data)
+		switch cid.Type {
+		case types.CIDTypeMetadataMedia, types.CIDTypeBridge: // Both cases use the same deserialization method
+			md = metadata.NewEmptyMediaMetadata()
 
-		if !equalBytes(hash.HashBytes, resHash) {
-			dlUriProvider.Downvote(dlUri)
-			continue
-		}
+			err = msgpack.Unmarshal(bytes, md)
+			if err != nil {
+				return nil, err
+			}
+		case types.CIDTypeMetadataWebapp:
+			md = metadata.NewEmptyWebAppMetadata()
 
-		dlUriProvider.Upvote(dlUri)
-		return data, nil
-	}
-}
-
-func (n *NodeImpl) GetMetadataByCID(cid CID) (Metadata, error) {
-	var metadata Metadata
-	var ok bool
-
-	if metadata, ok = n.MetadataCache[cid.Hash]; !ok {
-		bytes, err := n.DownloadBytesByHash(cid.Hash)
-		if err != nil {
-			return Metadata{}, err
-		}
-
-		switch cid.kind {
-		case METADATA_MEDIA, BRIDGE: // Both cases use the same deserialization method
-			metadata, err = deserializeMediaMetadata(bytes)
-		case METADATA_WEBAPP:
-			metadata, err = deserializeWebAppMetadata(bytes)
+			err = msgpack.Unmarshal(bytes, md)
+			if err != nil {
+				return nil, err
+			}
 		default:
-			return Metadata{}, errors.New("unsupported metadata format")
+			return nil, errors.New("unsupported metadata format")
 		}
 
-		if err != nil {
-			return Metadata{}, err
-		}
-
-		n.MetadataCache[cid.Hash] = metadata
+		n.metadataCache.Put(hashStr, md)
 	}
 
-	return metadata, nil
+	return md, nil
 }
-*/
