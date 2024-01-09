@@ -321,13 +321,29 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 }
 
 func (p *P2PImpl) readNodeVotes(nodeId *encoding.NodeId) (interfaces.NodeVotes, error) {
-	node := p.nodesBucket.Get(nodeId.Raw())
-	if node == nil {
+	var value []byte
+	var found bool
+	err := p.node.Db().View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(nodeBucketName))
+		if b == nil {
+			return fmt.Errorf("Bucket %s not found", nodeBucketName)
+		}
+		value = b.Get(nodeId.Raw())
+		if value == nil {
+			return nil
+		}
+		found = true
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !found {
 		return NewNodeVotes(), nil
 	}
 
 	var score interfaces.NodeVotes
-	err := msgpack.Unmarshal(node, &score)
+	err = msgpack.Unmarshal(value, &score)
 	if err != nil {
 		return nil, err
 	}
@@ -335,23 +351,23 @@ func (p *P2PImpl) readNodeVotes(nodeId *encoding.NodeId) (interfaces.NodeVotes, 
 	return score, nil
 }
 
-func (p *P2PImpl) saveNodeVotes(nodeId *encoding.NodeId) (interfaces.NodeVotes, error) {
-	votes, err := p.readNodeVotes(nodeId)
-	if err != nil {
-		return nil, err
-	}
-
+func (p *P2PImpl) saveNodeVotes(nodeId *encoding.NodeId, votes interfaces.NodeVotes) error {
+	// Marshal the votes into data
 	data, err := msgpack.Marshal(votes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = p.nodesBucket.Put(nodeId.Raw(), data)
-	if err != nil {
-		return nil, err
-	}
+	// Use a transaction to save the data
+	err = p.node.Db().Update(func(tx *bolt.Tx) error {
+		// Get or create the bucket
+		b := tx.Bucket([]byte(nodeBucketName))
 
-	return votes, nil
+		// Put the data into the bucket
+		return b.Put(nodeId.Raw(), data)
+	})
+
+	return err
 }
 
 func (p *P2PImpl) GetNodeScore(nodeId *encoding.NodeId) (float64, error) {

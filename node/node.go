@@ -2,6 +2,7 @@ package node
 
 import (
 	"errors"
+	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
@@ -31,7 +32,6 @@ type NodeImpl struct {
 	started               bool
 	hashQueryRoutingTable structs.Map
 	services              interfaces.Services
-	cacheBucket           *bolt.Bucket
 	httpClient            *resty.Client
 	connections           sync.WaitGroup
 }
@@ -86,9 +86,7 @@ func (n *NodeImpl) Start() error {
 	protocol.Init()
 	signed.Init()
 	err :=
-		utils.CreateBucket(cacheBucketName, n.Db(), func(bucket *bolt.Bucket) {
-			n.cacheBucket = bucket
-		})
+		utils.CreateBucket(cacheBucketName, n.Db())
 
 	if err != nil {
 		return err
@@ -157,20 +155,31 @@ func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, kinds []t
 	return locations, nil
 }
 func (n *NodeImpl) readStorageLocationsFromDB(hash *encoding.Multihash) (storage.StorageLocationMap, error) {
-	locationMap := storage.NewStorageLocationMap()
+	var locationMap storage.StorageLocationMap
 
-	bytes := n.cacheBucket.Get(hash.FullBytes())
-	if bytes == nil {
-		return locationMap, nil
-	}
+	err := n.Db().View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(cacheBucketName)) // Replace with your actual bucket name
+		if b == nil {
+			return fmt.Errorf("bucket %s not found", cacheBucketName)
+		}
 
-	err := msgpack.Unmarshal(bytes, locationMap)
+		bytes := b.Get(hash.FullBytes())
+		if bytes == nil {
+			// If no data found, return an empty locationMap but no error
+			locationMap = storage.NewStorageLocationMap()
+			return nil
+		}
+
+		return msgpack.Unmarshal(bytes, &locationMap)
+	})
+
 	if err != nil {
 		return nil, err
 	}
 
 	return locationMap, nil
 }
+
 func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location interfaces.StorageLocation, message []byte, config *config.NodeConfig) error {
 	// Read existing storage locations
 	locationDb, err := n.readStorageLocationsFromDB(hash)
@@ -205,8 +214,11 @@ func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding
 	if err != nil {
 		return err
 	}
+	err = n.Db().Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(cacheBucketName))
 
-	err = n.cacheBucket.Put(hash.FullBytes(), packedBytes)
+		return b.Put(hash.FullBytes(), packedBytes)
+	})
 	if err != nil {
 		return err
 	}
