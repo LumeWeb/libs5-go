@@ -19,26 +19,26 @@ func init() {
 	messageTypes = sync.Map{}
 
 	// Register factory functions instead of instances
-	RegisterMessageType(types.ProtocolMethodHandshakeOpen, func() base.IncomingMessage {
+	RegisterMessageType(int(types.ProtocolMethodHandshakeOpen), func() base.IncomingMessage {
 		return NewHandshakeOpen([]byte{}, "")
 	})
-	RegisterMessageType(types.ProtocolMethodHashQuery, func() base.IncomingMessage {
+	RegisterMessageType(int(types.ProtocolMethodHashQuery), func() base.IncomingMessage {
 		return NewHashQuery()
 	})
-	RegisterMessageType(types.ProtocolMethodSignedMessage, func() base.IncomingMessage {
+	RegisterMessageType(int(types.ProtocolMethodSignedMessage), func() base.IncomingMessage {
 		return signed.NewSignedMessage()
 	})
 
 }
 
-func RegisterMessageType(messageType types.ProtocolMethod, factoryFunc func() base.IncomingMessage) {
+func RegisterMessageType(messageType int, factoryFunc func() base.IncomingMessage) {
 	if factoryFunc == nil {
 		panic("factoryFunc cannot be nil")
 	}
-	messageTypes.Store(messageType, factoryFunc)
+	messageTypes.Store(int(messageType), factoryFunc)
 }
 
-func GetMessageType(kind types.ProtocolMethod) (base.IncomingMessage, bool) {
+func GetMessageType(kind int) (base.IncomingMessage, bool) {
 	value, ok := messageTypes.Load(kind)
 	if !ok {
 		return nil, false

@@ -13,22 +13,22 @@ var (
 func init() {
 	messageTypes = sync.Map{}
 
-	RegisterMessageType(types.ProtocolMethodHandshakeDone, func() base.SignedIncomingMessage {
+	RegisterMessageType(int(types.ProtocolMethodHandshakeDone), func() base.SignedIncomingMessage {
 		return NewHandshakeDone()
 	})
-	RegisterMessageType(types.ProtocolMethodAnnouncePeers, func() base.SignedIncomingMessage {
+	RegisterMessageType(int(types.ProtocolMethodAnnouncePeers), func() base.SignedIncomingMessage {
 		return NewAnnouncePeers()
 	})
 }
 
-func RegisterMessageType(messageType types.ProtocolMethod, factoryFunc func() base.SignedIncomingMessage) {
+func RegisterMessageType(messageType int, factoryFunc func() base.SignedIncomingMessage) {
 	if factoryFunc == nil {
 		panic("factoryFunc cannot be nil")
 	}
-	messageTypes.Store(messageType, factoryFunc)
+	messageTypes.Store(int(messageType), factoryFunc)
 }
 
-func GetMessageType(kind types.ProtocolMethod) (base.SignedIncomingMessage, bool) {
+func GetMessageType(kind int) (base.SignedIncomingMessage, bool) {
 	value, ok := messageTypes.Load(kind)
 	if !ok {
 		return nil, false

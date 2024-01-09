@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 	"io"
 	"net/url"
@@ -19,7 +18,7 @@ var _ IncomingMessageTyped = (*IncomingMessageImpl)(nil)
 type IncomingMessageHandler func(node interfaces.Node, peer *net.Peer, u *url.URL, verifyId bool) error
 
 type IncomingMessageImpl struct {
-	kind     types.ProtocolMethod
+	kind     int
 	data     msgpack.RawMessage
 	original []byte
 	known    bool
@@ -64,7 +63,7 @@ func (i *IncomingMessageImpl) IncomingMessage() IncomingMessage {
 	return i.incoming
 }
 
-func (i *IncomingMessageImpl) GetKind() types.ProtocolMethod {
+func (i *IncomingMessageImpl) Kind() int {
 	return i.kind
 }
 
@@ -74,10 +73,6 @@ func (i *IncomingMessageImpl) ToMessage() (message []byte, err error) {
 
 func (i *IncomingMessageImpl) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
 	panic("child class should implement this method")
-}
-
-func (i *IncomingMessageImpl) Kind() types.ProtocolMethod {
-	return i.kind
 }
 
 func (i *IncomingMessageImpl) Data() msgpack.RawMessage {
@@ -94,7 +89,7 @@ func NewIncomingMessageUnknown() *IncomingMessageImpl {
 	}
 }
 
-func NewIncomingMessageKnown(kind types.ProtocolMethod, data msgpack.RawMessage) *IncomingMessageImpl {
+func NewIncomingMessageKnown(kind int, data msgpack.RawMessage) *IncomingMessageImpl {
 	return &IncomingMessageImpl{
 		kind:  kind,
 		data:  data,
@@ -102,7 +97,7 @@ func NewIncomingMessageKnown(kind types.ProtocolMethod, data msgpack.RawMessage)
 	}
 }
 
-func NewIncomingMessageTyped(kind types.ProtocolMethod, data msgpack.RawMessage) *IncomingMessageTypedImpl {
+func NewIncomingMessageTyped(kind int, data msgpack.RawMessage) *IncomingMessageTypedImpl {
 	known := NewIncomingMessageKnown(kind, data)
 	return &IncomingMessageTypedImpl{*known}
 }
@@ -120,7 +115,7 @@ func (i *IncomingMessageImpl) DecodeMsgpack(dec *msgpack.Decoder) error {
 		return err
 	}
 
-	i.kind = types.ProtocolMethod(kind)
+	i.kind = kind
 
 	raw, err := io.ReadAll(dec.Buffered())
 
