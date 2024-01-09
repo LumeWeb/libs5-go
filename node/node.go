@@ -247,41 +247,43 @@ func (n *NodeImpl) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error)
 	}
 }
 
-func (n *NodeImpl) GetMetadataByCID(cid *encoding.CID) (metadata.Metadata, error) {
-	var md metadata.Metadata
-
+func (n *NodeImpl) GetMetadataByCID(cid *encoding.CID) (md metadata.Metadata, err error) {
 	hashStr, err := cid.Hash.ToString()
 	if err != nil {
 		return nil, err
 	}
 
 	if n.metadataCache.Contains(hashStr) {
-		bytes, err := n.DownloadBytesByHash(&cid.Hash)
+		md, _ := n.metadataCache.Get(hashStr)
+
+		return md.(metadata.Metadata), nil
+	}
+
+	bytes, err := n.DownloadBytesByHash(&cid.Hash)
+	if err != nil {
+		return nil, err
+	}
+
+	switch cid.Type {
+	case types.CIDTypeMetadataMedia, types.CIDTypeBridge: // Both cases use the same deserialization method
+		md = metadata.NewEmptyMediaMetadata()
+
+		err = msgpack.Unmarshal(bytes, md)
 		if err != nil {
 			return nil, err
 		}
+	case types.CIDTypeMetadataWebapp:
+		md = metadata.NewEmptyWebAppMetadata()
 
-		switch cid.Type {
-		case types.CIDTypeMetadataMedia, types.CIDTypeBridge: // Both cases use the same deserialization method
-			md = metadata.NewEmptyMediaMetadata()
-
-			err = msgpack.Unmarshal(bytes, md)
-			if err != nil {
-				return nil, err
-			}
-		case types.CIDTypeMetadataWebapp:
-			md = metadata.NewEmptyWebAppMetadata()
-
-			err = msgpack.Unmarshal(bytes, md)
-			if err != nil {
-				return nil, err
-			}
-		default:
-			return nil, errors.New("unsupported metadata format")
+		err = msgpack.Unmarshal(bytes, md)
+		if err != nil {
+			return nil, err
 		}
-
-		n.metadataCache.Put(hashStr, md)
+	default:
+		return nil, errors.New("unsupported metadata format")
 	}
+
+	n.metadataCache.Put(hashStr, md)
 
 	return md, nil
 }
