@@ -206,18 +206,25 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 
 	peer.SetId(id)
 
+	p.Node().ConnectionTracker().Add(1)
+
 	go func() {
 		err := p.OnNewPeer(peer, true)
 		if err != nil {
-			p.logger.Error("failed to add peer", zap.Error(err))
+			p.logger.Error("peer error", zap.Error(err))
 		}
+		p.Node().ConnectionTracker().Done()
 	}()
+
 	return nil
 
 }
 
 func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
 	var wg sync.WaitGroup
+
+	pid, _ := peer.Id().ToString()
+	p.logger.Debug("OnNewPeer started", zap.String("peer", pid))
 
 	challenge := protocol.GenerateChallenge()
 	peer.SetChallenge(challenge)

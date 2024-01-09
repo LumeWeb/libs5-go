@@ -16,6 +16,7 @@ import (
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -31,6 +32,7 @@ type NodeImpl struct {
 	services              interfaces.Services
 	cacheBucket           *bolt.Bucket
 	httpClient            *resty.Client
+	connections           sync.WaitGroup
 }
 
 func (n *NodeImpl) NetworkId() string {
@@ -283,4 +285,11 @@ func (n *NodeImpl) GetMetadataByCID(cid *encoding.CID) (metadata.Metadata, error
 	}
 
 	return md, nil
+}
+func (n *NodeImpl) WaitOnConnectedPeers() {
+	n.connections.Wait()
+}
+
+func (n *NodeImpl) ConnectionTracker() *sync.WaitGroup {
+	return &n.connections
 }

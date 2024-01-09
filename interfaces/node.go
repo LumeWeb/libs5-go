@@ -8,6 +8,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
+	"sync"
 )
 
 //go:generate mockgen -source=node.go -destination=../mocks/interfaces/node.go -package=interfaces
@@ -25,4 +26,6 @@ type Node interface {
 	NetworkId() string
 	DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error)
 	GetMetadataByCID(cid *encoding.CID) (metadata.Metadata, error)
+	WaitOnConnectedPeers()
+	ConnectionTracker() *sync.WaitGroup
 }
