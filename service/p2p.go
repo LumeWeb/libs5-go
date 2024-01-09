@@ -294,7 +294,7 @@ func (p *P2PImpl) readNodeVotes(nodeId *encoding.NodeId) (interfaces.NodeVotes, 
 	var score interfaces.NodeVotes
 	err := msgpack.Unmarshal(node, &score)
 	if err != nil {
-
+		return nil, err
 	}
 
 	return score, nil
