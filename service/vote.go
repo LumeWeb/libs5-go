@@ -55,3 +55,11 @@ func (n *NodeVotesImpl) DecodeMsgpack(dec *msgpack.Decoder) error {
 
 	return nil
 }
+
+func (n *NodeVotesImpl) Upvote() {
+	n.good++
+}
+
+func (n *NodeVotesImpl) Downvote() {
+	n.bad++
+}

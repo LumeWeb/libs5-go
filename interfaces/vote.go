@@ -9,4 +9,6 @@ type NodeVotes interface {
 	msgpack.CustomDecoder
 	Good() int
 	Bad() int
+	Upvote()
+	Downvote()
 }
