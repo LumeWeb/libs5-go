@@ -319,7 +319,7 @@ func (s *StorageLocationProviderImpl) Downvote(uri interfaces.SignedStorageLocat
 	return nil
 }
 
-func NewStorageLocationProvider(node interfaces.Node, hash *encoding.Multihash, locationTypes []types.StorageLocationType) interfaces.StorageLocationProvider {
+func NewStorageLocationProvider(node interfaces.Node, hash *encoding.Multihash, locationTypes ...types.StorageLocationType) interfaces.StorageLocationProvider {
 	if locationTypes == nil {
 		locationTypes = []types.StorageLocationType{
 			types.StorageLocationTypeFull,
