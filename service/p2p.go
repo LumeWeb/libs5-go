@@ -11,6 +11,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
+	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
 	bolt "go.etcd.io/bbolt"
@@ -298,6 +299,25 @@ func (p *P2PImpl) readNodeVotes(nodeId *encoding.NodeId) (interfaces.NodeVotes, 
 	}
 
 	return score, nil
+}
+
+func (p *P2PImpl) saveNodeVotes(nodeId *encoding.NodeId) (interfaces.NodeVotes, error) {
+	votes, err := p.readNodeVotes(nodeId)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := msgpack.Marshal(votes)
+	if err != nil {
+		return nil, err
+	}
+
+	err = p.nodesBucket.Put(nodeId.Raw(), data)
+	if err != nil {
+		return nil, err
+	}
+
+	return votes, nil
 }
 
 func (p *P2PImpl) GetNodeScore(nodeId *encoding.NodeId) (float64, error) {
