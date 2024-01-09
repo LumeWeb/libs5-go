@@ -38,7 +38,7 @@ func NewAnnouncePeers() *AnnouncePeers {
 }
 
 func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder) error {
-	// Decode the number of peers.
+	// CIDFromString the number of peers.
 	numPeers, err := dec.DecodeInt()
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder) error {
 
 	// Loop through each peer.
 	for i := 0; i < numPeers; i++ {
-		// Decode peer ID.
+		// CIDFromString peer ID.
 		peerIdBytes, err := dec.DecodeBytes()
 		if err != nil {
 			return err
@@ -62,13 +62,13 @@ func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder) error {
 			return err
 		}
 
-		// Decode the number of connection URIs for this peer.
+		// CIDFromString the number of connection URIs for this peer.
 		numUris, err := dec.DecodeInt()
 		if err != nil {
 			return err
 		}
 
-		// Decode each connection URI for this peer.
+		// CIDFromString each connection URI for this peer.
 		for j := 0; j < numUris; j++ {
 			uriStr, err := dec.DecodeString()
 			if err != nil {

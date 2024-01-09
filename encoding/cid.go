@@ -64,7 +64,7 @@ func (cid *CID) ToBytes() []byte {
 	return utils.ConcatBytes(cid.getPrefixBytes(), cid.Hash.fullBytes)
 }
 
-func Decode(cid string) (*CID, error) {
+func CIDFromString(cid string) (*CID, error) {
 	decodedBytes, err := MultibaseDecodeString(cid)
 	if err != nil {
 		return nil, err

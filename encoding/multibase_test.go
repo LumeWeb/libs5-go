@@ -36,25 +36,25 @@ func TestDecodeString(t *testing.T) {
 		{
 			name:      "TestValidMultibase_z",
 			args:      args{data: testdata.MediaBase58CID},
-			wantBytes: testdata.MediaCIDBytes, // Adjust this based on the expected output of multibase.Decode("zabc")
+			wantBytes: testdata.MediaCIDBytes, // Adjust this based on the expected output of multibase.CIDFromString("zabc")
 			wantErr:   false,
 		},
 		{
 			name:      "TestValidMultibase_f",
 			args:      args{data: testdata.MediaBase16CID},
-			wantBytes: testdata.MediaCIDBytes, // Adjust this based on the expected output of multibase.Decode("fxyz")
+			wantBytes: testdata.MediaCIDBytes, // Adjust this based on the expected output of multibase.CIDFromString("fxyz")
 			wantErr:   false,
 		},
 		{
 			name:      "TestValidMultibase_u",
 			args:      args{data: testdata.MediaBase64CID},
-			wantBytes: testdata.MediaCIDBytes, // Adjust this based on the expected output of multibase.Decode("uhello")
+			wantBytes: testdata.MediaCIDBytes, // Adjust this based on the expected output of multibase.CIDFromString("uhello")
 			wantErr:   false,
 		},
 		{
 			name:      "TestValidMultibase_b",
 			args:      args{data: testdata.MediaBase32CID},
-			wantBytes: testdata.MediaCIDBytes, // Adjust this based on the expected output of multibase.Decode("bworld")
+			wantBytes: testdata.MediaCIDBytes, // Adjust this based on the expected output of multibase.CIDFromString("bworld")
 			wantErr:   false,
 		},
 		/*		{
