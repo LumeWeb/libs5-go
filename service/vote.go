@@ -5,6 +5,12 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
+var (
+	_ interfaces.NodeVotes  = (*NodeVotesImpl)(nil)
+	_ msgpack.CustomDecoder = (*NodeVotesImpl)(nil)
+	_ msgpack.CustomEncoder = (*NodeVotesImpl)(nil)
+)
+
 type NodeVotesImpl struct {
 	good int
 	bad  int
