@@ -11,7 +11,10 @@ type NodeVotesImpl struct {
 }
 
 func NewNodeVotes() interfaces.NodeVotes {
-	return &NodeVotesImpl{}
+	return &NodeVotesImpl{
+		good: 0,
+		bad:  0,
+	}
 }
 
 func (n *NodeVotesImpl) Good() int {
