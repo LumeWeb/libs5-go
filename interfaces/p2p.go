@@ -4,6 +4,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
+	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"net/url"
 )
 
@@ -23,4 +24,7 @@ type P2PService interface {
 	SignMessageSimple(message []byte) ([]byte, error)
 	AddPeer(peer net.Peer) error
 	SendPublicPeersToPeer(peer net.Peer, peersToSend []net.Peer) error
+	SendHashRequest(hash *encoding.Multihash, kinds []types.StorageLocationType) error
+	UpVote(nodeId *encoding.NodeId) error
+	DownVote(nodeId *encoding.NodeId) error
 }

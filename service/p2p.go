@@ -401,3 +401,54 @@ func (p *P2PImpl) SendPublicPeersToPeer(peer net.Peer, peersToSend []net.Peer) e
 
 	return nil
 }
+func (p *P2PImpl) SendHashRequest(hash *encoding.Multihash, kinds []types.StorageLocationType) error {
+	hashRequest := protocol.NewHashRequest(hash, kinds)
+	message, err := msgpack.Marshal(hashRequest)
+	if err != nil {
+		return err
+	}
+
+	for _, peer := range p.peers.Values() {
+		peerValue, ok := peer.(net.Peer)
+		if !ok {
+			p.node.Logger().Error("failed to cast peer to net.Peer")
+			continue
+		}
+		err = peerValue.SendMessage(message)
+	}
+
+	return nil
+}
+
+func (p *P2PImpl) UpVote(nodeId *encoding.NodeId) error {
+	err := p.vote(nodeId, true)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *P2PImpl) DownVote(nodeId *encoding.NodeId) error {
+	err := p.vote(nodeId, false)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *P2PImpl) vote(nodeId *encoding.NodeId, upvote bool) error {
+	votes, err := p.readNodeVotes(nodeId)
+	if err != nil {
+		return err
+	}
+
+	if upvote {
+		votes.Upvote()
+	} else {
+		votes.Downvote()
+	}
+
+	return nil
+}
