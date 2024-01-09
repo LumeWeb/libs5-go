@@ -30,6 +30,10 @@ type StorageLocation struct {
 	base.IncomingMessageHandler
 }
 
+func NewStorageLocation() *StorageLocation {
+	return &StorageLocation{}
+}
+
 func (s *StorageLocation) DecodeMessage(dec *msgpack.Decoder) error {
 	data, err := dec.DecodeRaw()
 

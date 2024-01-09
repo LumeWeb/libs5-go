@@ -24,6 +24,9 @@ func Init() {
 	RegisterMessageType(int(types.ProtocolMethodHashQuery), func() base.IncomingMessage {
 		return NewHashQuery()
 	})
+	RegisterMessageType(int(types.RecordTypeStorageLocation), func() base.IncomingMessage {
+		return NewStorageLocation()
+	})
 	RegisterMessageType(int(types.ProtocolMethodSignedMessage), func() base.IncomingMessage {
 		return signed.NewSignedMessage()
 	})
