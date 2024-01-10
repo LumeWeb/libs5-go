@@ -47,7 +47,7 @@ type P2PImpl struct {
 }
 
 func NewP2P(node interfaces.Node) *P2PImpl {
-	uri, err := url.Parse(fmt.Sprintf("wws://%s/%d", node.Config().HTTP.API.Domain, node.Config().HTTP.API.Port))
+	uri, err := url.Parse(fmt.Sprintf("wss://%s/%d", node.Config().HTTP.API.Domain, node.Config().HTTP.API.Port))
 	if err != nil {
 		node.Logger().Fatal("failed to HTTP API URL Config", zap.Error(err))
 	}
