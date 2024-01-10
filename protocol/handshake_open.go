@@ -9,7 +9,6 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
-	"net/url"
 )
 
 var _ base.IncomingMessageTyped = (*HandshakeOpen)(nil)
@@ -101,7 +100,7 @@ func (h *HandshakeOpen) HandleMessage(node interfaces.Node, peer net.Peer, verif
 		return fmt.Errorf("Peer is in different network: %s", h.networkId)
 	}
 
-	handshake := signed.NewHandshakeDoneRequest(h.handshake, types.SupportedFeatures, []*url.URL{})
+	handshake := signed.NewHandshakeDoneRequest(h.handshake, types.SupportedFeatures, node.Services().P2P().SelfConnectionUris())
 	message, err := msgpack.Marshal(handshake)
 
 	if err != nil {
