@@ -11,7 +11,6 @@ import (
 //go:generate mockgen -source=p2p.go -destination=../mocks/interfaces/p2p.go -package=interfaces
 
 type P2PService interface {
-	Node() Node
 	Peers() structs.Map
 	ConnectToNode(connectionUris []*url.URL, retried bool) error
 	OnNewPeer(peer net.Peer, verifyId bool) error
