@@ -238,6 +238,11 @@ func (r *RegistryImpl) Get(pk []byte) (interfaces.SignedRegistryEntry, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if res != nil {
+		return res, nil
+	}
+
 	if res == nil {
 		r.logger.Debug(fmt.Sprintf("[registry] get (cached) %s", key), zap.String("key", keyString))
 		for i := 0; i < 200; i++ {
@@ -250,11 +255,9 @@ func (r *RegistryImpl) Get(pk []byte) (interfaces.SignedRegistryEntry, error) {
 				break
 			}
 		}
-	} else {
-		r.logger.Debug(fmt.Sprintf("[registry] get (cached) %s", key), zap.String("key", keyString))
-		time.Sleep(200 * time.Millisecond)
 	}
-	return r.getFromDB(pk)
+
+	return nil, nil
 }
 
 func (r *RegistryImpl) getFromDB(pk []byte) (sre interfaces.SignedRegistryEntry, err error) {
