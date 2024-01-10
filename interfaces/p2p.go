@@ -24,5 +24,6 @@ type P2PService interface {
 	UpVote(nodeId *encoding.NodeId) error
 	DownVote(nodeId *encoding.NodeId) error
 	NodeId() *encoding.NodeId
+	SelfConnectionUris() []*url.URL
 	Service
 }

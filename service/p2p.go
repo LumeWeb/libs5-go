@@ -33,31 +33,42 @@ var (
 const nodeBucketName = "nodes"
 
 type P2PImpl struct {
-	logger         *zap.Logger
-	nodeKeyPair    *ed25519.KeyPairEd25519
-	localNodeID    *encoding.NodeId
-	networkID      string
-	nodesBucket    *bolt.Bucket
-	node           interfaces.Node
-	inited         bool
-	reconnectDelay structs.Map
-	peers          structs.Map
-	peersPending   structs.Map
+	logger             *zap.Logger
+	nodeKeyPair        *ed25519.KeyPairEd25519
+	localNodeID        *encoding.NodeId
+	networkID          string
+	nodesBucket        *bolt.Bucket
+	node               interfaces.Node
+	inited             bool
+	reconnectDelay     structs.Map
+	peers              structs.Map
+	peersPending       structs.Map
+	selfConnectionUris []*url.URL
 }
 
 func NewP2P(node interfaces.Node) *P2PImpl {
+	uri, err := url.Parse(fmt.Sprintf("wws://%s/%d", node.Config().HTTP.API.Domain, node.Config().HTTP.API.Port))
+	if err != nil {
+		node.Logger().Fatal("failed to HTTP API URL Config", zap.Error(err))
+	}
+
 	service := &P2PImpl{
-		logger:         node.Logger(),
-		nodeKeyPair:    node.Config().KeyPair,
-		networkID:      node.Config().P2P.Network,
-		node:           node,
-		inited:         false,
-		reconnectDelay: structs.NewMap(),
-		peers:          structs.NewMap(),
-		peersPending:   structs.NewMap(),
+		logger:             node.Logger(),
+		nodeKeyPair:        node.Config().KeyPair,
+		networkID:          node.Config().P2P.Network,
+		node:               node,
+		inited:             false,
+		reconnectDelay:     structs.NewMap(),
+		peers:              structs.NewMap(),
+		peersPending:       structs.NewMap(),
+		selfConnectionUris: []*url.URL{uri},
 	}
 
 	return service
+}
+
+func (p *P2PImpl) SelfConnectionUris() []*url.URL {
+	return p.selfConnectionUris
 }
 
 func (p *P2PImpl) Node() interfaces.Node {
