@@ -52,7 +52,7 @@ func NewNode(config *config.NodeConfig) interfaces.Node {
 		hashQueryRoutingTable: structs.NewMap(),
 		httpClient:            resty.New(),
 	}
-	n.services = NewServices(service.NewP2P(n))
+	n.services = NewServices(service.NewP2P(n), service.NewRegistry(n))
 
 	return n
 }

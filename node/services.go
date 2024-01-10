@@ -23,8 +23,11 @@ func (s *ServicesImpl) Registry() interfaces.RegistryService {
 	return s.registry
 }
 
-func NewServices(p2p interfaces.P2PService) *ServicesImpl {
-	return &ServicesImpl{p2p: p2p}
+func NewServices(p2p interfaces.P2PService, registry interfaces.RegistryService) interfaces.Services {
+	return &ServicesImpl{
+		p2p:      p2p,
+		registry: registry,
+	}
 }
 
 func (s *ServicesImpl) P2P() interfaces.P2PService {

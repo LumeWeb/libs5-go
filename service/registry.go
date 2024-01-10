@@ -44,10 +44,10 @@ func (r *RegistryImpl) Init() error {
 	return utils.CreateBucket(registryBucketName, r.node.Db())
 }
 
-func NewRegistry(node interfaces.Node, logger *zap.Logger) *RegistryImpl {
+func NewRegistry(node interfaces.Node) *RegistryImpl {
 	return &RegistryImpl{
 		node:    node,
-		logger:  logger,
+		logger:  node.Logger(),
 		streams: structs.NewMap(),
 		subs:    structs.NewMap(),
 	}
