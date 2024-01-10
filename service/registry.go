@@ -286,10 +286,10 @@ func (r *RegistryImpl) Listen(pk []byte, cb func(sre interfaces.SignedRegistryEn
 	}
 	streamVal, _ := r.streams.Get(key)
 	stream := streamVal.(*emitter.Emitter)
-	channel := stream.On("event", cbProxy)
+	channel := stream.On("fire", cbProxy)
 
 	return func() {
-		stream.Off("event", channel)
+		stream.Off("fire", channel)
 	}, nil
 }
 
