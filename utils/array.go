@@ -16,7 +16,7 @@ func EncodeMsgpackArray(enc *msgpack.Encoder, array interface{}) error {
 			return err
 		}
 		for _, item := range v {
-			err = enc.Encode(item)
+			err = enc.EncodeString(item.String())
 			if err != nil {
 				return err
 			}
