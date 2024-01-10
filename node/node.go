@@ -15,6 +15,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/go-resty/resty/v2"
+	"github.com/julienschmidt/httprouter"
 	"github.com/vmihailenco/msgpack/v5"
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
@@ -52,7 +53,7 @@ func NewNode(config *config.NodeConfig) interfaces.Node {
 		hashQueryRoutingTable: structs.NewMap(),
 		httpClient:            resty.New(),
 	}
-	n.services = NewServices(service.NewP2P(n), service.NewRegistry(n))
+	n.services = NewServices(service.NewP2P(n), service.NewRegistry(n), service.NewHTTP(n))
 
 	return n
 }
@@ -332,4 +333,8 @@ func (n *NodeImpl) WaitOnConnectedPeers() {
 
 func (n *NodeImpl) ConnectionTracker() *sync.WaitGroup {
 	return &n.connections
+}
+
+func (n *NodeImpl) HTTPRouter() *httprouter.Router {
+	return n.services.HTTP().GetHandler()
 }
