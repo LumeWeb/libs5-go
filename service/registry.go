@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
@@ -207,7 +206,7 @@ func (r *RegistryImpl) Get(pk []byte) (interfaces.SignedRegistryEntry, error) {
 	}
 
 	if r.subs.Contains(keyString) {
-		r.logger.Debug(fmt.Sprintf("[registry] get (cached) %s", key), zap.String("key", keyString))
+		r.logger.Debug("[registry] get (cached)", zap.String("key", keyString))
 		res, err := r.getFromDB(pk)
 		if err != nil {
 			return nil, err
@@ -244,7 +243,7 @@ func (r *RegistryImpl) Get(pk []byte) (interfaces.SignedRegistryEntry, error) {
 	}
 
 	if res == nil {
-		r.logger.Debug(fmt.Sprintf("[registry] get (cached) %s", key), zap.String("key", keyString))
+		r.logger.Debug("[registry] get (cached)", zap.String("key", keyString))
 		for i := 0; i < 200; i++ {
 			time.Sleep(10 * time.Millisecond)
 			res, err := r.getFromDB(pk)
