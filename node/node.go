@@ -94,25 +94,17 @@ func (n *NodeImpl) Start() error {
 
 	n.started = true
 
-	err = n.Services().P2P().Init()
-	if err != nil {
-		return err
-	}
+	for _, svc := range n.services.All() {
+		err := svc.Init()
+		if err != nil {
+			return err
+		}
 
-	err = n.Services().P2P().Start()
-	if err != nil {
-		return err
+		err = svc.Start()
+		if err != nil {
+			return err
+		}
 	}
-	err = n.Services().Registry().Init()
-	if err != nil {
-		return err
-	}
-
-	err = n.Services().Registry().Start()
-	if err != nil {
-		return err
-	}
-
 	n.started = true
 	return nil
 }

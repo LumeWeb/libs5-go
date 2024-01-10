@@ -11,6 +11,14 @@ type ServicesImpl struct {
 	registry interfaces.RegistryService
 }
 
+func (s *ServicesImpl) All() []interfaces.Service {
+	services := make([]interfaces.Service, 0)
+	services = append(services, s.p2p)
+	services = append(services, s.registry)
+
+	return services
+}
+
 func (s *ServicesImpl) Registry() interfaces.RegistryService {
 	return s.registry
 }
