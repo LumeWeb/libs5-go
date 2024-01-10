@@ -116,7 +116,7 @@ func (r *RegistryImpl) Set(sre interfaces.SignedRegistryEntry, trusted bool, rec
 	eventObj, ok := r.streams.Get(keyString)
 	if ok {
 		event := eventObj.(*emitter.Emitter)
-		event.Emit("fire", sre)
+		go event.Emit("fire", sre)
 	}
 
 	err = r.node.Db().Update(func(txn *bbolt.Tx) error {
