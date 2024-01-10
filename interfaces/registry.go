@@ -23,5 +23,6 @@ type RegistryService interface {
 	Get(pk []byte) (SignedRegistryEntry, error)
 	BroadcastEntry(sre SignedRegistryEntry, receivedFrom net.Peer) error
 	SendRegistryRequest(pk []byte) error
+	Listen(pk []byte, cb func(sre SignedRegistryEntry)) (func(), error)
 	Service
 }
