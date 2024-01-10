@@ -11,3 +11,5 @@ var RegistryTypeMap = map[RegistryType]string{
 	RegistryTypeCID:          "CID",
 	RegistryTypeEncryptedCID: "EncryptedCID",
 }
+
+const RegistryMaxDataSize = 64

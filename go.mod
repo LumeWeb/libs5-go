@@ -8,6 +8,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.6.0
 	github.com/multiformats/go-multibase v0.2.0
+	github.com/olebedev/emitter v0.0.0-20230411050614-349169dec2ba
 	github.com/stretchr/testify v1.8.1
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	go.etcd.io/bbolt v1.3.8

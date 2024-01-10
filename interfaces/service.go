@@ -10,4 +10,5 @@ type Service interface {
 }
 type Services interface {
 	P2P() P2PService
+	Registry() RegistryService
 }

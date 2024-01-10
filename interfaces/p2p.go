@@ -13,9 +13,6 @@ import (
 type P2PService interface {
 	Node() Node
 	Peers() structs.Map
-	Start() error
-	Stop() error
-	Init() error
 	ConnectToNode(connectionUris []*url.URL, retried bool) error
 	OnNewPeer(peer net.Peer, verifyId bool) error
 	OnNewPeerListen(peer net.Peer, verifyId bool)
@@ -28,4 +25,5 @@ type P2PService interface {
 	UpVote(nodeId *encoding.NodeId) error
 	DownVote(nodeId *encoding.NodeId) error
 	NodeId() *encoding.NodeId
+	Service
 }

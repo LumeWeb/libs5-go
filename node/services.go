@@ -7,7 +7,12 @@ var (
 )
 
 type ServicesImpl struct {
-	p2p interfaces.P2PService
+	p2p      interfaces.P2PService
+	registry interfaces.RegistryService
+}
+
+func (s *ServicesImpl) Registry() interfaces.RegistryService {
+	return s.registry
 }
 
 func NewServices(p2p interfaces.P2PService) *ServicesImpl {

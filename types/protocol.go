@@ -11,6 +11,7 @@ const (
 	ProtocolMethodRegistryQuery ProtocolMethod = 0xD
 	RecordTypeStorageLocation   ProtocolMethod = 0x05
 	RecordTypeStreamEvent       ProtocolMethod = 0x09
+	RecordTypeRegistryEntry     ProtocolMethod = 0x07
 )
 
 var ProtocolMethodMap = map[ProtocolMethod]string{
@@ -22,4 +23,5 @@ var ProtocolMethodMap = map[ProtocolMethod]string{
 	ProtocolMethodRegistryQuery: "RegistryQuery",
 	RecordTypeStorageLocation:   "StorageLocation",
 	RecordTypeStreamEvent:       "StreamEvent",
+	RecordTypeRegistryEntry:     "RegistryEntry",
 }

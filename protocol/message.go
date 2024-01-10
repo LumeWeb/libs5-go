@@ -27,6 +27,12 @@ func Init() {
 	RegisterMessageType(int(types.RecordTypeStorageLocation), func() base.IncomingMessage {
 		return NewStorageLocation()
 	})
+	RegisterMessageType(int(types.RecordTypeRegistryEntry), func() base.IncomingMessage {
+		return NewEmptyRegistryEntryRequest()
+	})
+	RegisterMessageType(int(types.ProtocolMethodRegistryQuery), func() base.IncomingMessage {
+		return NewEmptyRegistryQuery()
+	})
 	RegisterMessageType(int(types.ProtocolMethodSignedMessage), func() base.IncomingMessage {
 		return signed.NewSignedMessage()
 	})

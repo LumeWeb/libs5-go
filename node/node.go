@@ -103,6 +103,15 @@ func (n *NodeImpl) Start() error {
 	if err != nil {
 		return err
 	}
+	err = n.Services().Registry().Init()
+	if err != nil {
+		return err
+	}
+
+	err = n.Services().Registry().Start()
+	if err != nil {
+		return err
+	}
 
 	n.started = true
 	return nil
