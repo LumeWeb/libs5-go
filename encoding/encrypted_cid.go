@@ -13,7 +13,7 @@ type EncryptedCID struct {
 	encryptedBlobHash   Multihash
 	OriginalCID         CID
 	encryptionAlgorithm byte
-	padding             uint32
+	padding             uint64
 	chunkSizeAsPowerOf2 int
 	encryptionKey       []byte
 }
@@ -23,7 +23,7 @@ var _ msgpack.CustomDecoder = (*EncryptedCID)(nil)
 var _ json.Marshaler = (*EncryptedCID)(nil)
 var _ json.Unmarshaler = (*EncryptedCID)(nil)
 
-func NewEncryptedCID(encryptedBlobHash Multihash, originalCID CID, encryptionKey []byte, padding uint32, chunkSizeAsPowerOf2 int, encryptionAlgorithm byte) *EncryptedCID {
+func NewEncryptedCID(encryptedBlobHash Multihash, originalCID CID, encryptionKey []byte, padding uint64, chunkSizeAsPowerOf2 int, encryptionAlgorithm byte) *EncryptedCID {
 	e := &EncryptedCID{
 		encryptedBlobHash:   encryptedBlobHash,
 		OriginalCID:         originalCID,

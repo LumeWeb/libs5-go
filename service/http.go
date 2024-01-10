@@ -70,7 +70,7 @@ func (h *HTTPImpl) p2pHandler(ctx jape.Context) {
 		return
 	}
 	go func() {
-		err := h.node.Services().P2P().OnNewPeer(peer, true)
+		err := h.node.Services().P2P().OnNewPeer(peer, false)
 		if err != nil {
 			h.node.Logger().Error("error handling new peer", zap.Error(err))
 		}

@@ -248,7 +248,14 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
 	var wg sync.WaitGroup
 
-	pid, _ := peer.Id().ToString()
+	var pid string
+
+	if peer.Id() != nil {
+		pid, _ = peer.Id().ToString()
+	} else {
+		pid = "unknown"
+	}
+
 	p.logger.Debug("OnNewPeer started", zap.String("peer", pid))
 
 	challenge := protocol.GenerateChallenge()
@@ -277,18 +284,29 @@ func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
 	return nil
 }
 func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
-	peerId, err := peer.Id().ToString()
-	if err != nil {
-		p.logger.Error("failed to get peer id", zap.Error(err))
-		return
+
+	var pid string
+
+	if peer.Id() != nil {
+		pid, _ = peer.Id().ToString()
+	} else {
+		pid = "unknown"
 	}
+
 	onDone := net.CloseCallback(func() {
-		// Handle closure of the connection
-		if p.peers.Contains(peerId) {
-			p.peers.Remove(peerId)
-		}
-		if p.peersPending.Contains(peerId) {
-			p.peersPending.Remove(peerId)
+		if peer.Id() != nil {
+			pid, err := peer.Id().ToString()
+			if err != nil {
+				p.logger.Error("failed to get peer id", zap.Error(err))
+				return
+			}
+			// Handle closure of the connection
+			if p.peers.Contains(pid) {
+				p.peers.Remove(pid)
+			}
+			if p.peersPending.Contains(pid) {
+				p.peersPending.Remove(pid)
+			}
 		}
 	})
 
@@ -300,7 +318,7 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 		imsg := base.NewIncomingMessageUnknown()
 
 		err := msgpack.Unmarshal(message, imsg)
-		p.logger.Debug("ListenForMessages", zap.Any("message", imsg), zap.String("peer", peerId))
+		p.logger.Debug("ListenForMessages", zap.Any("message", imsg), zap.String("peer", pid))
 		if err != nil {
 			return err
 		}

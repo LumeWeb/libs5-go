@@ -21,7 +21,7 @@ type CID struct {
 	Multibase
 	Type types.CIDType
 	Hash Multihash
-	Size uint32
+	Size uint64
 }
 
 var _ json.Marshaler = (*CID)(nil)
@@ -29,7 +29,7 @@ var _ json.Unmarshaler = (*CID)(nil)
 var _ msgpack.CustomEncoder = (*CID)(nil)
 var _ msgpack.CustomDecoder = (*CID)(nil)
 
-func NewCID(Type types.CIDType, Hash Multihash, Size uint32) *CID {
+func NewCID(Type types.CIDType, Hash Multihash, Size uint64) *CID {
 	c := &CID{
 		Type: Type,
 		Hash: Hash,
@@ -104,7 +104,7 @@ func CIDFromBytes(bytes []byte) (*CID, error) {
 	return initCID(bytes)
 }
 
-func CIDFromHash(bytes interface{}, size uint32, cidType types.CIDType) (*CID, error) {
+func CIDFromHash(bytes interface{}, size uint64, cidType types.CIDType) (*CID, error) {
 	var (
 		byteSlice []byte
 		err       error
@@ -151,7 +151,7 @@ func CIDVerify(bytes interface{}) bool {
 	return err == nil
 }
 
-func (cid *CID) CopyWith(newType int, newSize uint32) (*CID, error) {
+func (cid *CID) CopyWith(newType int, newSize uint64) (*CID, error) {
 	if newType == 0 {
 		newType = int(cid.Type)
 	}
@@ -282,7 +282,7 @@ func initCID(bytes []byte) (*CID, error) {
 	hashBytes := bytes[1:34]
 	hash := NewMultihash(hashBytes)
 
-	var size uint32
+	var size uint64
 	if len(bytes) > 34 {
 		sizeBytes := bytes[34:]
 		sizeValue := utils.DecodeEndian(sizeBytes)

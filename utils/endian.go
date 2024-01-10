@@ -2,15 +2,15 @@ package utils
 
 import "encoding/binary"
 
-func EncodeEndian(value uint32, length int) []byte {
+func EncodeEndian(value uint64, length int) []byte {
 	byteSlice := make([]byte, length)
-	binary.LittleEndian.PutUint32(byteSlice, value)
+	binary.LittleEndian.PutUint64(byteSlice, value)
 	return byteSlice
 }
 
-func DecodeEndian(byteSlice []byte) uint32 {
-	buffer := make([]byte, 4)
+func DecodeEndian(byteSlice []byte) uint64 {
+	buffer := make([]byte, 8)
 	copy(buffer, byteSlice)
 
-	return binary.LittleEndian.Uint32(buffer)
+	return binary.LittleEndian.Uint64(buffer)
 }
