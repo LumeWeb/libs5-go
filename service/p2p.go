@@ -78,10 +78,14 @@ func (p *P2PImpl) Start() error {
 			if err != nil {
 				return err
 			}
-			err = p.ConnectToNode([]*url.URL{u}, false)
-			if err != nil {
-				return err
-			}
+
+			peer := peer
+			go func() {
+				err := p.ConnectToNode([]*url.URL{u}, false)
+				if err != nil {
+					p.logger.Error("failed to connect to initial peer", zap.Error(err), zap.String("peer", peer))
+				}
+			}()
 		}
 	}
 
