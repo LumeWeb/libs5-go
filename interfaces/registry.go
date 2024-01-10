@@ -2,6 +2,8 @@ package interfaces
 
 import "git.lumeweb.com/LumeWeb/libs5-go/net"
 
+//go:generate mockgen -source=registry.go -destination=../mocks/interfaces/registry.go -package=interfaces
+
 type SignedRegistryEntry interface {
 	PK() []byte
 	Revision() uint64
