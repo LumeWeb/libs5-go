@@ -11,6 +11,7 @@ type NodeConfig struct {
 	KeyPair *ed25519.KeyPairEd25519
 	DB      *bolt.DB
 	Logger  *zap.Logger
+	HTTP    HTTPConfig
 }
 type P2PConfig struct {
 	Network string
@@ -19,4 +20,13 @@ type P2PConfig struct {
 
 type PeersConfig struct {
 	Initial []string
+}
+
+type HTTPAPIConfig struct {
+	Domain string
+	Port   uint
+}
+
+type HTTPConfig struct {
+	API HTTPAPIConfig
 }
