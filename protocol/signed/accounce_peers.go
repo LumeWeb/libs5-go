@@ -34,7 +34,11 @@ func NewAnnounceRequest(peer net.Peer, peersToSend []net.Peer) *AnnouncePeers {
 }
 
 func NewAnnouncePeers() *AnnouncePeers {
-	return &AnnouncePeers{peer: nil, connectionUris: nil}
+	ap := &AnnouncePeers{peer: nil, connectionUris: nil}
+
+	ap.SetRequiresHandshake(false)
+
+	return ap
 }
 
 func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder) error {

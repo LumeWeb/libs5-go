@@ -16,7 +16,7 @@ const (
 
 var ProtocolMethodMap = map[ProtocolMethod]string{
 	ProtocolMethodHandshakeOpen: "HandshakeOpen",
-	ProtocolMethodHandshakeDone: "HandshakeDone",
+	ProtocolMethodHandshakeDone: "IsHandshakeDone",
 	ProtocolMethodSignedMessage: "SignedMessage",
 	ProtocolMethodHashQuery:     "HashQuery",
 	ProtocolMethodAnnouncePeers: "AnnouncePeers",

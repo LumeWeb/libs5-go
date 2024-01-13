@@ -18,7 +18,11 @@ type RegistryQuery struct {
 }
 
 func NewEmptyRegistryQuery() *RegistryQuery {
-	return &RegistryQuery{}
+	rq := &RegistryQuery{}
+
+	rq.SetRequiresHandshake(true)
+
+	return rq
 }
 func NewRegistryQuery(pk []byte) *RegistryQuery {
 	return &RegistryQuery{pk: pk}

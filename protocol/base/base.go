@@ -16,6 +16,8 @@ type IncomingMessage interface {
 	SetSelf(self IncomingMessage)
 	Original() []byte
 	Kind() int
+	RequiresHandshake() bool
+	SetRequiresHandshake(value bool)
 	msgpack.CustomDecoder
 }
 

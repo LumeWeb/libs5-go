@@ -30,7 +30,11 @@ type StorageLocation struct {
 }
 
 func NewStorageLocation() *StorageLocation {
-	return &StorageLocation{}
+	sl := &StorageLocation{}
+
+	sl.SetRequiresHandshake(true)
+
+	return sl
 }
 
 func (s *StorageLocation) DecodeMessage(dec *msgpack.Decoder) error {

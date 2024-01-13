@@ -24,7 +24,11 @@ type HashQuery struct {
 }
 
 func NewHashQuery() *HashQuery {
-	return &HashQuery{}
+	hq := &HashQuery{}
+
+	hq.SetRequiresHandshake(true)
+
+	return hq
 }
 
 func NewHashRequest(hash *encoding.Multihash, kinds []types.StorageLocationType) *HashQuery {

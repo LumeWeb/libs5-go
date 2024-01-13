@@ -18,7 +18,11 @@ type RegistryEntryRequest struct {
 }
 
 func NewEmptyRegistryEntryRequest() *RegistryEntryRequest {
-	return &RegistryEntryRequest{}
+	rer := &RegistryEntryRequest{}
+
+	rer.SetRequiresHandshake(true)
+
+	return rer
 }
 func NewRegistryEntryRequest(sre interfaces.SignedRegistryEntry) *RegistryEntryRequest {
 	return &RegistryEntryRequest{sre: sre}

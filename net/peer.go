@@ -43,6 +43,8 @@ type Peer interface {
 	IsConnected() bool
 	SetConnectionURIs(uris []*url.URL)
 	ConnectionURIs() []*url.URL
+	IsHandshakeDone() bool
+	SetHandshakeDone(status bool)
 }
 
 type BasePeer struct {
@@ -51,6 +53,7 @@ type BasePeer struct {
 	challenge      []byte
 	socket         interface{}
 	id             *encoding.NodeId
+	handshaked     bool
 }
 
 func (b *BasePeer) IsConnected() bool {
@@ -105,4 +108,12 @@ func (b *BasePeer) SetConnectionURIs(uris []*url.URL) {
 }
 func (b *BasePeer) ConnectionURIs() []*url.URL {
 	return b.connectionURIs
+}
+
+func (b *BasePeer) IsHandshakeDone() bool {
+	return b.handshaked
+}
+
+func (b *BasePeer) SetHandshakeDone(status bool) {
+	b.handshaked = status
 }

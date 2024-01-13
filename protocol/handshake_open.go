@@ -39,10 +39,14 @@ var (
 )
 
 func NewHandshakeOpen(challenge []byte, networkId string) *HandshakeOpen {
-	return &HandshakeOpen{
+	ho := &HandshakeOpen{
 		challenge: challenge,
 		networkId: networkId,
 	}
+
+	ho.SetRequiresHandshake(false)
+
+	return ho
 }
 func (h HandshakeOpen) EncodeMsgpack(enc *msgpack.Encoder) error {
 	err := enc.EncodeUint(uint64(types.ProtocolMethodHandshakeOpen))

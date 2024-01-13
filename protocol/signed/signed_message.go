@@ -75,7 +75,11 @@ func (s *signedMessagePayoad) DecodeMsgpack(dec *msgpack.Decoder) error {
 }
 
 func NewSignedMessage() *SignedMessage {
-	return &SignedMessage{}
+	sm := &SignedMessage{}
+
+	sm.SetRequiresHandshake(false)
+
+	return sm
 }
 
 func (s *SignedMessage) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
@@ -88,6 +92,10 @@ func (s *SignedMessage) HandleMessage(node interfaces.Node, peer net.Peer, verif
 
 	if msgHandler, valid := GetMessageType(payload.kind); valid {
 		node.Logger().Debug("SignedMessage", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
+		if msgHandler.RequiresHandshake() && !peer.IsHandshakeDone() {
+			node.Logger().Debug("Peer is not handshake done, ignoring message", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
+			return nil
+		}
 		msgHandler.SetIncomingMessage(s)
 		msgHandler.SetSelf(msgHandler)
 		err := msgpack.Unmarshal(payload.message, &msgHandler)

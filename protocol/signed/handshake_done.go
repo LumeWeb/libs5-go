@@ -27,11 +27,15 @@ type HandshakeDone struct {
 }
 
 func NewHandshakeDoneRequest(handshake []byte, supportedFeatures int, connectionUris []*url.URL) *HandshakeDone {
-	return &HandshakeDone{
+	ho := &HandshakeDone{
 		handshake:         handshake,
 		supportedFeatures: supportedFeatures,
 		connectionUris:    connectionUris,
 	}
+
+	ho.SetRequiresHandshake(false)
+
+	return ho
 }
 
 func (m HandshakeDone) EncodeMsgpack(enc *msgpack.Encoder) error {
@@ -67,7 +71,11 @@ func (m *HandshakeDone) SetNetworkId(networkId string) {
 }
 
 func NewHandshakeDone() *HandshakeDone {
-	return &HandshakeDone{challenge: nil, networkId: "", supportedFeatures: -1}
+	hn := &HandshakeDone{challenge: nil, networkId: "", supportedFeatures: -1}
+
+	hn.SetRequiresHandshake(false)
+
+	return hn
 }
 
 func (h HandshakeDone) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
@@ -94,6 +102,7 @@ func (h HandshakeDone) HandleMessage(node interfaces.Node, peer net.Peer, verify
 	}
 
 	peer.SetConnected(true)
+	peer.SetHandshakeDone(true)
 
 	if h.supportedFeatures != types.SupportedFeatures {
 		return fmt.Errorf("Remote node does not support required features")

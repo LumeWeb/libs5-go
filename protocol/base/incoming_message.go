@@ -18,12 +18,13 @@ var _ IncomingMessageTyped = (*IncomingMessageImpl)(nil)
 type IncomingMessageHandler func(node interfaces.Node, peer *net.Peer, u *url.URL, verifyId bool) error
 
 type IncomingMessageImpl struct {
-	kind     int
-	data     msgpack.RawMessage
-	original []byte
-	known    bool
-	self     IncomingMessage
-	incoming IncomingMessage
+	kind              int
+	data              msgpack.RawMessage
+	original          []byte
+	known             bool
+	self              IncomingMessage
+	incoming          IncomingMessage
+	requiresHandshake bool
 }
 
 func (i *IncomingMessageImpl) Self() IncomingMessage {
@@ -125,4 +126,12 @@ func (i *IncomingMessageImpl) DecodeMsgpack(dec *msgpack.Decoder) error {
 
 	i.data = raw
 	return nil
+}
+
+func (i *IncomingMessageImpl) RequiresHandshake() bool {
+	return i.requiresHandshake
+}
+
+func (i *IncomingMessageImpl) SetRequiresHandshake(value bool) {
+	i.requiresHandshake = value
 }

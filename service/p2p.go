@@ -326,7 +326,10 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 		handler, ok := protocol.GetMessageType(imsg.Kind())
 
 		if ok {
-
+			if handler.RequiresHandshake() && !peer.IsHandshakeDone() {
+				p.logger.Debug("Peer is not handshake done, ignoring message", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(imsg.Kind())]))
+				return nil
+			}
 			imsg.SetOriginal(message)
 			handler.SetIncomingMessage(imsg)
 			handler.SetSelf(handler)
