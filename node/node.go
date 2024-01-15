@@ -336,5 +336,5 @@ func (n *NodeImpl) ConnectionTracker() *sync.WaitGroup {
 }
 
 func (n *NodeImpl) HTTPRouter() *httprouter.Router {
-	return n.services.HTTP().GetHandler()
+	return n.services.HTTP().GetHttpRouter()
 }

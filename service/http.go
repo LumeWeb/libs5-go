@@ -28,7 +28,7 @@ func NewHTTP(node interfaces.Node) interfaces.HTTPService {
 	}
 }
 
-func (h *HTTPImpl) GetHandler() *httprouter.Router {
+func (h *HTTPImpl) GetHttpRouter() *httprouter.Router {
 	mux := jape.Mux(map[string]jape.Handler{
 		"GET /s5/version": h.versionHandler,
 		"GET /s5/p2p":     h.p2pHandler,
