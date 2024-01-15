@@ -11,8 +11,10 @@ var _ maps.Map = (*MapImpl)(nil)
 
 type Map interface {
 	GetInt(key interface{}) (value *int)
+	GetUInt(key interface{}) (value *uint)
 	GetString(key interface{}) (value *string)
 	PutInt(key interface{}, value int)
+	PutUInt(key interface{}, value uint)
 	Contains(value interface{}) bool
 	maps.Map
 }
@@ -51,6 +53,22 @@ func (m *MapImpl) GetInt(key interface{}) (value *int) {
 	return value
 }
 
+func (m *MapImpl) GetUInt(key interface{}) (value *uint) {
+	val, found := m.Get(key)
+
+	if !found {
+		return nil
+	}
+
+	if intValue, ok := val.(uint); ok {
+		value = &intValue
+	} else {
+		log.Fatalf("value is not an uint: %v", val)
+	}
+
+	return value
+}
+
 func (m *MapImpl) GetString(key interface{}) (value *string) {
 	val, found := m.Get(key)
 
@@ -74,6 +92,10 @@ func (m *MapImpl) Put(key interface{}, value interface{}) {
 }
 
 func (m *MapImpl) PutInt(key interface{}, value int) {
+	m.Put(key, value)
+}
+
+func (m *MapImpl) PutUInt(key interface{}, value uint) {
 	m.Put(key, value)
 }
 
