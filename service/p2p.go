@@ -216,9 +216,9 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 		return nil
 	}
 
-	reconnectDelay := p.reconnectDelay.GetInt(idString)
+	reconnectDelay := p.reconnectDelay.GetUInt(idString)
 	if reconnectDelay == nil {
-		delay := 1
+		delay := uint(1)
 		reconnectDelay = &delay
 	}
 
