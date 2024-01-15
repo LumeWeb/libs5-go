@@ -234,13 +234,13 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 			p.logger.Error("failed to connect, too many retries", zap.String("node", connectionUri.String()), zap.Error(err))
 			counter := uint(0)
 			if p.outgoingPeerFailures.Contains(idString) {
-				tmp := *p.outgoingPeerFailures.GetInt(idString)
+				tmp := *p.outgoingPeerFailures.GetUInt(idString)
 				counter = uint(tmp)
 			}
 
 			counter++
 
-			p.outgoingPeerFailures.Put(idString, counter)
+			p.outgoingPeerFailures.PutUInt(idString, counter)
 
 			if counter >= p.maxOutgoingPeerFailures {
 
