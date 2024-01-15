@@ -18,10 +18,13 @@ type HTTPImpl struct {
 	handler interfaces.HTTPHandler
 }
 
-func NewHTTP(node interfaces.Node, handler interfaces.HTTPHandler) interfaces.HTTPService {
+func (h *HTTPImpl) SetHttpHandler(handler interfaces.HTTPHandler) {
+	h.handler = handler
+}
+
+func NewHTTP(node interfaces.Node) interfaces.HTTPService {
 	return &HTTPImpl{
-		node:    node,
-		handler: handler,
+		node: node,
 	}
 }
 

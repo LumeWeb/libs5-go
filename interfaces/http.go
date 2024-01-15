@@ -10,6 +10,7 @@ import (
 type HTTPService interface {
 	Service
 	GetHandler() *httprouter.Router
+	SetHttpHandler(handler HTTPHandler)
 }
 
 type HTTPHandler interface {
