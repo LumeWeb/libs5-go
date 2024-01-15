@@ -239,16 +239,18 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 			p.outgoingPeerFailures.Put(idString, counter)
 
 			if counter >= p.maxOutgoingPeerFailures {
-				fromPeerId, err := fromPeer.Id().ToString()
-				if err != nil {
-					return err
+				if fromPeer != nil {
+					fromPeerId, err := fromPeer.Id().ToString()
+					if err != nil {
+						return err
+					}
+					p.incomingPeerBlockList.Put(fromPeerId, true)
+					err = fromPeer.End()
+					if err != nil {
+						return err
+					}
 				}
-				p.outgoingPeerBlocklist.Put(fromPeerId, true)
-				p.incomingPeerBlockList.Put(idString, true)
-				err = fromPeer.End()
-				if err != nil {
-					return err
-				}
+				p.outgoingPeerBlocklist.Put(idString, true)
 			}
 
 			return nil
