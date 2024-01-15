@@ -115,3 +115,14 @@ func (p *WebSocketPeer) SetChallenge(challenge []byte) {
 func (p *WebSocketPeer) GetChallenge() []byte {
 	return p.challenge
 }
+
+func (b *WebSocketPeer) GetIP() string {
+	ctx, cancel := context.WithCancel(context.Background())
+	netConn := websocket.NetConn(ctx, b.socket, websocket.MessageBinary)
+
+	ipAddr := netConn.RemoteAddr().String()
+
+	cancel()
+
+	return ipAddr
+}

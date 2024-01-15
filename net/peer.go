@@ -81,7 +81,6 @@ func (b *BasePeer) End() error {
 	panic("must implement in child class")
 }
 func (b *BasePeer) GetIP() string {
-	//TODO implement me
 	panic("must implement in child class")
 }
 
