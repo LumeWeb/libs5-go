@@ -14,8 +14,9 @@ type NodeConfig struct {
 	HTTP    HTTPConfig
 }
 type P2PConfig struct {
-	Network string
-	Peers   PeersConfig
+	Network                 string
+	Peers                   PeersConfig
+	MaxOutgoingPeerFailures uint
 }
 
 type PeersConfig struct {

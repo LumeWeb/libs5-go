@@ -108,7 +108,7 @@ func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder) error {
 
 func (a AnnouncePeers) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
 	if len(a.connectionUris) > 0 {
-		err := node.Services().P2P().ConnectToNode([]*url.URL{a.connectionUris[0]}, false)
+		err := node.Services().P2P().ConnectToNode([]*url.URL{a.connectionUris[0]}, false, peer)
 		if err != nil {
 			return err
 		}

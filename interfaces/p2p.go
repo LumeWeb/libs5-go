@@ -12,7 +12,7 @@ import (
 
 type P2PService interface {
 	Peers() structs.Map
-	ConnectToNode(connectionUris []*url.URL, retried bool) error
+	ConnectToNode(connectionUris []*url.URL, retried bool, fromPeer net.Peer) error
 	OnNewPeer(peer net.Peer, verifyId bool) error
 	OnNewPeerListen(peer net.Peer, verifyId bool)
 	GetNodeScore(nodeId *encoding.NodeId) (float64, error)

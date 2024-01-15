@@ -45,6 +45,7 @@ type Peer interface {
 	ConnectionURIs() []*url.URL
 	IsHandshakeDone() bool
 	SetHandshakeDone(status bool)
+	GetIP() string
 }
 
 type BasePeer struct {
@@ -77,6 +78,10 @@ func (b *BasePeer) ListenForMessages(callback EventCallback, options ListenerOpt
 }
 
 func (b *BasePeer) End() error {
+	panic("must implement in child class")
+}
+func (b *BasePeer) GetIP() string {
+	//TODO implement me
 	panic("must implement in child class")
 }
 

@@ -33,17 +33,22 @@ var (
 const nodeBucketName = "nodes"
 
 type P2PImpl struct {
-	logger             *zap.Logger
-	nodeKeyPair        *ed25519.KeyPairEd25519
-	localNodeID        *encoding.NodeId
-	networkID          string
-	nodesBucket        *bolt.Bucket
-	node               interfaces.Node
-	inited             bool
-	reconnectDelay     structs.Map
-	peers              structs.Map
-	peersPending       structs.Map
-	selfConnectionUris []*url.URL
+	logger                  *zap.Logger
+	nodeKeyPair             *ed25519.KeyPairEd25519
+	localNodeID             *encoding.NodeId
+	networkID               string
+	nodesBucket             *bolt.Bucket
+	node                    interfaces.Node
+	inited                  bool
+	reconnectDelay          structs.Map
+	peers                   structs.Map
+	peersPending            structs.Map
+	selfConnectionUris      []*url.URL
+	outgoingPeerBlocklist   structs.Map
+	incomingPeerBlockList   structs.Map
+	incomingIPBlocklist     structs.Map
+	outgoingPeerFailures    structs.Map
+	maxOutgoingPeerFailures uint
 }
 
 func NewP2P(node interfaces.Node) *P2PImpl {
@@ -53,15 +58,19 @@ func NewP2P(node interfaces.Node) *P2PImpl {
 	}
 
 	service := &P2PImpl{
-		logger:             node.Logger(),
-		nodeKeyPair:        node.Config().KeyPair,
-		networkID:          node.Config().P2P.Network,
-		node:               node,
-		inited:             false,
-		reconnectDelay:     structs.NewMap(),
-		peers:              structs.NewMap(),
-		peersPending:       structs.NewMap(),
-		selfConnectionUris: []*url.URL{uri},
+		logger:                  node.Logger(),
+		nodeKeyPair:             node.Config().KeyPair,
+		networkID:               node.Config().P2P.Network,
+		node:                    node,
+		inited:                  false,
+		reconnectDelay:          structs.NewMap(),
+		peers:                   structs.NewMap(),
+		peersPending:            structs.NewMap(),
+		selfConnectionUris:      []*url.URL{uri},
+		outgoingPeerBlocklist:   structs.NewMap(),
+		incomingPeerBlockList:   structs.NewMap(),
+		incomingIPBlocklist:     structs.NewMap(),
+		maxOutgoingPeerFailures: node.Config().P2P.MaxOutgoingPeerFailures,
 	}
 
 	return service
@@ -92,7 +101,7 @@ func (p *P2PImpl) Start() error {
 
 			peer := peer
 			go func() {
-				err := p.ConnectToNode([]*url.URL{u}, false)
+				err := p.ConnectToNode([]*url.URL{u}, false, nil)
 				if err != nil {
 					p.logger.Error("failed to connect to initial peer", zap.Error(err), zap.String("peer", peer))
 				}
@@ -123,7 +132,7 @@ func (p *P2PImpl) Init() error {
 
 	return nil
 }
-func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
+func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPeer net.Peer) error {
 	if !p.Node().IsStarted() {
 		return nil
 	}
@@ -179,6 +188,11 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 		return nil
 	}
 
+	if p.outgoingPeerFailures.Contains(idString) {
+		p.logger.Error("outgoing peer is on blocklist", zap.String("node", connectionUri.String()))
+		return nil
+	}
+
 	reconnectDelay := p.reconnectDelay.GetInt(idString)
 	if reconnectDelay == nil {
 		delay := 1
@@ -195,6 +209,28 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 	if err != nil {
 		if retried {
 			p.logger.Error("failed to connect, too many retries", zap.String("node", connectionUri.String()), zap.Error(err))
+			counter := uint(0)
+			if p.outgoingPeerFailures.Contains(idString) {
+				tmp := *p.outgoingPeerFailures.GetInt(idString)
+				counter = uint(tmp)
+			}
+
+			counter++
+
+			p.outgoingPeerFailures.Put(idString, counter)
+
+			if counter >= p.maxOutgoingPeerFailures {
+				fromPeerId, err := fromPeer.Id().ToString()
+				if err != nil {
+					return err
+				}
+				p.incomingPeerBlockList.Put(idString, fromPeerId)
+				err = fromPeer.End()
+				if err != nil {
+					return err
+				}
+			}
+
 			return nil
 		}
 		retried = true
@@ -211,7 +247,11 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool) error {
 
 		time.Sleep(time.Duration(delayDeref) * time.Second)
 
-		return p.ConnectToNode(connectionUris, retried)
+		return p.ConnectToNode(connectionUris, retried, fromPeer)
+	}
+
+	if p.outgoingPeerFailures.Contains(idString) {
+		p.outgoingPeerFailures.Remove(idString)
 	}
 
 	peer, err := net.CreateTransportPeer(scheme, &net.TransportPeerConfig{
@@ -254,6 +294,25 @@ func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
 		pid, _ = peer.Id().ToString()
 	} else {
 		pid = "unknown"
+	}
+
+	pip := peer.GetIP()
+
+	if p.incomingIPBlocklist.Contains(pid) {
+		p.logger.Error("peer is on identity blocklist", zap.String("peer", pid))
+		err := peer.End()
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	if p.incomingPeerBlockList.Contains(pip) {
+		p.logger.Debug("peer is on ip blocklist", zap.String("peer", pid), zap.String("ip", pip))
+		err := peer.End()
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 
 	p.logger.Debug("OnNewPeer started", zap.String("peer", pid))
