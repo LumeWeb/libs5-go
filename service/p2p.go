@@ -244,13 +244,18 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 					if err != nil {
 						return err
 					}
+					fromPeerIP := fromPeer.GetIP()
 					p.incomingPeerBlockList.Put(fromPeerId, true)
+					p.incomingIPBlocklist.Put(fromPeerIP, true)
 					err = fromPeer.End()
 					if err != nil {
 						return err
 					}
+
+					p.logger.Info("blocking peer for sending peer on blocklist", zap.String("node", connectionUri.String()), zap.String("peer", fromPeerId), zap.String("ip", fromPeerIP))
 				}
 				p.outgoingPeerBlocklist.Put(idString, true)
+				p.logger.Info("blocking peer for too many failures", zap.String("node", connectionUri.String()))
 			}
 
 			return nil
