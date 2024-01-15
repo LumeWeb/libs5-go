@@ -213,7 +213,7 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 				p.incomingIPBlocklist.Put(fromPeerIP, true)
 				blocked = true
 			}
-			err = fromPeer.End()
+			err = fromPeer.EndForAbuse()
 			if err != nil {
 				return err
 			}
@@ -272,7 +272,7 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 						p.incomingIPBlocklist.Put(fromPeerIP, true)
 						blocked = true
 					}
-					err = fromPeer.End()
+					err = fromPeer.EndForAbuse()
 					if err != nil {
 						return err
 					}
@@ -329,7 +329,7 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 
 	go func() {
 		err := p.OnNewPeer(peer, true)
-		if err != nil {
+		if err != nil && !peer.Abused() {
 			p.logger.Error("peer error", zap.Error(err))
 		}
 		p.Node().ConnectionTracker().Done()
@@ -354,7 +354,7 @@ func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
 
 	if p.incomingIPBlocklist.Contains(pid) {
 		p.logger.Error("peer is on identity blocklist", zap.String("peer", pid))
-		err := peer.End()
+		err := peer.EndForAbuse()
 		if err != nil {
 			return err
 		}
@@ -362,7 +362,7 @@ func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
 	}
 	if p.incomingPeerBlockList.Contains(pip) {
 		p.logger.Debug("peer is on ip blocklist", zap.String("peer", pid), zap.String("ip", pip))
-		err := peer.End()
+		err := peer.EndForAbuse()
 		if err != nil {
 			return err
 		}
