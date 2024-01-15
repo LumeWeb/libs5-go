@@ -189,7 +189,7 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 		return nil
 	}
 
-	if p.outgoingPeerFailures.Contains(idString) {
+	if p.outgoingPeerBlocklist.Contains(idString) {
 		p.logger.Error("outgoing peer is on blocklist", zap.String("node", connectionUri.String()))
 
 		if fromPeer != nil {
