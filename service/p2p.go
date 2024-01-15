@@ -424,7 +424,9 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 	})
 
 	onError := net.ErrorCallback(func(args ...interface{}) {
-		p.logger.Error("peer error", zap.Any("args", args))
+		if !peer.Abused() {
+			p.logger.Error("peer error", zap.Any("args", args))
+		}
 	})
 
 	peer.ListenForMessages(func(message []byte) error {
