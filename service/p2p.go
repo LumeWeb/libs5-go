@@ -225,7 +225,8 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 				if err != nil {
 					return err
 				}
-				p.incomingPeerBlockList.Put(idString, fromPeerId)
+				p.outgoingPeerBlocklist.Put(fromPeerId, true)
+				p.incomingPeerBlockList.Put(idString, true)
 				err = fromPeer.End()
 				if err != nil {
 					return err
