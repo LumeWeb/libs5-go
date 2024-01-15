@@ -33,6 +33,7 @@ type Peer interface {
 	RenderLocationURI() string
 	ListenForMessages(callback EventCallback, options ListenerOptions)
 	End() error
+	EndForAbuse() error
 	SetId(id *encoding.NodeId)
 	Id() *encoding.NodeId
 	SetChallenge(challenge []byte)
@@ -46,6 +47,7 @@ type Peer interface {
 	IsHandshakeDone() bool
 	SetHandshakeDone(status bool)
 	GetIP() string
+	Abused() bool
 }
 
 type BasePeer struct {
@@ -78,6 +80,9 @@ func (b *BasePeer) ListenForMessages(callback EventCallback, options ListenerOpt
 }
 
 func (b *BasePeer) End() error {
+	panic("must implement in child class")
+}
+func (b *BasePeer) EndForAbuse() error {
 	panic("must implement in child class")
 }
 func (b *BasePeer) GetIP() string {
@@ -120,4 +125,8 @@ func (b *BasePeer) IsHandshakeDone() bool {
 
 func (b *BasePeer) SetHandshakeDone(status bool) {
 	b.handshaked = status
+}
+
+func (b *BasePeer) Abused() bool {
+	panic("must implement in child class")
 }
