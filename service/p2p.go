@@ -273,13 +273,13 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 
 		p.logger.Error("failed to connect", zap.String("node", connectionUri.String()), zap.Error(err))
 
-		delay := p.reconnectDelay.GetInt(idString)
+		delay := p.reconnectDelay.GetUInt(idString)
 		if delay == nil {
-			tmp := 1
+			tmp := uint(1)
 			delay = &tmp
 		}
 		delayDeref := *delay
-		p.reconnectDelay.PutInt(idString, delayDeref*2)
+		p.reconnectDelay.PutUInt(idString, delayDeref*2)
 
 		time.Sleep(time.Duration(delayDeref) * time.Second)
 
