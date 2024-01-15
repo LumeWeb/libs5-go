@@ -192,15 +192,19 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 	if p.outgoingPeerBlocklist.Contains(idString) {
 		p.logger.Error("outgoing peer is on blocklist", zap.String("node", connectionUri.String()))
 
+		var fromPeerId string
+
 		if fromPeer != nil {
-			fromPeerId, err := fromPeer.Id().ToString()
-			if err != nil {
-				return err
+			if fromPeer.Id() != nil {
+				fromPeerId, err = fromPeer.Id().ToString()
+				if err != nil {
+					return err
+				}
+				p.incomingPeerBlockList.Put(fromPeerId, true)
 			}
 
 			fromPeerIP := fromPeer.GetIP()
 
-			p.incomingPeerBlockList.Put(fromPeerId, true)
 			p.incomingIPBlocklist.Put(fromPeerIP, true)
 			err = fromPeer.End()
 			if err != nil {
@@ -239,13 +243,18 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 			p.outgoingPeerFailures.Put(idString, counter)
 
 			if counter >= p.maxOutgoingPeerFailures {
+
 				if fromPeer != nil {
-					fromPeerId, err := fromPeer.Id().ToString()
-					if err != nil {
-						return err
+					var fromPeerId string
+					if fromPeer.Id() != nil {
+						fromPeerId, err = fromPeer.Id().ToString()
+						if err != nil {
+							return err
+						}
+						p.incomingPeerBlockList.Put(fromPeerId, true)
 					}
+
 					fromPeerIP := fromPeer.GetIP()
-					p.incomingPeerBlockList.Put(fromPeerId, true)
 					p.incomingIPBlocklist.Put(fromPeerIP, true)
 					err = fromPeer.End()
 					if err != nil {
