@@ -47,7 +47,7 @@ type Peer interface {
 	IsHandshakeDone() bool
 	SetHandshakeDone(status bool)
 	GetIP() string
-	Abused() bool
+	Abuser() bool
 }
 
 type BasePeer struct {
@@ -127,6 +127,6 @@ func (b *BasePeer) SetHandshakeDone(status bool) {
 	b.handshaked = status
 }
 
-func (b *BasePeer) Abused() bool {
+func (b *BasePeer) Abuser() bool {
 	panic("must implement in child class")
 }

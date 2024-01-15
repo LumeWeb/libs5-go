@@ -329,7 +329,7 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 
 	go func() {
 		err := p.OnNewPeer(peer, true)
-		if err != nil && !peer.Abused() {
+		if err != nil && !peer.Abuser() {
 			p.logger.Error("peer error", zap.Error(err))
 		}
 		p.Node().ConnectionTracker().Done()
@@ -424,7 +424,7 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 	})
 
 	onError := net.ErrorCallback(func(args ...interface{}) {
-		if !peer.Abused() {
+		if !peer.Abuser() {
 			p.logger.Error("peer error", zap.Any("args", args))
 		}
 	})

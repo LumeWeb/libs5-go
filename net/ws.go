@@ -16,7 +16,7 @@ var (
 type WebSocketPeer struct {
 	BasePeer
 	socket *websocket.Conn
-	abused bool
+	abuser bool
 }
 
 func (p *WebSocketPeer) Connect(uri *url.URL) (interface{}, error) {
@@ -105,7 +105,7 @@ func (p *WebSocketPeer) End() error {
 	return nil
 }
 func (p *WebSocketPeer) EndForAbuse() error {
-	p.abused = true
+	p.abuser = true
 	err := p.socket.Close(websocket.StatusPolicyViolation, "")
 	if err != nil {
 		return err
@@ -135,6 +135,6 @@ func (b *WebSocketPeer) GetIP() string {
 
 	return ipAddr
 }
-func (p *WebSocketPeer) Abused() bool {
-	return p.abused
+func (p *WebSocketPeer) Abuser() bool {
+	return p.abuser
 }
