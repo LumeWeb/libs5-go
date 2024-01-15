@@ -191,6 +191,24 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 
 	if p.outgoingPeerFailures.Contains(idString) {
 		p.logger.Error("outgoing peer is on blocklist", zap.String("node", connectionUri.String()))
+
+		if fromPeer != nil {
+			fromPeerId, err := fromPeer.Id().ToString()
+			if err != nil {
+				return err
+			}
+
+			fromPeerIP := fromPeer.GetIP()
+
+			p.incomingPeerBlockList.Put(fromPeerId, true)
+			p.incomingIPBlocklist.Put(fromPeerIP, true)
+			err = fromPeer.End()
+			if err != nil {
+				return err
+			}
+
+			p.logger.Info("blocking peer for sending peer on blocklist", zap.String("node", connectionUri.String()), zap.String("peer", fromPeerId), zap.String("ip", fromPeerIP))
+		}
 		return nil
 	}
 
