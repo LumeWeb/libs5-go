@@ -14,17 +14,22 @@ import (
 var _ interfaces.HTTPService = (*HTTPImpl)(nil)
 
 type HTTPImpl struct {
-	node interfaces.Node
+	node    interfaces.Node
+	handler interfaces.HTTPHandler
 }
 
-func NewHTTP(node interfaces.Node) *HTTPImpl {
-	return &HTTPImpl{node: node}
+func NewHTTP(node interfaces.Node, handler interfaces.HTTPHandler) interfaces.HTTPService {
+	return &HTTPImpl{
+		node:    node,
+		handler: handler,
+	}
 }
 
 func (h *HTTPImpl) GetHandler() *httprouter.Router {
 	mux := jape.Mux(map[string]jape.Handler{
 		"GET /s5/version": h.versionHandler,
 		"GET /s5/p2p":     h.p2pHandler,
+		"POST /s5/upload": h.uploadHandler,
 	})
 
 	return mux
@@ -79,4 +84,8 @@ func (h *HTTPImpl) p2pHandler(ctx jape.Context) {
 		}
 		h.node.ConnectionTracker().Done()
 	}()
+}
+
+func (h *HTTPImpl) uploadHandler(context jape.Context) {
+	h.handler.SmallFileUpload(&context)
 }
