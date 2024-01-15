@@ -70,6 +70,7 @@ func NewP2P(node interfaces.Node) *P2PImpl {
 		outgoingPeerBlocklist:   structs.NewMap(),
 		incomingPeerBlockList:   structs.NewMap(),
 		incomingIPBlocklist:     structs.NewMap(),
+		outgoingPeerFailures:    structs.NewMap(),
 		maxOutgoingPeerFailures: node.Config().P2P.MaxOutgoingPeerFailures,
 	}
 
