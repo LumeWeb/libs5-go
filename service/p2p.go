@@ -575,7 +575,7 @@ func (p *P2PImpl) AddPeer(peer net.Peer) error {
 		return err
 	}
 	p.peers.Put(peerId, peer)
-	p.reconnectDelay.Put(peerId, 1)
+	p.reconnectDelay.PutUInt(peerId, 1)
 
 	if p.peersPending.Contains(peerId) {
 		p.peersPending.Remove(peerId)
