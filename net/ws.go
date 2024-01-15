@@ -105,12 +105,11 @@ func (p *WebSocketPeer) End() error {
 	return nil
 }
 func (p *WebSocketPeer) EndForAbuse() error {
+	p.abused = true
 	err := p.socket.Close(websocket.StatusPolicyViolation, "")
 	if err != nil {
 		return err
 	}
-
-	p.abused = true
 
 	return nil
 }
