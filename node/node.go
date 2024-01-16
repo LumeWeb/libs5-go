@@ -15,7 +15,6 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/go-resty/resty/v2"
-	"github.com/julienschmidt/httprouter"
 	"github.com/vmihailenco/msgpack/v5"
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
@@ -333,8 +332,4 @@ func (n *NodeImpl) WaitOnConnectedPeers() {
 
 func (n *NodeImpl) ConnectionTracker() *sync.WaitGroup {
 	return &n.connections
-}
-
-func (n *NodeImpl) HTTPRouter() *httprouter.Router {
-	return n.services.HTTP().GetHttpRouter()
 }
