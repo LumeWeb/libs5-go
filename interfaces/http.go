@@ -9,14 +9,5 @@ import (
 
 type HTTPService interface {
 	Service
-	GetHttpRouter() *httprouter.Router
-	SetHttpHandler(handler HTTPHandler)
-}
-
-type HTTPHandler interface {
-	SmallFileUpload(context *jape.Context)
-	AccountRegisterChallenge(context *jape.Context)
-	AccountRegister(context *jape.Context)
-	AccountLoginChallenge(context *jape.Context)
-	AccountLogin(context *jape.Context)
+	GetHttpRouter(inject map[string]jape.Handler) *httprouter.Router
 }

@@ -14,12 +14,7 @@ import (
 var _ interfaces.HTTPService = (*HTTPImpl)(nil)
 
 type HTTPImpl struct {
-	node    interfaces.Node
-	handler interfaces.HTTPHandler
-}
-
-func (h *HTTPImpl) SetHttpHandler(handler interfaces.HTTPHandler) {
-	h.handler = handler
+	node interfaces.Node
 }
 
 func NewHTTP(node interfaces.Node) interfaces.HTTPService {
@@ -28,18 +23,17 @@ func NewHTTP(node interfaces.Node) interfaces.HTTPService {
 	}
 }
 
-func (h *HTTPImpl) GetHttpRouter() *httprouter.Router {
-	mux := jape.Mux(map[string]jape.Handler{
-		"GET /s5/version":        h.versionHandler,
-		"GET /s5/p2p":            h.p2pHandler,
-		"POST /s5/upload":        h.uploadHandler,
-		"GET /account/register":  h.accountRegisterChallengeHandler,
-		"POST /account/register": h.accountRegisterHandler,
-		"GET /account/login":     h.accountLoginChallengeHandler,
-		"POST /account/login":    h.accountLoginHandler,
-	})
+func (h *HTTPImpl) GetHttpRouter(inject map[string]jape.Handler) *httprouter.Router {
+	routes := map[string]jape.Handler{
+		"GET /s5/version": h.versionHandler,
+		"GET /s5/p2p":     h.p2pHandler,
+	}
 
-	return mux
+	for k, v := range inject {
+		routes[k] = v
+	}
+
+	return jape.Mux(routes)
 }
 
 func (h *HTTPImpl) Node() interfaces.Node {
@@ -91,20 +85,4 @@ func (h *HTTPImpl) p2pHandler(ctx jape.Context) {
 		}
 		h.node.ConnectionTracker().Done()
 	}()
-}
-
-func (h *HTTPImpl) uploadHandler(context jape.Context) {
-	h.handler.SmallFileUpload(&context)
-}
-func (h *HTTPImpl) accountRegisterChallengeHandler(context jape.Context) {
-	h.handler.AccountRegisterChallenge(&context)
-}
-func (h *HTTPImpl) accountRegisterHandler(context jape.Context) {
-	h.handler.AccountRegisterChallenge(&context)
-}
-func (h *HTTPImpl) accountLoginChallengeHandler(context jape.Context) {
-	h.handler.AccountLoginChallenge(&context)
-}
-func (h *HTTPImpl) accountLoginHandler(context jape.Context) {
-	h.handler.AccountLoginChallenge(&context)
 }
