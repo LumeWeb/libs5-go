@@ -15,4 +15,8 @@ type HTTPService interface {
 
 type HTTPHandler interface {
 	SmallFileUpload(context *jape.Context)
+	AccountRegisterChallenge(context *jape.Context)
+	AccountRegister(context *jape.Context)
+	AccountLoginChallenge(context *jape.Context)
+	AccountLogin(context *jape.Context)
 }
