@@ -13,6 +13,15 @@ import (
 
 var _ interfaces.HTTPService = (*HTTPImpl)(nil)
 
+type P2PNodesResponse struct {
+	Nodes []P2PNodeResponse `json:"nodes"`
+}
+
+type P2PNodeResponse struct {
+	Id   string   `json:"id"`
+	Uris []string `json:"uris"`
+}
+
 type HTTPImpl struct {
 	node interfaces.Node
 }
@@ -25,8 +34,9 @@ func NewHTTP(node interfaces.Node) interfaces.HTTPService {
 
 func (h *HTTPImpl) GetHttpRouter(inject map[string]jape.Handler) *httprouter.Router {
 	routes := map[string]jape.Handler{
-		"GET /s5/version": h.versionHandler,
-		"GET /s5/p2p":     h.p2pHandler,
+		"GET /s5/version":   h.versionHandler,
+		"GET /s5/p2p":       h.p2pHandler,
+		"Get /s5/p2p/nodes": h.p2pNodesHandler,
 	}
 
 	for k, v := range inject {
@@ -85,4 +95,27 @@ func (h *HTTPImpl) p2pHandler(ctx jape.Context) {
 		}
 		h.node.ConnectionTracker().Done()
 	}()
+}
+
+func (h *HTTPImpl) p2pNodesHandler(ctx jape.Context) {
+	localId, err := h.node.Services().P2P().NodeId().ToString()
+
+	if ctx.Check("error getting local node id", err) != nil {
+		return
+	}
+
+	uris := h.node.Services().P2P().SelfConnectionUris()
+
+	nodeList := make([]P2PNodeResponse, len(uris))
+
+	for i, uri := range uris {
+		nodeList[i] = P2PNodeResponse{
+			Id:   localId,
+			Uris: []string{uri.String()},
+		}
+	}
+
+	ctx.Encode(P2PNodesResponse{
+		Nodes: nodeList,
+	})
 }
