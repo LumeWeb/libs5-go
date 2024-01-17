@@ -18,8 +18,8 @@ type extMap struct {
 
 type FileReference struct {
 	Name     string         `json:"name"`
-	Created  int            `json:"created"`
-	Version  int            `json:"version"`
+	Created  uint64         `json:"created"`
+	Version  uint64         `json:"version"`
 	File     *FileVersion   `json:"file"`
 	Ext      extMap         `json:"ext"`
 	History  fileHistoryMap `json:"history"`
@@ -28,7 +28,7 @@ type FileReference struct {
 	Key      string         `json:"key"`
 }
 
-func NewFileReference(name string, created, version int, file *FileVersion, ext extMap, history fileHistoryMap, mimeType string) *FileReference {
+func NewFileReference(name string, created, version uint64, file *FileVersion, ext extMap, history fileHistoryMap, mimeType string) *FileReference {
 	return &FileReference{
 		Name:     name,
 		Created:  created,
@@ -106,7 +106,7 @@ func (fr *FileReference) DecodeMsgpack(dec *msgpack.Decoder) error {
 				return err
 			}
 
-			fr.Version = val
+			fr.Version = uint64(val)
 		case int8(6):
 			err := dec.Decode(&fr.MimeType)
 			if err != nil {
