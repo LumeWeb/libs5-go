@@ -41,6 +41,10 @@ func (m *Multihash) HashBytes() []byte {
 	return m.fullBytes[1:]
 }
 
+func MultihashFromBytes(bytes []byte, kind types.HashType) *Multihash {
+	return NewMultihash(append([]byte{byte(kind)}, bytes...))
+}
+
 func MultihashFromBase64Url(hash string) (*Multihash, error) {
 	encoder, _ := multibase.EncoderByName("base64url")
 	encoding, err := getEncoding(hash)
