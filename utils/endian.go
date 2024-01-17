@@ -1,21 +1,16 @@
 package utils
 
-func EncodeEndian(value uint64, length int) []byte {
-	res := make([]byte, length)
+import "encoding/binary"
 
-	for i := 0; i < length; i++ {
-		res[i] = byte(value & 0xff)
-		value = value >> 8
-	}
-	return res
+func EncodeEndian(value uint64, length int) []byte {
+	byteSlice := make([]byte, length)
+	binary.LittleEndian.PutUint64(byteSlice, value)
+	return byteSlice
 }
 
-func DecodeEndian(bytes []byte) uint64 {
-	var total uint64
+func DecodeEndian(byteSlice []byte) uint64 {
+	buffer := make([]byte, 8)
+	copy(buffer, byteSlice)
 
-	for i := 0; i < len(bytes); i++ {
-		total += uint64(bytes[i]) << (8 * uint(i))
-	}
-
-	return total
+	return binary.LittleEndian.Uint64(buffer)
 }
