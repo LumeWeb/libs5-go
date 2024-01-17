@@ -6,14 +6,22 @@ import (
 )
 
 var _ SerializableMetadata = (*FileReference)(nil)
-var _ SerializableMetadata = (*fileHistoryMap)(nil)
-var _ SerializableMetadata = (*extMap)(nil)
+var _ SerializableMetadata = (*FileHistoryMap)(nil)
+var _ SerializableMetadata = (*ExtMap)(nil)
 
-type fileHistoryMap struct {
+type FileHistoryMap struct {
 	linkedhashmap.Map
 }
-type extMap struct {
+type ExtMap struct {
 	linkedhashmap.Map
+}
+
+func NewExtMap() ExtMap {
+	return ExtMap{*linkedhashmap.New()}
+}
+
+func NewFileHistoryMap() FileHistoryMap {
+	return FileHistoryMap{*linkedhashmap.New()}
 }
 
 type FileReference struct {
@@ -21,14 +29,14 @@ type FileReference struct {
 	Created  uint64         `json:"created"`
 	Version  uint64         `json:"version"`
 	File     *FileVersion   `json:"file"`
-	Ext      extMap         `json:"ext"`
-	History  fileHistoryMap `json:"history"`
+	Ext      ExtMap         `json:"ext"`
+	History  FileHistoryMap `json:"history"`
 	MimeType string         `json:"mimeType"`
 	URI      string         `json:"uri"`
 	Key      string         `json:"key"`
 }
 
-func NewFileReference(name string, created, version uint64, file *FileVersion, ext extMap, history fileHistoryMap, mimeType string) *FileReference {
+func NewFileReference(name string, created, version uint64, file *FileVersion, ext ExtMap, history FileHistoryMap, mimeType string) *FileReference {
 	return &FileReference{
 		Name:     name,
 		Created:  created,
@@ -130,30 +138,30 @@ func (fr *FileReference) DecodeMsgpack(dec *msgpack.Decoder) error {
 	}
 
 	if !hasExt {
-		fr.Ext = extMap{*linkedhashmap.New()}
+		fr.Ext = ExtMap{*linkedhashmap.New()}
 	}
 
 	if !hasHistory {
-		fr.History = fileHistoryMap{*linkedhashmap.New()}
+		fr.History = FileHistoryMap{*linkedhashmap.New()}
 	}
 
 	return nil
 }
 
-func (ext extMap) EncodeMsgpack(enc *msgpack.Encoder) error {
+func (ext ExtMap) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return marshallMapMsgpack(enc, &ext.Map)
 }
-func (ext *extMap) DecodeMsgpack(dec *msgpack.Decoder) error {
-	return unmarshalMapMsgpack(dec, &ext.Map, &extMap{}, true)
+func (ext *ExtMap) DecodeMsgpack(dec *msgpack.Decoder) error {
+	return unmarshalMapMsgpack(dec, &ext.Map, &ExtMap{}, true)
 }
-func (fhm fileHistoryMap) EncodeMsgpack(enc *msgpack.Encoder) error {
+func (fhm FileHistoryMap) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return marshallMapMsgpack(enc, &fhm.Map)
 }
-func (fhm *fileHistoryMap) DecodeMsgpack(dec *msgpack.Decoder) error {
-	return unmarshalMapMsgpack(dec, &fhm.Map, &extMap{}, false)
+func (fhm *FileHistoryMap) DecodeMsgpack(dec *msgpack.Decoder) error {
+	return unmarshalMapMsgpack(dec, &fhm.Map, &ExtMap{}, false)
 }
 
-func (m *fileHistoryMap) UnmarshalJSON(bytes []byte) error {
+func (m *FileHistoryMap) UnmarshalJSON(bytes []byte) error {
 	if string(bytes) == "null" {
 		m.Map = *linkedhashmap.New()
 		return nil
@@ -161,7 +169,7 @@ func (m *fileHistoryMap) UnmarshalJSON(bytes []byte) error {
 	return m.FromJSON(bytes)
 }
 
-func (m *extMap) UnmarshalJSON(bytes []byte) error {
+func (m *ExtMap) UnmarshalJSON(bytes []byte) error {
 	if string(bytes) == "null" {
 		m.Map = *linkedhashmap.New()
 		return nil

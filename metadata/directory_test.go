@@ -35,14 +35,14 @@ func (frm fileReferenceMap) Equal(other fileReferenceMap) bool {
 	return isEqual(frm.Size, other.Size, frm.Iterator, other.Iterator)
 }
 
-func (frm fileHistoryMap) Equal(other fileHistoryMap) bool {
+func (frm FileHistoryMap) Equal(other FileHistoryMap) bool {
 	return isEqual(frm.Size, other.Size, frm.Iterator, other.Iterator)
 }
 
 func (drm directoryReferenceMap) Equal(other directoryReferenceMap) bool {
 	return isEqual(drm.Size, other.Size, drm.Iterator, other.Iterator)
 }
-func (ext extMap) Equal(other extMap) bool {
+func (ext ExtMap) Equal(other ExtMap) bool {
 	return isEqual(ext.Size, other.Size, ext.Iterator, other.Iterator)
 }
 
