@@ -237,7 +237,7 @@ func (cid *CID) DecodeMsgpack(dec *msgpack.Decoder) error {
 }
 
 func CIDFromRegistryPublicKey(pubkey interface{}) (*CID, error) {
-	return CIDFromHash(pubkey, 0, types.CIDTypeResolver)
+	return CIDFromHash(pubkey, 0, types.CIDTypeResolver, types.HashTypeEd25519)
 }
 
 func decodeMsgpackCID(cid interface{}, dec *msgpack.Decoder) error {
