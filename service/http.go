@@ -36,7 +36,7 @@ func (h *HTTPImpl) GetHttpRouter(inject map[string]jape.Handler) *httprouter.Rou
 	routes := map[string]jape.Handler{
 		"GET /s5/version":   h.versionHandler,
 		"GET /s5/p2p":       h.p2pHandler,
-		"Get /s5/p2p/nodes": h.p2pNodesHandler,
+		"GET /s5/p2p/nodes": h.p2pNodesHandler,
 	}
 
 	for k, v := range inject {
