@@ -104,7 +104,7 @@ func CIDFromBytes(bytes []byte) (*CID, error) {
 	return initCID(bytes)
 }
 
-func CIDFromHash(bytes interface{}, size uint64, cidType types.CIDType) (*CID, error) {
+func CIDFromHash(bytes interface{}, size uint64, cidType types.CIDType, hashType types.HashType) (*CID, error) {
 	var (
 		byteSlice []byte
 		err       error
@@ -126,7 +126,7 @@ func CIDFromHash(bytes interface{}, size uint64, cidType types.CIDType) (*CID, e
 		return nil, fmt.Errorf("invalid hash type %d", cidType)
 	}
 
-	return NewCID(cidType, *NewMultihash(byteSlice), size), nil
+	return NewCID(cidType, *MultihashFromBytes(byteSlice, hashType), size), nil
 }
 
 func CIDVerify(bytes interface{}) bool {
