@@ -60,6 +60,32 @@ func TestWebAppMetadata_DecodeJSON(t *testing.T) {
 	}
 }
 
+func TestWebAppMetadata_DecodeMsgpack(t *testing.T) {
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "Decode",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jsonDm := getWebappMeta()
+			dm := &WebAppMetadata{}
+
+			if err := msgpack.Unmarshal(readFile("webapp.bin"), dm); (err != nil) != tt.wantErr {
+				t.Errorf("DecodeMsgpack() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if !cmp.Equal(jsonDm, dm) {
+				t.Errorf("DecodeMsgpack() error = %v, wantErr %v", "msgpack does not match json", tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestWebAppMetadata_EncodeJSON(t *testing.T) {
 	tests := []struct {
 		name    string
