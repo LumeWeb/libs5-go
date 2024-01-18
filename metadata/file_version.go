@@ -7,7 +7,7 @@ import (
 )
 
 type FileVersion struct {
-	Ts           int                    `json:"ts"`
+	Ts           uint64                 `json:"ts"`
 	EncryptedCID *encoding.EncryptedCID `json:"encryptedCID,string"`
 	PlaintextCID *encoding.CID          `json:"cid,string"`
 	Thumbnail    *FileVersionThumbnail  `json:"thumbnail"`
@@ -15,7 +15,7 @@ type FileVersion struct {
 	Ext          map[string]interface{} `json:"ext"`
 }
 
-func NewFileVersion(ts int, encryptedCID *encoding.EncryptedCID, plaintextCID *encoding.CID, thumbnail *FileVersionThumbnail, hashes []*encoding.Multihash, ext map[string]interface{}) *FileVersion {
+func NewFileVersion(ts uint64, encryptedCID *encoding.EncryptedCID, plaintextCID *encoding.CID, thumbnail *FileVersionThumbnail, hashes []*encoding.Multihash, ext map[string]interface{}) *FileVersion {
 	return &FileVersion{
 		Ts:           ts,
 		EncryptedCID: encryptedCID,
