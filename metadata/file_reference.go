@@ -50,7 +50,7 @@ func NewFileReference(name string, created, version uint64, file *FileVersion, e
 	}
 }
 
-func (fr *FileReference) Modified() int {
+func (fr *FileReference) Modified() uint64 {
 	return fr.File.Ts
 }
 
