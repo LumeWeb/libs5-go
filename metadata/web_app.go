@@ -17,11 +17,11 @@ var (
 
 type WebAppMetadata struct {
 	BaseMetadata
-	Name          string
-	TryFiles      []string
-	ErrorPages    map[int]string
-	ExtraMetadata ExtraMetadata
-	Paths         map[string]WebAppMetadataFileReference
+	Name          string                                 `json:"name"`
+	TryFiles      []string                               `json:"tryFiles"`
+	ErrorPages    map[int]string                         `json:"errorPages"`
+	ExtraMetadata ExtraMetadata                          `json:"extraMetadata"`
+	Paths         map[string]WebAppMetadataFileReference `json:"paths"`
 }
 
 func NewWebAppMetadata(name string, tryFiles []string, extraMetadata ExtraMetadata, errorPages map[int]string, paths map[string]WebAppMetadataFileReference) *WebAppMetadata {
