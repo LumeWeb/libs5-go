@@ -32,8 +32,8 @@ type FileReference struct {
 	Ext      ExtMap         `json:"ext"`
 	History  FileHistoryMap `json:"history"`
 	MimeType string         `json:"mimeType"`
-	URI      string         `json:"uri"`
-	Key      string         `json:"key"`
+	URI      string         `json:"uri,omitempty"`
+	Key      string         `json:"key,omitempty"`
 }
 
 func NewFileReference(name string, created, version uint64, file *FileVersion, ext ExtMap, history FileHistoryMap, mimeType string) *FileReference {
