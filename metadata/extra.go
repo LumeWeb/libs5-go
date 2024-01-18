@@ -145,6 +145,11 @@ func (em *ExtraMetadata) DecodeMsgpack(dec *msgpack.Decoder) error {
 			return err
 		}
 	}
+
+	if mapLen == 0 {
+		em.Data = make(map[int]interface{})
+	}
+
 	return nil
 }
 
