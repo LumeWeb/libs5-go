@@ -45,6 +45,9 @@ func (drm directoryReferenceMap) Equal(other directoryReferenceMap) bool {
 func (ext ExtMap) Equal(other ExtMap) bool {
 	return isEqual(ext.Size, other.Size, ext.Iterator, other.Iterator)
 }
+func (fr FileReference) Equal(other FileReference) bool {
+	return fr.File.CID().Equals(other.File.CID())
+}
 
 func readFile(filename string) []byte {
 	filePath := filepath.Join("testdata", filename)
@@ -66,6 +69,32 @@ func getDirectoryMeta() *DirectoryMetadata {
 	}
 
 	return &dir
+}
+
+func TestDirectoryMetadata_DecodeJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "Decode",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jsonDm := getDirectoryMeta()
+			dm := &DirectoryMetadata{}
+
+			if err := msgpack.Unmarshal(readFile("directory.bin"), dm); (err != nil) != tt.wantErr {
+				t.Errorf("DecodeMsgpack() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if !cmp.Equal(jsonDm, dm) {
+				t.Errorf("DecodeMsgpack() error = %v, wantErr %v", "msgpack does not match json", tt.wantErr)
+			}
+		})
+	}
 }
 
 func TestDirectoryMetadata_DecodeMsgpack(t *testing.T) {
