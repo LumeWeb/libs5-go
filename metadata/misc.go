@@ -2,6 +2,7 @@ package metadata
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
@@ -26,8 +27,7 @@ func (b *Base64UrlBinary) UnmarshalJSON(data []byte) error {
 	return nil
 }
 func (b Base64UrlBinary) MarshalJSON() ([]byte, error) {
-	return []byte(base64.RawURLEncoding.EncodeToString(b)), nil
-
+	return json.Marshal([]byte(base64.RawURLEncoding.EncodeToString(b)))
 }
 
 func decodeIntMap(dec *msgpack.Decoder) (map[int]interface{}, error) {
