@@ -1,9 +1,11 @@
 package metadata
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/emirpasic/gods/maps/linkedhashmap"
 	cmp "github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 	"github.com/vmihailenco/msgpack/v5"
 	"os"
 	"path/filepath"
@@ -59,7 +61,7 @@ func readFile(filename string) []byte {
 }
 
 func getDirectoryMeta() *DirectoryMetadata {
-	data := readFile("directory.json")
+	data := getDirectoryMetaContent()
 
 	var dir DirectoryMetadata
 
@@ -69,6 +71,12 @@ func getDirectoryMeta() *DirectoryMetadata {
 	}
 
 	return &dir
+}
+
+func getDirectoryMetaContent() []byte {
+	data := readFile("directory.json")
+
+	return data
 }
 
 func TestDirectoryMetadata_DecodeJSON(t *testing.T) {
@@ -162,6 +170,42 @@ func TestDirectoryMetadata_EncodeMsgpack(t *testing.T) {
 			if !cmp.Equal(dm, dm2) {
 				t.Errorf("EncodeMsgpack() error = %v, wantErr %v", "msgpack deser verification does not match", tt.wantErr)
 			}
+		})
+	}
+}
+func TestDirectoryMetadata_EncodeJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "Encode",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jsonDm := getDirectoryMetaContent()
+			dm := &DirectoryMetadata{}
+
+			if err := json.Unmarshal(jsonDm, dm); (err != nil) != tt.wantErr {
+				t.Errorf("EncodeJSON() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			jsonData, err := json.MarshalIndent(dm, "", "\t")
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("EncodeJSON() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			buf := bytes.NewBuffer(nil)
+
+			err = json.Indent(buf, jsonData, "", "\t")
+			if err != nil {
+				t.Errorf("EncodeJSON() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			assert.Equal(t, buf.Bytes(), jsonData)
 		})
 	}
 }
