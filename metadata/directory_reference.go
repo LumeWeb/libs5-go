@@ -12,20 +12,20 @@ type DirectoryReference struct {
 	Name              string                 `json:"name"`
 	EncryptedWriteKey Base64UrlBinary        `json:"encryptedWriteKey,string"`
 	PublicKey         Base64UrlBinary        `json:"publicKey,string"`
-	EncryptionKey     Base64UrlBinary        `json:"encryptionKey,string"`
+	EncryptionKey     *Base64UrlBinary       `json:"encryptionKey,string"`
 	Ext               map[string]interface{} `json:"ext"`
-	URI               string                 `json:"uri"`
-	Key               string                 `json:"key"`
+	URI               string                 `json:"uri,omitempty"`
+	Key               string                 `json:"key,omitempty"`
 	Size              int64                  `json:"size"`
 }
 
-func NewDirectoryReference(created uint64, name string, encryptedWriteKey, publicKey, encryptionKey []byte, ext map[string]interface{}) *DirectoryReference {
+func NewDirectoryReference(created uint64, name string, encryptedWriteKey, publicKey, encryptionKey Base64UrlBinary, ext map[string]interface{}) *DirectoryReference {
 	return &DirectoryReference{
 		Created:           created,
 		Name:              name,
 		EncryptedWriteKey: encryptedWriteKey,
 		PublicKey:         publicKey,
-		EncryptionKey:     encryptionKey,
+		EncryptionKey:     &encryptionKey,
 		Ext:               ext,
 		URI:               "",
 		Key:               "",
@@ -80,7 +80,7 @@ func (dr *DirectoryReference) DecodeMsgpack(dec *msgpack.Decoder) error {
 		case int8(4):
 			dr.EncryptedWriteKey = value.([]byte)
 		case int8(5):
-			dr.EncryptionKey = value.([]byte)
+			dr.EncryptionKey = value.(*Base64UrlBinary)
 		case int8(6):
 			dr.Ext = value.(map[string]interface{})
 		}
