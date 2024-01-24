@@ -57,6 +57,9 @@ func (s *StorageLocation) HandleMessage(node interfaces.Node, peer net.Peer, ver
 	for i := 0; i < int(partCount); i++ {
 		length := utils.DecodeEndian(msg[cursor : cursor+2])
 		cursor += 2
+		if len(msg) < cursor+int(length) {
+			return fmt.Errorf("Invalid message")
+		}
 		part := string(msg[cursor : cursor+int(length)])
 		parts = append(parts, part)
 		cursor += int(length)
