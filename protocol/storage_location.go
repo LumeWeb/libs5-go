@@ -78,7 +78,7 @@ func (s *StorageLocation) HandleMessage(node interfaces.Node, peer net.Peer, ver
 	nodeId := encoding.NewNodeId(publicKey)
 
 	// Assuming `node` is an instance of your NodeImpl structure
-	err := node.AddStorageLocation(hash, nodeId, storage.NewStorageLocation(int(typeOfData), parts, int64(expiry)), msg, node.Config()) // Implement AddStorageLocation
+	err := node.AddStorageLocation(hash, nodeId, storage.NewStorageLocation(int(typeOfData), parts, int64(expiry)), msg) // Implement AddStorageLocation
 
 	if err != nil {
 		return fmt.Errorf("Failed to add storage location: %s", err)
