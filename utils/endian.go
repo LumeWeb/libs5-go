@@ -10,10 +10,12 @@ func EncodeEndian(value uint64, length int) []byte {
 	return res
 }
 func DecodeEndian(bytes []byte) uint64 {
-	var total uint64
+	var total uint64 = 0
+	var multiplier uint64 = 1
 
 	for _, b := range bytes {
-		total = total*256 + uint64(b)
+		total += uint64(b) * multiplier
+		multiplier *= 256
 	}
 
 	return total
