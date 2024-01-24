@@ -39,7 +39,7 @@ func MultihashFromBytes(bytes []byte, kind types.HashType) *Multihash {
 }
 
 func MultihashFromBase64Url(hash string) (*Multihash, error) {
-	ret, err := base64.StdEncoding.DecodeString(hash)
+	ret, err := base64.RawURLEncoding.DecodeString(hash)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func MultihashFromBase64Url(hash string) (*Multihash, error) {
 }
 
 func (m *Multihash) ToBase64Url() (string, error) {
-	return base64.StdEncoding.EncodeToString(m.fullBytes), nil
+	return base64.RawURLEncoding.EncodeToString(m.fullBytes), nil
 }
 
 func (m *Multihash) ToBase32() (string, error) {
