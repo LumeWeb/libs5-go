@@ -2,18 +2,11 @@ package encoding
 
 import (
 	"bytes"
+	"encoding/base32"
+	"encoding/base64"
 	"encoding/json"
-	"errors"
-	"fmt"
-	"git.lumeweb.com/LumeWeb/libs5-go/internal/bases"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
-	"github.com/multiformats/go-multibase"
-	"unicode/utf8"
-)
-
-var (
-	errorNotBase64Url = errors.New("not a base64url string")
 )
 
 type MultihashCode = int
@@ -46,14 +39,7 @@ func MultihashFromBytes(bytes []byte, kind types.HashType) *Multihash {
 }
 
 func MultihashFromBase64Url(hash string) (*Multihash, error) {
-	encoder, _ := multibase.EncoderByName("base64url")
-	encoding, err := getEncoding(hash)
-
-	if encoding != encoder.Encoding() {
-		return nil, errorNotBase64Url
-	}
-
-	_, ret, err := multibase.Decode(hash)
+	ret, err := base64.StdEncoding.DecodeString(hash)
 	if err != nil {
 		return nil, err
 	}
@@ -61,11 +47,11 @@ func MultihashFromBase64Url(hash string) (*Multihash, error) {
 }
 
 func (m *Multihash) ToBase64Url() (string, error) {
-	return bases.ToBase64Url(m.fullBytes)
+	return base64.StdEncoding.EncodeToString(m.fullBytes), nil
 }
 
 func (m *Multihash) ToBase32() (string, error) {
-	return bases.ToBase32(m.fullBytes)
+	return base32.StdEncoding.EncodeToString(m.fullBytes), nil
 }
 
 func (m *Multihash) ToString() (string, error) {
@@ -84,12 +70,12 @@ func (m *Multihash) HashCode() MultihashCode {
 }
 
 func (b *Multihash) UnmarshalJSON(data []byte) error {
-	decodedData, err := MultibaseDecodeString(string(data))
+	decodedData, err := MultihashFromBase64Url(string(data))
 	if err != nil {
 		return err
 	}
 
-	b.fullBytes = decodedData
+	b.fullBytes = decodedData.fullBytes
 	return nil
 }
 func (b Multihash) MarshalJSON() ([]byte, error) {
@@ -100,16 +86,4 @@ func (b Multihash) MarshalJSON() ([]byte, error) {
 
 	return []byte(url), nil
 
-}
-
-func getEncoding(hash string) (multibase.Encoding, error) {
-	r, _ := utf8.DecodeRuneInString(hash)
-	enc := multibase.Encoding(r)
-
-	_, ok := multibase.EncodingToStr[enc]
-	if !ok {
-		return -1, fmt.Errorf("unsupported multibase encoding: %d", enc)
-
-	}
-	return enc, nil
 }
