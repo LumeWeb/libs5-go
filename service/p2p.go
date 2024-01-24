@@ -695,7 +695,7 @@ func (p *P2PImpl) PrepareProvideMessage(hash *encoding.Multihash, location inter
 	list = append(list, 0)
 
 	// Sign the list using the node's private key.
-	signature := ed25519p.Sign(p.nodeKeyPair.PublicKeyRaw(), list)
+	signature := ed25519p.Sign(p.nodeKeyPair.ExtractBytes(), list)
 
 	// Append the public key and signature to the list.
 	finalList := append(list, p.nodeKeyPair.PublicKey()...)
