@@ -279,6 +279,10 @@ func initCID(bytes []byte) (*CID, error) {
 		return NewCID(cidType, *hash, 0), nil
 	}
 
+	if len(bytes) < 34 {
+		return nil, errors.New("invalid cid")
+	}
+
 	hashBytes := bytes[1:34]
 	hash := NewMultihash(hashBytes)
 
