@@ -128,6 +128,27 @@ func (h *HashQuery) HandleMessage(node interfaces.Node, peer net.Peer, verifyId 
 		}
 	}
 
+	if node.ProviderStore() != nil {
+		if node.ProviderStore().CanProvide(h.hash, h.kinds) {
+			location, err := node.ProviderStore().Provide(h.hash, h.kinds)
+			if err != nil {
+				return err
+			}
+
+			message := node.Services().P2P().PrepareProvideMessage(h.hash, location)
+
+			err = node.AddStorageLocation(h.hash, node.Services().P2P().NodeId(), location, message)
+			if err != nil {
+				return err
+			}
+
+			err = peer.SendMessage(message)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	var peers *hashset.Set
 	hashString, err := h.hash.ToString()
 	node.Logger().Debug("HashQuery", zap.Any("hashString", hashString))
