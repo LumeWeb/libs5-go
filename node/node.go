@@ -189,7 +189,7 @@ func (n *NodeImpl) readStorageLocationsFromDB(hash *encoding.Multihash) (storage
 	return locationMap, nil
 }
 
-func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location interfaces.StorageLocation, message []byte, config *config.NodeConfig) error {
+func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location interfaces.StorageLocation, message []byte) error {
 	// Read existing storage locations
 	locationDb, err := n.readStorageLocationsFromDB(hash)
 	if err != nil {

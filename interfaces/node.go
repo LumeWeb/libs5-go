@@ -22,7 +22,7 @@ type Node interface {
 	Db() *bolt.DB
 	Start() error
 	GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType) (map[string]StorageLocation, error)
-	AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location StorageLocation, message []byte, config *config.NodeConfig) error
+	AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location StorageLocation, message []byte) error
 	NetworkId() string
 	DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error)
 	DownloadBytesByCID(cid *encoding.CID) (bytes []byte, err error)
