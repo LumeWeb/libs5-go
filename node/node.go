@@ -34,6 +34,7 @@ type NodeImpl struct {
 	services              interfaces.Services
 	httpClient            *resty.Client
 	connections           sync.WaitGroup
+	providerStore         interfaces.ProviderStore
 }
 
 func (n *NodeImpl) NetworkId() string {
@@ -332,4 +333,12 @@ func (n *NodeImpl) WaitOnConnectedPeers() {
 
 func (n *NodeImpl) ConnectionTracker() *sync.WaitGroup {
 	return &n.connections
+}
+
+func (n *NodeImpl) SetProviderStore(store interfaces.ProviderStore) {
+	n.providerStore = store
+}
+
+func (n *NodeImpl) ProviderStore() interfaces.ProviderStore {
+	return n.providerStore
 }

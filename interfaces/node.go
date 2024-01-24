@@ -29,4 +29,6 @@ type Node interface {
 	GetMetadataByCID(cid *encoding.CID) (metadata.Metadata, error)
 	WaitOnConnectedPeers()
 	ConnectionTracker() *sync.WaitGroup
+	SetProviderStore(store ProviderStore)
+	ProviderStore() ProviderStore
 }
