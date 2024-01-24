@@ -25,5 +25,6 @@ type P2PService interface {
 	DownVote(nodeId *encoding.NodeId) error
 	NodeId() *encoding.NodeId
 	SelfConnectionUris() []*url.URL
+	PrepareProvideMessage(hash *encoding.Multihash, location StorageLocation) []byte
 	Service
 }
