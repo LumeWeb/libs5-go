@@ -685,7 +685,7 @@ func (p *P2PImpl) PrepareProvideMessage(hash *encoding.Multihash, location inter
 		bytes := []byte(part)
 
 		// Encode the length of the part as 4 bytes and append.
-		list = append(list, utils.EncodeEndian(uint64(len(bytes)), 4)...)
+		list = append(list, utils.EncodeEndian(uint64(len(bytes)), 2)...)
 
 		// Append the actual part bytes.
 		list = append(list, bytes...)
