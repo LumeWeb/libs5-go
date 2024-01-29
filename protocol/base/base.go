@@ -8,8 +8,6 @@ import (
 	"io"
 )
 
-//go:generate mockgen -source=base.go -destination=../mocks/base/base.go -package=base
-
 var (
 	_ msgpack.CustomDecoder = (*IncomingMessageReader)(nil)
 )

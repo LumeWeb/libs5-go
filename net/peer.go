@@ -6,8 +6,6 @@ import (
 	"net/url"
 )
 
-//go:generate mockgen -source=peer.go -destination=../mocks/net/peer.go -package=net
-
 var (
 	_ Peer = (*BasePeer)(nil)
 )
