@@ -3,8 +3,9 @@ package base
 import (
 	"context"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/node"
+	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"github.com/vmihailenco/msgpack/v5"
+	"go.uber.org/zap"
 	"io"
 )
 
@@ -22,7 +23,8 @@ type IncomingMessageData struct {
 	Original []byte
 	Data     []byte
 	Ctx      context.Context
-	Node     *node.Node
+	Services service.Services
+	Logger   *zap.Logger
 	Peer     net.Peer
 	VerifyId bool
 }

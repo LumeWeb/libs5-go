@@ -88,10 +88,11 @@ func (h HashQuery) EncodeMsgpack(enc *msgpack.Encoder) error {
 }
 
 func (h *HashQuery) HandleMessage(message base.IncomingMessageData) error {
-	node := message.Node
 	peer := message.Peer
+	services := message.Services
+	logger := message.Logger
 
-	mapLocations, err := node.GetCachedStorageLocations(h.hash, h.kinds)
+	mapLocations, err := services.Storage().GetCachedStorageLocations(h.hash, h.kinds)
 	if err != nil {
 		log.Printf("Error getting cached storage locations: %v", err)
 		return err
@@ -102,14 +103,14 @@ func (h *HashQuery) HandleMessage(message base.IncomingMessageData) error {
 		for key := range mapLocations {
 			nodeId, err := encoding.DecodeNodeId(key)
 			if err != nil {
-				node.Logger().Error("Error decoding node id", zap.Error(err))
+				logger.Error("Error decoding node id", zap.Error(err))
 				continue
 			}
 
 			availableNodes = append(availableNodes, nodeId)
 		}
 
-		score, err := node.Services().P2P().SortNodesByScore(availableNodes)
+		score, err := services.P2P().SortNodesByScore(availableNodes)
 		if err != nil {
 			return err
 		}
@@ -128,16 +129,16 @@ func (h *HashQuery) HandleMessage(message base.IncomingMessageData) error {
 		}
 	}
 
-	if node.ProviderStore() != nil {
-		if node.ProviderStore().CanProvide(h.hash, h.kinds) {
-			location, err := node.ProviderStore().Provide(h.hash, h.kinds)
+	if services.Storage().ProviderStore() != nil {
+		if services.Storage().ProviderStore().CanProvide(h.hash, h.kinds) {
+			location, err := services.Storage().ProviderStore().Provide(h.hash, h.kinds)
 			if err != nil {
 				return err
 			}
 
-			message := node.Services().P2P().PrepareProvideMessage(h.hash, location)
+			message := services.P2P().PrepareProvideMessage(h.hash, location)
 
-			err = node.AddStorageLocation(h.hash, node.Services().P2P().NodeId(), location, message)
+			err = services.Storage().AddStorageLocation(h.hash, services.P2P().NodeId(), location, message)
 			if err != nil {
 				return err
 			}
@@ -151,11 +152,11 @@ func (h *HashQuery) HandleMessage(message base.IncomingMessageData) error {
 
 	var peers *hashset.Set
 	hashString, err := h.hash.ToString()
-	node.Logger().Debug("HashQuery", zap.Any("hashString", hashString))
+	logger.Debug("HashQuery", zap.Any("hashString", hashString))
 	if err != nil {
 		return err
 	}
-	peersVal, ok := node.HashQueryRoutingTable().Get(hashString) // Implement HashQueryRoutingTable method
+	peersVal, ok := services.P2P().HashQueryRoutingTable().Get(hashString) // Implement HashQueryRoutingTable method
 	if ok {
 		peers = peersVal.(*hashset.Set)
 		if !peers.Contains(peer.Id()) {
@@ -168,14 +169,14 @@ func (h *HashQuery) HandleMessage(message base.IncomingMessageData) error {
 	peerList := hashset.New()
 	peerList.Add(peer.Id())
 
-	node.HashQueryRoutingTable().Put(hashString, peerList)
+	services.P2P().HashQueryRoutingTable().Put(hashString, peerList)
 
-	for _, val := range node.Services().P2P().Peers().Values() {
+	for _, val := range services.P2P().Peers().Values() {
 		peerVal := val.(net.Peer)
 		if !peerVal.Id().Equals(peer.Id()) {
 			err := peerVal.SendMessage(message.Original)
 			if err != nil {
-				node.Logger().Error("Failed to send message", zap.Error(err))
+				logger.Error("Failed to send message", zap.Error(err))
 			}
 		}
 	}

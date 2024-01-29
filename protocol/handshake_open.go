@@ -94,21 +94,21 @@ func (h *HandshakeOpen) DecodeMessage(dec *msgpack.Decoder, message base.Incomin
 }
 
 func (h *HandshakeOpen) HandleMessage(message base.IncomingMessageData) error {
-	node := message.Node
 	peer := message.Peer
+	services := message.Services
 
-	if h.networkId != node.NetworkId() {
+	if h.networkId != services.P2P().NetworkId() {
 		return fmt.Errorf("Peer is in different network: %s", h.networkId)
 	}
 
-	handshake := signed.NewHandshakeDoneRequest(h.handshake, types.SupportedFeatures, node.Services().P2P().SelfConnectionUris())
+	handshake := signed.NewHandshakeDoneRequest(h.handshake, types.SupportedFeatures, services.P2P().SelfConnectionUris())
 	hsMessage, err := msgpack.Marshal(handshake)
 
 	if err != nil {
 		return err
 	}
 
-	secureMessage, err := node.Services().P2P().SignMessageSimple(hsMessage)
+	secureMessage, err := services.P2P().SignMessageSimple(hsMessage)
 
 	if err != nil {
 		return err

@@ -40,8 +40,9 @@ func (s *StorageLocation) DecodeMessage(dec *msgpack.Decoder, message base.Incom
 }
 func (s *StorageLocation) HandleMessage(message base.IncomingMessageData) error {
 	msg := message.Original
-	node := message.Node
+	services := message.Services
 	peer := message.Peer
+	logger := message.Logger
 
 	hash := encoding.NewMultihash(msg[1:34]) // Replace NewMultihash with appropriate function
 
@@ -80,7 +81,7 @@ func (s *StorageLocation) HandleMessage(message base.IncomingMessageData) error 
 	nodeId := encoding.NewNodeId(publicKey)
 
 	// Assuming `node` is an instance of your NodeImpl structure
-	err := node.AddStorageLocation(hash, nodeId, storage.NewStorageLocation(int(typeOfData), parts, int64(expiry)), msg) // Implement AddStorageLocation
+	err := services.Storage().AddStorageLocation(hash, nodeId, storage.NewStorageLocation(int(typeOfData), parts, int64(expiry)), msg) // Implement AddStorageLocation
 
 	if err != nil {
 		return fmt.Errorf("Failed to add storage location: %s", err)
@@ -92,7 +93,7 @@ func (s *StorageLocation) HandleMessage(message base.IncomingMessageData) error 
 	}
 
 	var list *hashset.Set
-	listVal, ok := node.HashQueryRoutingTable().Get(hashStr) // Implement HashQueryRoutingTable method
+	listVal, ok := services.P2P().HashQueryRoutingTable().Get(hashStr) // Implement HashQueryRoutingTable method
 	if !ok {
 		list = hashset.New()
 	} else {
@@ -109,16 +110,16 @@ func (s *StorageLocation) HandleMessage(message base.IncomingMessageData) error 
 		if err != nil {
 			return err
 		}
-		if peerVal, ok := node.Services().P2P().Peers().Get(peerIdStr); ok {
+		if peerVal, ok := services.P2P().Peers().Get(peerIdStr); ok {
 			foundPeer := peerVal.(net.Peer)
 			err := foundPeer.SendMessage(msg)
 			if err != nil {
-				node.Logger().Error("Failed to send message", zap.Error(err))
+				logger.Error("Failed to send message", zap.Error(err))
 				continue
 			}
 		}
 
-		node.HashQueryRoutingTable().Remove(hash.HashCode())
+		services.P2P().HashQueryRoutingTable().Remove(hash.HashCode())
 	}
 
 	return nil

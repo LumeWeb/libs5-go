@@ -16,6 +16,7 @@ type Services interface {
 	P2P() *P2PService
 	Registry() *RegistryService
 	HTTP() *HTTPService
+	Storage() *StorageService
 	All() []Service
 	IsStarted() bool
 	Start() error

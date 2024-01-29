@@ -83,8 +83,8 @@ func NewSignedMessage() *SignedMessage {
 
 func (s *SignedMessage) HandleMessage(message base.IncomingMessageData) error {
 	var payload signedMessageReader
-	node := message.Node
 	peer := message.Peer
+	logger := message.Logger
 
 	err := msgpack.Unmarshal(s.message, &payload)
 	if err != nil {
@@ -92,9 +92,9 @@ func (s *SignedMessage) HandleMessage(message base.IncomingMessageData) error {
 	}
 
 	if msgHandler, valid := GetMessageType(payload.kind); valid {
-		node.Logger().Debug("SignedMessage", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
+		logger.Debug("SignedMessage", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
 		if msgHandler.RequiresHandshake() && !peer.IsHandshakeDone() {
-			node.Logger().Debug("Peer is not handshake done, ignoring message", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
+			logger.Debug("Peer is not handshake done, ignoring message", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
 			return nil
 		}
 		err := msgpack.Unmarshal(payload.message, &msgHandler)

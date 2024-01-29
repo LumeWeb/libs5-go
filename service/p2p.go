@@ -50,6 +50,7 @@ type P2PService struct {
 	outgoingPeerFailures    structs.Map
 	maxOutgoingPeerFailures uint
 	connections             sync.WaitGroup
+	hashQueryRoutingTable   structs.Map
 	ServiceBase
 }
 
@@ -72,6 +73,7 @@ func NewP2P(params ServiceParams) *P2PService {
 		incomingIPBlocklist:     structs.NewMap(),
 		outgoingPeerFailures:    structs.NewMap(),
 		maxOutgoingPeerFailures: params.Config.P2P.MaxOutgoingPeerFailures,
+		hashQueryRoutingTable:   structs.NewMap(),
 		ServiceBase: ServiceBase{
 			logger: params.Logger,
 			config: params.Config,
@@ -710,4 +712,11 @@ func (p *P2PService) WaitOnConnectedPeers() {
 
 func (p *P2PService) ConnectionTracker() *sync.WaitGroup {
 	return &p.connections
+}
+
+func (p *P2PService) NetworkId() string {
+	return p.config.P2P.Network
+}
+func (n *P2PService) HashQueryRoutingTable() structs.Map {
+	return n.hashQueryRoutingTable
 }

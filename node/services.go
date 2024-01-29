@@ -12,12 +12,14 @@ type ServicesParams struct {
 	P2P      *service.P2PService
 	Registry *service.RegistryService
 	HTTP     *service.HTTPService
+	Storage  *service.StorageService
 }
 
 type ServicesImpl struct {
 	p2p      *service.P2PService
 	registry *service.RegistryService
 	http     *service.HTTPService
+	storage  *service.StorageService
 	started  bool
 }
 
@@ -25,11 +27,16 @@ func (s *ServicesImpl) HTTP() *service.HTTPService {
 	return s.http
 }
 
+func (s *ServicesImpl) Storage() *service.StorageService {
+	return s.storage
+}
+
 func (s *ServicesImpl) All() []service.Service {
 	services := make([]service.Service, 0)
 	services = append(services, s.p2p)
 	services = append(services, s.registry)
 	services = append(services, s.http)
+	services = append(services, s.storage)
 
 	return services
 }
@@ -43,6 +50,7 @@ func NewServices(params ServicesParams) service.Services {
 		p2p:      params.P2P,
 		registry: params.Registry,
 		http:     params.HTTP,
+		storage:  params.Storage,
 		started:  false,
 	}
 

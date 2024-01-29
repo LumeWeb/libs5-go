@@ -106,10 +106,10 @@ func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder, message IncomingMess
 }
 
 func (a AnnouncePeers) HandleMessage(message IncomingMessageDataSigned) error {
-	node := message.Node
+	services := message.Services
 	peer := message.Peer
 	if len(a.connectionUris) > 0 {
-		err := node.Services().P2P().ConnectToNode([]*url.URL{a.connectionUris[0]}, false, peer)
+		err := services.P2P().ConnectToNode([]*url.URL{a.connectionUris[0]}, false, peer)
 		if err != nil {
 			return err
 		}

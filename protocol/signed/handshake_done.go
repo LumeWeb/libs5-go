@@ -77,12 +77,13 @@ func NewHandshakeDone() *HandshakeDone {
 }
 
 func (h HandshakeDone) HandleMessage(message IncomingMessageDataSigned) error {
-	node := message.Node
+	services := message.Services
 	peer := message.Peer
 	verifyId := message.VerifyId
 	nodeId := message.NodeId
+	logger := message.Logger
 
-	if !node.IsStarted() {
+	if !services.IsStarted() {
 		err := peer.End()
 		if err != nil {
 			return nil
@@ -108,7 +109,7 @@ func (h HandshakeDone) HandleMessage(message IncomingMessageDataSigned) error {
 	if h.supportedFeatures != types.SupportedFeatures {
 		return fmt.Errorf("Remote node does not support required features")
 	}
-	err := node.Services().P2P().AddPeer(peer)
+	err := services.P2P().AddPeer(peer)
 	if err != nil {
 		return err
 	}
@@ -121,9 +122,9 @@ func (h HandshakeDone) HandleMessage(message IncomingMessageDataSigned) error {
 		return err
 	}
 
-	node.Logger().Info(fmt.Sprintf("[+] %s (%s)", peerId, peer.RenderLocationURI()))
+	logger.Info(fmt.Sprintf("[+] %s (%s)", peerId, peer.RenderLocationURI()))
 
-	err = node.Services().P2P().SendPublicPeersToPeer(peer, []net.Peer{peer})
+	err = services.P2P().SendPublicPeersToPeer(peer, []net.Peer{peer})
 	if err != nil {
 		return err
 	}

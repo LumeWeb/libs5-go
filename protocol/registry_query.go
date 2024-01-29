@@ -51,9 +51,9 @@ func (s *RegistryQuery) DecodeMessage(dec *msgpack.Decoder, message base.Incomin
 }
 
 func (s *RegistryQuery) HandleMessage(message base.IncomingMessageData) error {
-	node := message.Node
+	services := message.Services
 	peer := message.Peer
-	sre, err := node.Services().Registry().Get(s.pk)
+	sre, err := services.Registry().Get(s.pk)
 	if err != nil {
 		return err
 	}

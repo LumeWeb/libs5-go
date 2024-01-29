@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	_node "git.lumeweb.com/LumeWeb/libs5-go/node"
+	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.uber.org/zap"
@@ -31,6 +31,13 @@ type StorageLocationImpl struct {
 	binaryParts     [][]byte
 	expiry          int64
 	providerMessage []byte
+}
+
+type StorageLocationProviderParams struct {
+	Services      service.Services
+	Hash          *encoding.Multihash
+	LocationTypes []types.StorageLocationType
+	service.ServiceParams
 }
 
 func (s *StorageLocationImpl) Type() int {
@@ -184,7 +191,7 @@ func NewStorageLocationMap() StorageLocationMap {
 }
 
 type StorageLocationProviderImpl struct {
-	node            *_node.Node
+	services        service.Services
 	hash            *encoding.Multihash
 	types           []types.StorageLocationType
 	timeoutDuration time.Duration
@@ -194,12 +201,13 @@ type StorageLocationProviderImpl struct {
 	isTimedOut      bool
 	isWaitingForUri bool
 	mutex           sync.Mutex
+	logger          *zap.Logger
 }
 
 func (s *StorageLocationProviderImpl) Start() error {
 	var err error
 
-	s.uris, err = s.node.GetCachedStorageLocations(s.hash, s.types)
+	s.uris, err = s.services.Storage().GetCachedStorageLocations(s.hash, s.types)
 	if err != nil {
 		return err
 	}
@@ -212,10 +220,9 @@ func (s *StorageLocationProviderImpl) Start() error {
 		}
 
 		s.availableNodes = append(s.availableNodes, nodeId)
-
 	}
 
-	s.availableNodes, err = s.node.Services().P2P().SortNodesByScore(s.availableNodes)
+	s.availableNodes, err = s.services.P2P().SortNodesByScore(s.availableNodes)
 	if err != nil {
 		s.mutex.Unlock()
 		return err
@@ -235,18 +242,17 @@ func (s *StorageLocationProviderImpl) Start() error {
 				break
 			}
 
-			newUris, err := s.node.GetCachedStorageLocations(s.hash, s.types)
+			newUris, err := s.services.Storage().GetCachedStorageLocations(s.hash, s.types)
 			if err != nil {
 				s.mutex.Unlock()
 				break
 			}
 
-			//s.node.Logger().Debug("New URIs", zap.Any("uris", newUris), zap.Any("availableNodes", s.availableNodes), zap.Any("timeout", s.timeout), zap.Any("isTimedOut", s.isTimedOut), zap.Any("isWaitingForUri", s.isWaitingForUri), zap.Any("requestSent", requestSent))
 			if len(s.availableNodes) == 0 && len(newUris) < 2 && !requestSent {
-				s.node.Logger().Debug("Sending hash request")
-				err := s.node.Services().P2P().SendHashRequest(s.hash, s.types)
+				s.logger.Debug("Sending hash request")
+				err := s.services.P2P().SendHashRequest(s.hash, s.types)
 				if err != nil {
-					s.node.Logger().Error("Error sending hash request", zap.Error(err))
+					s.logger.Error("Error sending hash request", zap.Error(err))
 					continue
 				}
 				requestSent = true
@@ -258,7 +264,7 @@ func (s *StorageLocationProviderImpl) Start() error {
 					s.uris[k] = v
 					nodeId, err := encoding.DecodeNodeId(k)
 					if err != nil {
-						s.node.Logger().Error("Error decoding node id", zap.Error(err))
+						s.logger.Error("Error decoding node id", zap.Error(err))
 						continue
 					}
 					if !containsNode(s.availableNodes, nodeId) {
@@ -269,9 +275,9 @@ func (s *StorageLocationProviderImpl) Start() error {
 			}
 
 			if hasNewNode {
-				score, err := s.node.Services().P2P().SortNodesByScore(s.availableNodes)
+				score, err := s.services.P2P().SortNodesByScore(s.availableNodes)
 				if err != nil {
-					s.node.Logger().Error("Error sorting nodes by score", zap.Error(err))
+					s.logger.Error("Error sorting nodes by score", zap.Error(err))
 				} else {
 					s.availableNodes = score
 				}
@@ -299,7 +305,7 @@ func (s *StorageLocationProviderImpl) Next() (SignedStorageLocation, error) {
 
 			uri, exists := s.uris[nodIdStr]
 			if !exists {
-				s.node.Logger().Error("Could not find uri for node id", zap.String("nodeId", nodIdStr))
+				s.logger.Error("Could not find uri for node id", zap.String("nodeId", nodIdStr))
 				continue
 			}
 
@@ -320,7 +326,7 @@ func (s *StorageLocationProviderImpl) Next() (SignedStorageLocation, error) {
 }
 
 func (s *StorageLocationProviderImpl) Upvote(uri SignedStorageLocation) error {
-	err := s.node.Services().P2P().UpVote(uri.NodeId())
+	err := s.services.P2P().UpVote(uri.NodeId())
 	if err != nil {
 		return err
 	}
@@ -329,26 +335,27 @@ func (s *StorageLocationProviderImpl) Upvote(uri SignedStorageLocation) error {
 }
 
 func (s *StorageLocationProviderImpl) Downvote(uri SignedStorageLocation) error {
-	err := s.node.Services().P2P().DownVote(uri.NodeId())
+	err := s.services.P2P().DownVote(uri.NodeId())
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func NewStorageLocationProvider(node *_node.Node, hash *encoding.Multihash, locationTypes ...types.StorageLocationType) StorageLocationProvider {
-	if locationTypes == nil {
-		locationTypes = []types.StorageLocationType{
+func NewStorageLocationProvider(params StorageLocationProviderParams) *StorageLocationProviderImpl {
+	if params.LocationTypes == nil {
+		params.LocationTypes = []types.StorageLocationType{
 			types.StorageLocationTypeFull,
 		}
 	}
 
 	return &StorageLocationProviderImpl{
-		node:            node,
-		hash:            hash,
-		types:           locationTypes,
+		services:        params.Services,
+		hash:            params.Hash,
+		types:           params.LocationTypes,
 		timeoutDuration: 60 * time.Second,
 		uris:            make(map[string]StorageLocation),
+		logger:          params.Logger,
 	}
 }
 func containsNode(slice []*encoding.NodeId, item *encoding.NodeId) bool {
