@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/ed25519"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/node"
+	_node "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
+	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
@@ -26,8 +26,7 @@ import (
 	"time"
 )
 
-var _ interfaces.P2PService = (*P2PImpl)(nil)
-var _ interfaces.NodeVotes = (*NodeVotesImpl)(nil)
+var _ Service = (*P2PService)(nil)
 
 var (
 	errUnsupportedProtocol       = errors.New("unsupported protocol")
@@ -36,13 +35,13 @@ var (
 
 const nodeBucketName = "nodes"
 
-type P2PImpl struct {
+type P2PService struct {
 	logger                  *zap.Logger
 	nodeKeyPair             *ed25519.KeyPairEd25519
 	localNodeID             *encoding.NodeId
 	networkID               string
 	nodesBucket             *bolt.Bucket
-	node                    interfaces.Node
+	node                    *_node.Node
 	inited                  bool
 	reconnectDelay          structs.Map
 	peers                   structs.Map
@@ -55,13 +54,13 @@ type P2PImpl struct {
 	maxOutgoingPeerFailures uint
 }
 
-func NewP2P(node interfaces.Node) *P2PImpl {
+func NewP2P(node *_node.Node) *P2PService {
 	uri, err := url.Parse(fmt.Sprintf("wss://%s:%d/s5/p2p", node.Config().HTTP.API.Domain, node.Config().HTTP.API.Port))
 	if err != nil {
 		node.Logger().Fatal("failed to HTTP API URL Config", zap.Error(err))
 	}
 
-	service := &P2PImpl{
+	service := &P2PService{
 		logger:                  node.Logger(),
 		nodeKeyPair:             node.Config().KeyPair,
 		networkID:               node.Config().P2P.Network,
@@ -81,19 +80,19 @@ func NewP2P(node interfaces.Node) *P2PImpl {
 	return service
 }
 
-func (p *P2PImpl) SelfConnectionUris() []*url.URL {
+func (p *P2PService) SelfConnectionUris() []*url.URL {
 	return p.selfConnectionUris
 }
 
-func (p *P2PImpl) Node() interfaces.Node {
+func (p *P2PService) Node() *_node.Node {
 	return p.node
 }
 
-func (p *P2PImpl) Peers() structs.Map {
+func (p *P2PService) Peers() structs.Map {
 	return p.peers
 }
 
-func (p *P2PImpl) Start() error {
+func (p *P2PService) Start() error {
 	config := p.Node().Config()
 	if len(config.P2P.Peers.Initial) > 0 {
 		initialPeers := config.P2P.Peers.Initial
@@ -117,11 +116,11 @@ func (p *P2PImpl) Start() error {
 	return nil
 }
 
-func (p *P2PImpl) Stop() error {
+func (p *P2PService) Stop() error {
 	panic("implement me")
 }
 
-func (p *P2PImpl) Init() error {
+func (p *P2PService) Init() error {
 	if p.inited {
 		return nil
 	}
@@ -137,7 +136,7 @@ func (p *P2PImpl) Init() error {
 
 	return nil
 }
-func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPeer net.Peer) error {
+func (p *P2PService) ConnectToNode(connectionUris []*url.URL, retried bool, fromPeer net.Peer) error {
 	if !p.Node().IsStarted() {
 		return nil
 	}
@@ -343,7 +342,7 @@ func (p *P2PImpl) ConnectToNode(connectionUris []*url.URL, retried bool, fromPee
 
 }
 
-func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
+func (p *P2PService) OnNewPeer(peer net.Peer, verifyId bool) error {
 	var wg sync.WaitGroup
 
 	var pid string
@@ -400,7 +399,7 @@ func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
 	p.logger.Debug("OnNewPeer ended", zap.String("peer", pid))
 	return nil
 }
-func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
+func (p *P2PService) OnNewPeerListen(peer net.Peer, verifyId bool) {
 	onDone := net.CloseCallback(func() {
 		if peer.Id() != nil {
 			pid, err := peer.Id().ToString()
@@ -444,7 +443,7 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 			Original: message,
 			Data:     reader.Data,
 			Ctx:      context.Background(),
-			Node:     p.node.(*node.NodeImpl),
+			Node:     p.node,
 			Peer:     peer,
 			VerifyId: verifyId,
 		}
@@ -471,7 +470,7 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 	})
 }
 
-func (p *P2PImpl) readNodeVotes(nodeId *encoding.NodeId) (interfaces.NodeVotes, error) {
+func (p *P2PService) readNodeVotes(nodeId *encoding.NodeId) (NodeVotes, error) {
 	var value []byte
 	var found bool
 	err := p.node.Db().View(func(tx *bolt.Tx) error {
@@ -493,7 +492,7 @@ func (p *P2PImpl) readNodeVotes(nodeId *encoding.NodeId) (interfaces.NodeVotes, 
 		return NewNodeVotes(), nil
 	}
 
-	var score interfaces.NodeVotes
+	var score NodeVotes
 	err = msgpack.Unmarshal(value, &score)
 	if err != nil {
 		return nil, err
@@ -502,7 +501,7 @@ func (p *P2PImpl) readNodeVotes(nodeId *encoding.NodeId) (interfaces.NodeVotes, 
 	return score, nil
 }
 
-func (p *P2PImpl) saveNodeVotes(nodeId *encoding.NodeId, votes interfaces.NodeVotes) error {
+func (p *P2PService) saveNodeVotes(nodeId *encoding.NodeId, votes NodeVotes) error {
 	// Marshal the votes into data
 	data, err := msgpack.Marshal(votes)
 	if err != nil {
@@ -521,7 +520,7 @@ func (p *P2PImpl) saveNodeVotes(nodeId *encoding.NodeId, votes interfaces.NodeVo
 	return err
 }
 
-func (p *P2PImpl) GetNodeScore(nodeId *encoding.NodeId) (float64, error) {
+func (p *P2PService) GetNodeScore(nodeId *encoding.NodeId) (float64, error) {
 	if nodeId.Equals(p.localNodeID) {
 		return 1, nil
 	}
@@ -534,7 +533,7 @@ func (p *P2PImpl) GetNodeScore(nodeId *encoding.NodeId) (float64, error) {
 	return protocol.CalculateNodeScore(score.Good(), score.Bad()), nil
 
 }
-func (p *P2PImpl) SortNodesByScore(nodes []*encoding.NodeId) ([]*encoding.NodeId, error) {
+func (p *P2PService) SortNodesByScore(nodes []*encoding.NodeId) ([]*encoding.NodeId, error) {
 	scores := make(map[encoding.NodeIdCode]float64)
 	var errOccurred error
 
@@ -554,7 +553,7 @@ func (p *P2PImpl) SortNodesByScore(nodes []*encoding.NodeId) ([]*encoding.NodeId
 
 	return nodes, errOccurred
 }
-func (p *P2PImpl) SignMessageSimple(message []byte) ([]byte, error) {
+func (p *P2PService) SignMessageSimple(message []byte) ([]byte, error) {
 	signedMessage := signed.NewSignedMessageRequest(message)
 	signedMessage.SetNodeId(p.localNodeID)
 
@@ -573,7 +572,7 @@ func (p *P2PImpl) SignMessageSimple(message []byte) ([]byte, error) {
 	return result, nil
 }
 
-func (p *P2PImpl) AddPeer(peer net.Peer) error {
+func (p *P2PService) AddPeer(peer net.Peer) error {
 	peerId, err := peer.Id().ToString()
 	if err != nil {
 		return err
@@ -587,7 +586,7 @@ func (p *P2PImpl) AddPeer(peer net.Peer) error {
 
 	return nil
 }
-func (p *P2PImpl) SendPublicPeersToPeer(peer net.Peer, peersToSend []net.Peer) error {
+func (p *P2PService) SendPublicPeersToPeer(peer net.Peer, peersToSend []net.Peer) error {
 	announceRequest := signed.NewAnnounceRequest(peer, peersToSend)
 
 	message, err := msgpack.Marshal(announceRequest)
@@ -606,7 +605,7 @@ func (p *P2PImpl) SendPublicPeersToPeer(peer net.Peer, peersToSend []net.Peer) e
 
 	return nil
 }
-func (p *P2PImpl) SendHashRequest(hash *encoding.Multihash, kinds []types.StorageLocationType) error {
+func (p *P2PService) SendHashRequest(hash *encoding.Multihash, kinds []types.StorageLocationType) error {
 	hashRequest := protocol.NewHashRequest(hash, kinds)
 	message, err := msgpack.Marshal(hashRequest)
 	if err != nil {
@@ -625,7 +624,7 @@ func (p *P2PImpl) SendHashRequest(hash *encoding.Multihash, kinds []types.Storag
 	return nil
 }
 
-func (p *P2PImpl) UpVote(nodeId *encoding.NodeId) error {
+func (p *P2PService) UpVote(nodeId *encoding.NodeId) error {
 	err := p.vote(nodeId, true)
 	if err != nil {
 		return err
@@ -634,7 +633,7 @@ func (p *P2PImpl) UpVote(nodeId *encoding.NodeId) error {
 	return nil
 }
 
-func (p *P2PImpl) DownVote(nodeId *encoding.NodeId) error {
+func (p *P2PService) DownVote(nodeId *encoding.NodeId) error {
 	err := p.vote(nodeId, false)
 	if err != nil {
 		return err
@@ -643,7 +642,7 @@ func (p *P2PImpl) DownVote(nodeId *encoding.NodeId) error {
 	return nil
 }
 
-func (p *P2PImpl) vote(nodeId *encoding.NodeId, upvote bool) error {
+func (p *P2PService) vote(nodeId *encoding.NodeId, upvote bool) error {
 	votes, err := p.readNodeVotes(nodeId)
 	if err != nil {
 		return err
@@ -662,11 +661,11 @@ func (p *P2PImpl) vote(nodeId *encoding.NodeId, upvote bool) error {
 
 	return nil
 }
-func (p *P2PImpl) NodeId() *encoding.NodeId {
+func (p *P2PService) NodeId() *encoding.NodeId {
 	return p.localNodeID
 }
 
-func (p *P2PImpl) PrepareProvideMessage(hash *encoding.Multihash, location interfaces.StorageLocation) []byte {
+func (p *P2PService) PrepareProvideMessage(hash *encoding.Multihash, location storage.StorageLocation) []byte {
 	// Initialize the list with the record type.
 	list := []byte{byte(types.RecordTypeStorageLocation)}
 

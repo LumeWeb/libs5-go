@@ -1,7 +1,6 @@
 package protocol
 
 import (
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
@@ -11,7 +10,7 @@ var _ base.IncomingMessage = (*RegistryEntryRequest)(nil)
 var _ base.EncodeableMessage = (*RegistryEntryRequest)(nil)
 
 type RegistryEntryRequest struct {
-	sre interfaces.SignedRegistryEntry
+	sre SignedRegistryEntry
 	base.HandshakeRequirement
 }
 
@@ -22,7 +21,7 @@ func NewEmptyRegistryEntryRequest() *RegistryEntryRequest {
 
 	return rer
 }
-func NewRegistryEntryRequest(sre interfaces.SignedRegistryEntry) *RegistryEntryRequest {
+func NewRegistryEntryRequest(sre SignedRegistryEntry) *RegistryEntryRequest {
 	return &RegistryEntryRequest{sre: sre}
 }
 

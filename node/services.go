@@ -1,23 +1,25 @@
 package node
 
-import "git.lumeweb.com/LumeWeb/libs5-go/interfaces"
+import (
+	"git.lumeweb.com/LumeWeb/libs5-go/service"
+)
 
 var (
-	_ interfaces.Services = (*ServicesImpl)(nil)
+	_ service.Services = (*ServicesImpl)(nil)
 )
 
 type ServicesImpl struct {
-	p2p      interfaces.P2PService
-	registry interfaces.RegistryService
-	http     interfaces.HTTPService
+	p2p      *service.P2PService
+	registry *service.RegistryService
+	http     *service.HTTPService
 }
 
-func (s *ServicesImpl) HTTP() interfaces.HTTPService {
+func (s *ServicesImpl) HTTP() *service.HTTPService {
 	return s.http
 }
 
-func (s *ServicesImpl) All() []interfaces.Service {
-	services := make([]interfaces.Service, 0)
+func (s *ServicesImpl) All() []service.Service {
+	services := make([]service.Service, 0)
 	services = append(services, s.p2p)
 	services = append(services, s.registry)
 	services = append(services, s.http)
@@ -25,11 +27,11 @@ func (s *ServicesImpl) All() []interfaces.Service {
 	return services
 }
 
-func (s *ServicesImpl) Registry() interfaces.RegistryService {
+func (s *ServicesImpl) Registry() *service.RegistryService {
 	return s.registry
 }
 
-func NewServices(p2p interfaces.P2PService, registry interfaces.RegistryService, http interfaces.HTTPService) interfaces.Services {
+func NewServices(p2p *service.P2PService, registry *service.RegistryService, http *service.HTTPService) service.Services {
 	return &ServicesImpl{
 		p2p:      p2p,
 		registry: registry,
@@ -37,6 +39,6 @@ func NewServices(p2p interfaces.P2PService, registry interfaces.RegistryService,
 	}
 }
 
-func (s *ServicesImpl) P2P() interfaces.P2PService {
+func (s *ServicesImpl) P2P() *service.P2PService {
 	return s.p2p
 }

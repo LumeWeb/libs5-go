@@ -14,11 +14,11 @@ import (
 )
 
 var (
-	_ msgpack.CustomDecoder              = (*StorageLocationMap)(nil)
-	_ msgpack.CustomEncoder              = (*StorageLocationMap)(nil)
-	_ interfaces.StorageLocation         = (*StorageLocationImpl)(nil)
-	_ interfaces.StorageLocationProvider = (*StorageLocationProviderImpl)(nil)
-	_ interfaces.SignedStorageLocation   = (*SignedStorageLocationImpl)(nil)
+	_ msgpack.CustomDecoder   = (*StorageLocationMap)(nil)
+	_ msgpack.CustomEncoder   = (*StorageLocationMap)(nil)
+	_ StorageLocation         = (*StorageLocationImpl)(nil)
+	_ StorageLocationProvider = (*StorageLocationProviderImpl)(nil)
+	_ SignedStorageLocation   = (*SignedStorageLocationImpl)(nil)
 )
 
 type StorageLocationMap map[int]NodeStorage
@@ -73,7 +73,7 @@ func (s *StorageLocationImpl) ProviderMessage() []byte {
 	return s.providerMessage
 }
 
-func NewStorageLocation(Type int, Parts []string, Expiry int64) interfaces.StorageLocation {
+func NewStorageLocation(Type int, Parts []string, Expiry int64) StorageLocation {
 	return &StorageLocationImpl{
 		kind:   Type,
 		parts:  Parts,
@@ -99,10 +99,10 @@ func (s *StorageLocationImpl) String() string {
 
 type SignedStorageLocationImpl struct {
 	nodeID   *encoding.NodeId
-	location interfaces.StorageLocation
+	location StorageLocation
 }
 
-func NewSignedStorageLocation(NodeID *encoding.NodeId, Location interfaces.StorageLocation) interfaces.SignedStorageLocation {
+func NewSignedStorageLocation(NodeID *encoding.NodeId, Location StorageLocation) SignedStorageLocation {
 	return &SignedStorageLocationImpl{
 		nodeID:   NodeID,
 		location: Location,
@@ -122,7 +122,7 @@ func (ssl *SignedStorageLocationImpl) String() string {
 func (ssl *SignedStorageLocationImpl) NodeId() *encoding.NodeId {
 	return ssl.nodeID
 }
-func (ssl *SignedStorageLocationImpl) Location() interfaces.StorageLocation {
+func (ssl *SignedStorageLocationImpl) Location() StorageLocation {
 	return ssl.location
 }
 
@@ -189,7 +189,7 @@ type StorageLocationProviderImpl struct {
 	types           []types.StorageLocationType
 	timeoutDuration time.Duration
 	availableNodes  []*encoding.NodeId
-	uris            map[string]interfaces.StorageLocation
+	uris            map[string]StorageLocation
 	timeout         time.Time
 	isTimedOut      bool
 	isWaitingForUri bool
@@ -283,7 +283,7 @@ func (s *StorageLocationProviderImpl) Start() error {
 	}()
 	return nil
 }
-func (s *StorageLocationProviderImpl) Next() (interfaces.SignedStorageLocation, error) {
+func (s *StorageLocationProviderImpl) Next() (SignedStorageLocation, error) {
 	s.timeout = time.Now().Add(s.timeoutDuration)
 
 	for {
@@ -319,7 +319,7 @@ func (s *StorageLocationProviderImpl) Next() (interfaces.SignedStorageLocation, 
 	}
 }
 
-func (s *StorageLocationProviderImpl) Upvote(uri interfaces.SignedStorageLocation) error {
+func (s *StorageLocationProviderImpl) Upvote(uri SignedStorageLocation) error {
 	err := s.node.Services().P2P().UpVote(uri.NodeId())
 	if err != nil {
 		return err
@@ -328,7 +328,7 @@ func (s *StorageLocationProviderImpl) Upvote(uri interfaces.SignedStorageLocatio
 	return nil
 }
 
-func (s *StorageLocationProviderImpl) Downvote(uri interfaces.SignedStorageLocation) error {
+func (s *StorageLocationProviderImpl) Downvote(uri SignedStorageLocation) error {
 	err := s.node.Services().P2P().DownVote(uri.NodeId())
 	if err != nil {
 		return err
@@ -336,7 +336,7 @@ func (s *StorageLocationProviderImpl) Downvote(uri interfaces.SignedStorageLocat
 	return nil
 }
 
-func NewStorageLocationProvider(node interfaces.Node, hash *encoding.Multihash, locationTypes ...types.StorageLocationType) interfaces.StorageLocationProvider {
+func NewStorageLocationProvider(node interfaces.Node, hash *encoding.Multihash, locationTypes ...types.StorageLocationType) StorageLocationProvider {
 	if locationTypes == nil {
 		locationTypes = []types.StorageLocationType{
 			types.StorageLocationTypeFull,
@@ -348,7 +348,7 @@ func NewStorageLocationProvider(node interfaces.Node, hash *encoding.Multihash, 
 		hash:            hash,
 		types:           locationTypes,
 		timeoutDuration: 60 * time.Second,
-		uris:            make(map[string]interfaces.StorageLocation),
+		uris:            make(map[string]StorageLocation),
 	}
 }
 func containsNode(slice []*encoding.NodeId, item *encoding.NodeId) bool {
@@ -358,4 +358,37 @@ func containsNode(slice []*encoding.NodeId, item *encoding.NodeId) bool {
 		}
 	}
 	return false
+}
+
+type StorageLocationProvider interface {
+	Start() error
+	Next() (SignedStorageLocation, error)
+	Upvote(uri SignedStorageLocation) error
+	Downvote(uri SignedStorageLocation) error
+}
+
+type StorageLocation interface {
+	BytesURL() string
+	OutboardBytesURL() string
+	String() string
+	ProviderMessage() []byte
+	Type() int
+	Parts() []string
+	BinaryParts() [][]byte
+	Expiry() int64
+	SetProviderMessage(msg []byte)
+	SetType(t int)
+	SetParts(p []string)
+	SetBinaryParts(bp [][]byte)
+	SetExpiry(e int64)
+}
+type SignedStorageLocation interface {
+	String() string
+	NodeId() *encoding.NodeId
+	Location() StorageLocation
+}
+
+type ProviderStore interface {
+	CanProvide(hash *encoding.Multihash, kind []types.StorageLocationType) bool
+	Provide(hash *encoding.Multihash, kind []types.StorageLocationType) (StorageLocation, error)
 }

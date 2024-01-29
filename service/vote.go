@@ -1,12 +1,11 @@
 package service
 
 import (
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
 var (
-	_ interfaces.NodeVotes  = (*NodeVotesImpl)(nil)
+	_ NodeVotes             = (*NodeVotesImpl)(nil)
 	_ msgpack.CustomDecoder = (*NodeVotesImpl)(nil)
 	_ msgpack.CustomEncoder = (*NodeVotesImpl)(nil)
 )
@@ -16,7 +15,7 @@ type NodeVotesImpl struct {
 	bad  int
 }
 
-func NewNodeVotes() interfaces.NodeVotes {
+func NewNodeVotes() NodeVotes {
 	return &NodeVotesImpl{
 		good: 0,
 		bad:  0,
@@ -68,4 +67,13 @@ func (n *NodeVotesImpl) Upvote() {
 
 func (n *NodeVotesImpl) Downvote() {
 	n.bad++
+}
+
+type NodeVotes interface {
+	msgpack.CustomEncoder
+	msgpack.CustomDecoder
+	Good() int
+	Bad() int
+	Upvote()
+	Downvote()
 }

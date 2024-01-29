@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/metadata"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
@@ -22,31 +21,29 @@ import (
 	"time"
 )
 
-var _ interfaces.Node = (*NodeImpl)(nil)
-
 const cacheBucketName = "object-cache"
 
-type NodeImpl struct {
+type Node struct {
 	nodeConfig            *config.NodeConfig
 	metadataCache         structs.Map
 	started               bool
 	hashQueryRoutingTable structs.Map
-	services              interfaces.Services
+	services              service.Services
 	httpClient            *resty.Client
 	connections           sync.WaitGroup
-	providerStore         interfaces.ProviderStore
+	providerStore         storage.ProviderStore
 }
 
-func (n *NodeImpl) NetworkId() string {
+func (n *Node) NetworkId() string {
 	return n.nodeConfig.P2P.Network
 }
 
-func (n *NodeImpl) Services() interfaces.Services {
+func (n *Node) Services() service.Services {
 	return n.services
 }
 
-func NewNode(config *config.NodeConfig) interfaces.Node {
-	n := &NodeImpl{
+func NewNode(config *config.NodeConfig) *Node {
+	n := &Node{
 		nodeConfig:            config,
 		metadataCache:         structs.NewMap(),
 		started:               false,
@@ -57,33 +54,33 @@ func NewNode(config *config.NodeConfig) interfaces.Node {
 
 	return n
 }
-func (n *NodeImpl) HashQueryRoutingTable() structs.Map {
+func (n *Node) HashQueryRoutingTable() structs.Map {
 	return n.hashQueryRoutingTable
 }
 
-func (n *NodeImpl) IsStarted() bool {
+func (n *Node) IsStarted() bool {
 	return n.started
 }
 
-func (n *NodeImpl) Config() *config.NodeConfig {
+func (n *Node) Config() *config.NodeConfig {
 	return n.nodeConfig
 }
 
-func (n *NodeImpl) Logger() *zap.Logger {
+func (n *Node) Logger() *zap.Logger {
 	if n.nodeConfig != nil {
 		return n.nodeConfig.Logger
 	}
 	return nil
 }
 
-func (n *NodeImpl) Db() *bolt.DB {
+func (n *Node) Db() *bolt.DB {
 	if n.nodeConfig != nil {
 		return n.nodeConfig.DB
 	}
 	return nil
 }
 
-func (n *NodeImpl) Start() error {
+func (n *Node) Start() error {
 	protocol.Init()
 	signed.Init()
 	err :=
@@ -109,15 +106,15 @@ func (n *NodeImpl) Start() error {
 	n.started = true
 	return nil
 }
-func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType) (map[string]interfaces.StorageLocation, error) {
-	locations := make(map[string]interfaces.StorageLocation)
+func (n *Node) GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType) (map[string]storage.StorageLocation, error) {
+	locations := make(map[string]storage.StorageLocation)
 
 	locationMap, err := n.readStorageLocationsFromDB(hash)
 	if err != nil {
 		return nil, err
 	}
 	if len(locationMap) == 0 {
-		return make(map[string]interfaces.StorageLocation), nil
+		return make(map[string]storage.StorageLocation), nil
 	}
 
 	ts := time.Now().Unix()
@@ -163,7 +160,7 @@ func (n *NodeImpl) GetCachedStorageLocations(hash *encoding.Multihash, kinds []t
 	}
 	return locations, nil
 }
-func (n *NodeImpl) readStorageLocationsFromDB(hash *encoding.Multihash) (storage.StorageLocationMap, error) {
+func (n *Node) readStorageLocationsFromDB(hash *encoding.Multihash) (storage.StorageLocationMap, error) {
 	var locationMap storage.StorageLocationMap
 
 	err := n.Db().View(func(tx *bolt.Tx) error {
@@ -189,7 +186,7 @@ func (n *NodeImpl) readStorageLocationsFromDB(hash *encoding.Multihash) (storage
 	return locationMap, nil
 }
 
-func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location interfaces.StorageLocation, message []byte) error {
+func (n *Node) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location storage.StorageLocation, message []byte) error {
 	// Read existing storage locations
 	locationDb, err := n.readStorageLocationsFromDB(hash)
 	if err != nil {
@@ -235,7 +232,7 @@ func (n *NodeImpl) AddStorageLocation(hash *encoding.Multihash, nodeId *encoding
 	return nil
 }
 
-func (n *NodeImpl) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error) {
+func (n *Node) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error) {
 	// Initialize the download URI provider
 	dlUriProvider := storage.NewStorageLocationProvider(n, hash, types.StorageLocationTypeFull, types.StorageLocationTypeFile)
 	err := dlUriProvider.Start()
@@ -271,7 +268,7 @@ func (n *NodeImpl) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error)
 	}
 }
 
-func (n *NodeImpl) DownloadBytesByCID(cid *encoding.CID) (bytes []byte, err error) {
+func (n *Node) DownloadBytesByCID(cid *encoding.CID) (bytes []byte, err error) {
 	bytes, err = n.DownloadBytesByHash(&cid.Hash)
 	if err != nil {
 		return nil, err
@@ -280,7 +277,7 @@ func (n *NodeImpl) DownloadBytesByCID(cid *encoding.CID) (bytes []byte, err erro
 	return bytes, nil
 }
 
-func (n *NodeImpl) GetMetadataByCID(cid *encoding.CID) (md metadata.Metadata, err error) {
+func (n *Node) GetMetadataByCID(cid *encoding.CID) (md metadata.Metadata, err error) {
 	hashStr, err := cid.Hash.ToString()
 	if err != nil {
 		return nil, err
@@ -327,18 +324,18 @@ func (n *NodeImpl) GetMetadataByCID(cid *encoding.CID) (md metadata.Metadata, er
 
 	return md, nil
 }
-func (n *NodeImpl) WaitOnConnectedPeers() {
+func (n *Node) WaitOnConnectedPeers() {
 	n.connections.Wait()
 }
 
-func (n *NodeImpl) ConnectionTracker() *sync.WaitGroup {
+func (n *Node) ConnectionTracker() *sync.WaitGroup {
 	return &n.connections
 }
 
-func (n *NodeImpl) SetProviderStore(store interfaces.ProviderStore) {
+func (n *Node) SetProviderStore(store storage.ProviderStore) {
 	n.providerStore = store
 }
 
-func (n *NodeImpl) ProviderStore() interfaces.ProviderStore {
+func (n *Node) ProviderStore() storage.ProviderStore {
 	return n.providerStore
 }

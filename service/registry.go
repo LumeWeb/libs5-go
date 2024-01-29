@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	_node "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
@@ -16,42 +16,44 @@ import (
 	"time"
 )
 
-var _ interfaces.RegistryService = (*RegistryImpl)(nil)
-
 const registryBucketName = "registry"
 
-type RegistryImpl struct {
-	node    interfaces.Node
+var (
+	_ Service = (*RegistryService)(nil)
+)
+
+type RegistryService struct {
+	node    *_node.Node
 	logger  *zap.Logger
 	streams structs.Map
 	subs    structs.Map
 }
 
-func (r *RegistryImpl) Node() interfaces.Node {
+func (r *RegistryService) Node() *_node.Node {
 	return r.node
 }
 
-func (r *RegistryImpl) Start() error {
+func (r *RegistryService) Start() error {
 	return nil
 }
 
-func (r *RegistryImpl) Stop() error {
+func (r *RegistryService) Stop() error {
 	return nil
 }
 
-func (r *RegistryImpl) Init() error {
+func (r *RegistryService) Init() error {
 	return utils.CreateBucket(registryBucketName, r.node.Db())
 }
 
-func NewRegistry(node interfaces.Node) *RegistryImpl {
-	return &RegistryImpl{
+func NewRegistry(node *_node.Node) *RegistryService {
+	return &RegistryService{
 		node:    node,
 		logger:  node.Logger(),
 		streams: structs.NewMap(),
 		subs:    structs.NewMap(),
 	}
 }
-func (r *RegistryImpl) Set(sre interfaces.SignedRegistryEntry, trusted bool, receivedFrom net.Peer) error {
+func (r *RegistryService) Set(sre protocol.SignedRegistryEntry, trusted bool, receivedFrom net.Peer) error {
 	hash := encoding.NewMultihash(sre.PK())
 	hashString, err := hash.ToString()
 	if err != nil {
@@ -138,7 +140,7 @@ func (r *RegistryImpl) Set(sre interfaces.SignedRegistryEntry, trusted bool, rec
 
 	return nil
 }
-func (r *RegistryImpl) BroadcastEntry(sre interfaces.SignedRegistryEntry, receivedFrom net.Peer) error {
+func (r *RegistryService) BroadcastEntry(sre protocol.SignedRegistryEntry, receivedFrom net.Peer) error {
 	hash := encoding.NewMultihash(sre.PK())
 	hashString, err := hash.ToString()
 	if err != nil {
@@ -171,7 +173,7 @@ func (r *RegistryImpl) BroadcastEntry(sre interfaces.SignedRegistryEntry, receiv
 
 	return nil
 }
-func (r *RegistryImpl) SendRegistryRequest(pk []byte) error {
+func (r *RegistryService) SendRegistryRequest(pk []byte) error {
 	query := protocol.NewRegistryQuery(pk)
 
 	request, err := msgpack.Marshal(query)
@@ -198,7 +200,7 @@ func (r *RegistryImpl) SendRegistryRequest(pk []byte) error {
 
 	return nil
 }
-func (r *RegistryImpl) Get(pk []byte) (interfaces.SignedRegistryEntry, error) {
+func (r *RegistryService) Get(pk []byte) (protocol.SignedRegistryEntry, error) {
 	key := encoding.NewMultihash(pk)
 	keyString, err := key.ToString()
 	if err != nil {
@@ -259,14 +261,14 @@ func (r *RegistryImpl) Get(pk []byte) (interfaces.SignedRegistryEntry, error) {
 	return nil, nil
 }
 
-func (r *RegistryImpl) Listen(pk []byte, cb func(sre interfaces.SignedRegistryEntry)) (func(), error) {
+func (r *RegistryService) Listen(pk []byte, cb func(sre protocol.SignedRegistryEntry)) (func(), error) {
 	key, err := encoding.NewMultihash(pk).ToString()
 	if err != nil {
 		return nil, err
 	}
 
 	cbProxy := func(event *emitter.Event) {
-		sre, ok := event.Args[0].(interfaces.SignedRegistryEntry)
+		sre, ok := event.Args[0].(protocol.SignedRegistryEntry)
 		if !ok {
 			r.logger.Error("Failed to cast event to SignedRegistryEntry")
 			return
@@ -292,7 +294,7 @@ func (r *RegistryImpl) Listen(pk []byte, cb func(sre interfaces.SignedRegistryEn
 	}, nil
 }
 
-func (r *RegistryImpl) getFromDB(pk []byte) (sre interfaces.SignedRegistryEntry, err error) {
+func (r *RegistryService) getFromDB(pk []byte) (sre protocol.SignedRegistryEntry, err error) {
 	err = r.node.Db().View(func(txn *bbolt.Tx) error {
 		bucket := txn.Bucket([]byte(registryBucketName))
 		val := bucket.Get(pk)

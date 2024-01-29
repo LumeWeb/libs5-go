@@ -24,7 +24,7 @@ type IncomingMessageData struct {
 	Original []byte
 	Data     []byte
 	Ctx      context.Context
-	Node     *node.NodeImpl
+	Node     *node.Node
 	Peer     net.Peer
 	VerifyId bool
 }

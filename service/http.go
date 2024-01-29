@@ -2,8 +2,8 @@ package service
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/build"
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	_node "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"github.com/julienschmidt/httprouter"
 	"go.sia.tech/jape"
 	"go.uber.org/zap"
@@ -11,7 +11,7 @@ import (
 	"nhooyr.io/websocket"
 )
 
-var _ interfaces.HTTPService = (*HTTPImpl)(nil)
+var _ Service = (*HTTPService)(nil)
 
 type P2PNodesResponse struct {
 	Nodes []P2PNodeResponse `json:"nodes"`
@@ -22,17 +22,17 @@ type P2PNodeResponse struct {
 	Uris []string `json:"uris"`
 }
 
-type HTTPImpl struct {
-	node interfaces.Node
+type HTTPService struct {
+	node *_node.Node
 }
 
-func NewHTTP(node interfaces.Node) interfaces.HTTPService {
-	return &HTTPImpl{
+func NewHTTP(node *_node.Node) *HTTPService {
+	return &HTTPService{
 		node: node,
 	}
 }
 
-func (h *HTTPImpl) GetHttpRouter(inject map[string]jape.Handler) *httprouter.Router {
+func (h *HTTPService) GetHttpRouter(inject map[string]jape.Handler) *httprouter.Router {
 	routes := map[string]jape.Handler{
 		"GET /s5/version":   h.versionHandler,
 		"GET /s5/p2p":       h.p2pHandler,
@@ -46,26 +46,26 @@ func (h *HTTPImpl) GetHttpRouter(inject map[string]jape.Handler) *httprouter.Rou
 	return jape.Mux(routes)
 }
 
-func (h *HTTPImpl) Node() interfaces.Node {
+func (h *HTTPService) Node() *_node.Node {
 	return h.node
 }
 
-func (h *HTTPImpl) Start() error {
+func (h *HTTPService) Start() error {
 	return nil
 }
 
-func (h *HTTPImpl) Stop() error {
+func (h *HTTPService) Stop() error {
 	return nil
 }
 
-func (h *HTTPImpl) Init() error {
+func (h *HTTPService) Init() error {
 	return nil
 }
 
-func (h *HTTPImpl) versionHandler(ctx jape.Context) {
+func (h *HTTPService) versionHandler(ctx jape.Context) {
 	_, _ = ctx.ResponseWriter.Write([]byte(build.Version))
 }
-func (h *HTTPImpl) p2pHandler(ctx jape.Context) {
+func (h *HTTPService) p2pHandler(ctx jape.Context) {
 	c, err := websocket.Accept(ctx.ResponseWriter, ctx.Request, nil)
 	if err != nil {
 		h.node.Logger().Error("error accepting websocket connection", zap.Error(err))
@@ -97,7 +97,7 @@ func (h *HTTPImpl) p2pHandler(ctx jape.Context) {
 	}()
 }
 
-func (h *HTTPImpl) p2pNodesHandler(ctx jape.Context) {
+func (h *HTTPService) p2pNodesHandler(ctx jape.Context) {
 	localId, err := h.node.Services().P2P().NodeId().ToString()
 
 	if ctx.Check("error getting local node id", err) != nil {

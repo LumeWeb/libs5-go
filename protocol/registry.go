@@ -4,15 +4,30 @@ import (
 	ed25519p "crypto/ed25519"
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/ed25519"
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 )
 
 var (
-	_ interfaces.SignedRegistryEntry = (*SignedRegistryEntryImpl)(nil)
-	_ interfaces.SignedRegistryEntry = (*SignedRegistryEntryImpl)(nil)
+	_ SignedRegistryEntry = (*SignedRegistryEntryImpl)(nil)
+	_ SignedRegistryEntry = (*SignedRegistryEntryImpl)(nil)
 )
+
+type SignedRegistryEntry interface {
+	PK() []byte
+	Revision() uint64
+	Data() []byte
+	Signature() []byte
+	SetPK(pk []byte)
+	SetRevision(revision uint64)
+	SetData(data []byte)
+	SetSignature(signature []byte)
+	Verify() bool
+}
+
+type RegistryEntry interface {
+	Sign() SignedRegistryEntry
+}
 
 type SignedRegistryEntryImpl struct {
 	pk        []byte
@@ -57,7 +72,7 @@ func (s *SignedRegistryEntryImpl) SetSignature(signature []byte) {
 	s.signature = signature
 }
 
-func NewSignedRegistryEntry(pk []byte, revision uint64, data []byte, signature []byte) interfaces.SignedRegistryEntry {
+func NewSignedRegistryEntry(pk []byte, revision uint64, data []byte, signature []byte) SignedRegistryEntry {
 	return &SignedRegistryEntryImpl{
 		pk:        pk,
 		revision:  revision,
@@ -72,7 +87,7 @@ type RegistryEntryImpl struct {
 	revision uint64
 }
 
-func NewRegistryEntry(kp ed25519.KeyPairEd25519, data []byte, revision uint64) interfaces.RegistryEntry {
+func NewRegistryEntry(kp ed25519.KeyPairEd25519, data []byte, revision uint64) RegistryEntry {
 	return &RegistryEntryImpl{
 		kp:       kp,
 		data:     data,
@@ -80,11 +95,11 @@ func NewRegistryEntry(kp ed25519.KeyPairEd25519, data []byte, revision uint64) i
 	}
 }
 
-func (r *RegistryEntryImpl) Sign() interfaces.SignedRegistryEntry {
+func (r *RegistryEntryImpl) Sign() SignedRegistryEntry {
 	return SignRegistryEntry(r.kp, r.data, r.revision)
 }
 
-func SignRegistryEntry(kp ed25519.KeyPairEd25519, data []byte, revision uint64) interfaces.SignedRegistryEntry {
+func SignRegistryEntry(kp ed25519.KeyPairEd25519, data []byte, revision uint64) SignedRegistryEntry {
 	buffer := MarshalRegistryEntry(data, revision)
 
 	privateKey := kp.ExtractBytes()
@@ -92,14 +107,14 @@ func SignRegistryEntry(kp ed25519.KeyPairEd25519, data []byte, revision uint64) 
 
 	return NewSignedRegistryEntry(kp.PublicKey(), uint64(revision), data, signature)
 }
-func VerifyRegistryEntry(sre interfaces.SignedRegistryEntry) bool {
+func VerifyRegistryEntry(sre SignedRegistryEntry) bool {
 	buffer := MarshalRegistryEntry(sre.Data(), sre.Revision())
 	publicKey := sre.PK()[1:]
 
 	return ed25519p.Verify(publicKey, buffer, sre.Signature())
 }
 
-func MarshalSignedRegistryEntry(sre interfaces.SignedRegistryEntry) []byte {
+func MarshalSignedRegistryEntry(sre SignedRegistryEntry) []byte {
 	buffer := MarshalRegistryEntry(sre.Data(), sre.Revision())
 	buffer = append(buffer, sre.Signature()...)
 
@@ -118,7 +133,7 @@ func MarshalRegistryEntry(data []byte, revision uint64) []byte {
 	return buffer
 }
 
-func UnmarshalSignedRegistryEntry(event []byte) (sre interfaces.SignedRegistryEntry, err error) {
+func UnmarshalSignedRegistryEntry(event []byte) (sre SignedRegistryEntry, err error) {
 	if len(event) < 43 {
 		return nil, errors.New("Invalid registry entry")
 	}
