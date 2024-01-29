@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
@@ -13,17 +12,16 @@ import (
 	"net/url"
 )
 
-var _ base.IncomingMessageTyped = (*HandshakeDone)(nil)
+var _ IncomingMessageSigned = (*HandshakeDone)(nil)
 var _ base.EncodeableMessage = (*HandshakeDone)(nil)
 
 type HandshakeDone struct {
-	challenge []byte
-	networkId string
-	base.IncomingMessageTypedImpl
-	base.IncomingMessageHandler
+	challenge         []byte
+	networkId         string
 	supportedFeatures int
 	connectionUris    []*url.URL
 	handshake         []byte
+	base.HandshakeRequirement
 }
 
 func NewHandshakeDoneRequest(handshake []byte, supportedFeatures int, connectionUris []*url.URL) *HandshakeDone {
@@ -78,7 +76,12 @@ func NewHandshakeDone() *HandshakeDone {
 	return hn
 }
 
-func (h HandshakeDone) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
+func (h HandshakeDone) HandleMessage(message IncomingMessageDataSigned) error {
+	node := message.Node
+	peer := message.Peer
+	verifyId := message.VerifyId
+	nodeId := message.NodeId
+
 	if !node.IsStarted() {
 		err := peer.End()
 		if err != nil {
@@ -90,8 +93,6 @@ func (h HandshakeDone) HandleMessage(node interfaces.Node, peer net.Peer, verify
 	if !bytes.Equal(peer.Challenge(), h.challenge) {
 		return errors.New("Invalid challenge")
 	}
-
-	nodeId := h.IncomingMessage().(*SignedMessage).NodeId()
 
 	if !verifyId {
 		peer.SetId(nodeId)
@@ -130,7 +131,7 @@ func (h HandshakeDone) HandleMessage(node interfaces.Node, peer net.Peer, verify
 	return nil
 }
 
-func (h *HandshakeDone) DecodeMessage(dec *msgpack.Decoder) error {
+func (h *HandshakeDone) DecodeMessage(dec *msgpack.Decoder, message IncomingMessageDataSigned) error {
 	challenge, err := dec.DecodeBytes()
 	if err != nil {
 		return err

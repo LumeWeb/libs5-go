@@ -2,7 +2,6 @@ package signed
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
@@ -11,14 +10,14 @@ import (
 )
 
 var (
-	_ base.IncomingMessageTyped = (*AnnouncePeers)(nil)
+	_ IncomingMessageSigned = (*AnnouncePeers)(nil)
 )
 
 type AnnouncePeers struct {
 	peer           net.Peer
 	connectionUris []*url.URL
 	peersToSend    []net.Peer
-	base.IncomingMessageTypedImpl
+	base.HandshakeRequirement
 }
 
 func (a *AnnouncePeers) PeersToSend() []net.Peer {
@@ -41,7 +40,7 @@ func NewAnnouncePeers() *AnnouncePeers {
 	return ap
 }
 
-func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder) error {
+func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder, message IncomingMessageDataSigned) error {
 	// CIDFromString the number of peers.
 	numPeers, err := dec.DecodeInt()
 	if err != nil {
@@ -106,7 +105,9 @@ func (a *AnnouncePeers) DecodeMessage(dec *msgpack.Decoder) error {
 	return nil
 }
 
-func (a AnnouncePeers) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
+func (a AnnouncePeers) HandleMessage(message IncomingMessageDataSigned) error {
+	node := message.Node
+	peer := message.Peer
 	if len(a.connectionUris) > 0 {
 		err := node.Services().P2P().ConnectToNode([]*url.URL{a.connectionUris[0]}, false, peer)
 		if err != nil {

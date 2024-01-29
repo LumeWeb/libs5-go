@@ -4,7 +4,6 @@ import (
 	"crypto/ed25519"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/storage"
@@ -15,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var _ base.IncomingMessageTyped = (*StorageLocation)(nil)
+var _ base.IncomingMessage = (*StorageLocation)(nil)
 
 type StorageLocation struct {
 	hash      *encoding.Multihash
@@ -24,9 +23,7 @@ type StorageLocation struct {
 	parts     []string
 	publicKey []byte
 	signature []byte
-
-	base.IncomingMessageTypedImpl
-	base.IncomingMessageHandler
+	base.HandshakeRequirement
 }
 
 func NewStorageLocation() *StorageLocation {
@@ -37,12 +34,14 @@ func NewStorageLocation() *StorageLocation {
 	return sl
 }
 
-func (s *StorageLocation) DecodeMessage(dec *msgpack.Decoder) error {
+func (s *StorageLocation) DecodeMessage(dec *msgpack.Decoder, message base.IncomingMessageData) error {
 	// nop, we use the incoming message -> original already stored
 	return nil
 }
-func (s *StorageLocation) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
-	msg := s.IncomingMessage().Original()
+func (s *StorageLocation) HandleMessage(message base.IncomingMessageData) error {
+	msg := message.Original
+	node := message.Node
+	peer := message.Peer
 
 	hash := encoding.NewMultihash(msg[1:34]) // Replace NewMultihash with appropriate function
 

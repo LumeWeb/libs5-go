@@ -5,7 +5,6 @@ import (
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
-	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
@@ -14,9 +13,9 @@ import (
 )
 
 var (
-	_ base.IncomingMessageTyped = (*SignedMessage)(nil)
-	_ msgpack.CustomDecoder     = (*signedMessagePayoad)(nil)
-	_ msgpack.CustomEncoder     = (*SignedMessage)(nil)
+	_ base.IncomingMessage  = (*SignedMessage)(nil)
+	_ msgpack.CustomDecoder = (*signedMessageReader)(nil)
+	_ msgpack.CustomEncoder = (*SignedMessage)(nil)
 )
 
 var (
@@ -27,7 +26,7 @@ type SignedMessage struct {
 	nodeId    *encoding.NodeId
 	signature []byte
 	message   []byte
-	base.IncomingMessageTypedImpl
+	base.HandshakeRequirement
 }
 
 func (s *SignedMessage) NodeId() *encoding.NodeId {
@@ -50,12 +49,12 @@ func NewSignedMessageRequest(message []byte) *SignedMessage {
 	return &SignedMessage{message: message}
 }
 
-type signedMessagePayoad struct {
+type signedMessageReader struct {
 	kind    int
 	message msgpack.RawMessage
 }
 
-func (s *signedMessagePayoad) DecodeMsgpack(dec *msgpack.Decoder) error {
+func (s *signedMessageReader) DecodeMsgpack(dec *msgpack.Decoder) error {
 	kind, err := dec.DecodeInt()
 	if err != nil {
 		return err
@@ -82,8 +81,10 @@ func NewSignedMessage() *SignedMessage {
 	return sm
 }
 
-func (s *SignedMessage) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
-	var payload signedMessagePayoad
+func (s *SignedMessage) HandleMessage(message base.IncomingMessageData) error {
+	var payload signedMessageReader
+	node := message.Node
+	peer := message.Peer
 
 	err := msgpack.Unmarshal(s.message, &payload)
 	if err != nil {
@@ -96,14 +97,17 @@ func (s *SignedMessage) HandleMessage(node interfaces.Node, peer net.Peer, verif
 			node.Logger().Debug("Peer is not handshake done, ignoring message", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
 			return nil
 		}
-		msgHandler.SetIncomingMessage(s)
-		msgHandler.SetSelf(msgHandler)
 		err := msgpack.Unmarshal(payload.message, &msgHandler)
 		if err != nil {
 			return err
 		}
 
-		err = msgHandler.HandleMessage(node, peer, verifyId)
+		data := IncomingMessageDataSigned{
+			IncomingMessageData: message,
+			NodeId:              s.nodeId,
+		}
+
+		err = msgHandler.HandleMessage(data)
 		if err != nil {
 			return err
 		}
@@ -112,7 +116,7 @@ func (s *SignedMessage) HandleMessage(node interfaces.Node, peer net.Peer, verif
 	return nil
 }
 
-func (s *SignedMessage) DecodeMessage(dec *msgpack.Decoder) error {
+func (s *SignedMessage) DecodeMessage(dec *msgpack.Decoder, message base.IncomingMessageData) error {
 	nodeId, err := dec.DecodeBytes()
 	if err != nil {
 		return err
@@ -127,12 +131,12 @@ func (s *SignedMessage) DecodeMessage(dec *msgpack.Decoder) error {
 
 	s.signature = signature
 
-	message, err := dec.DecodeBytes()
+	signedMessage, err := dec.DecodeBytes()
 	if err != nil {
 		return err
 	}
 
-	s.message = message
+	s.message = signedMessage
 
 	if !ed25519.Verify(s.nodeId.Raw()[1:], s.message, s.signature) {
 		return errInvalidSignature

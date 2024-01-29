@@ -2,7 +2,6 @@ package protocol
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
@@ -12,15 +11,13 @@ import (
 	"log"
 )
 
-var _ base.IncomingMessageTyped = (*HashQuery)(nil)
 var _ base.EncodeableMessage = (*HashQuery)(nil)
+var _ base.IncomingMessage = (*HashQuery)(nil)
 
 type HashQuery struct {
 	hash  *encoding.Multihash
 	kinds []types.StorageLocationType
-
-	base.IncomingMessageTypedImpl
-	base.IncomingMessageHandler
+	base.HandshakeRequirement
 }
 
 func NewHashQuery() *HashQuery {
@@ -49,7 +46,7 @@ func (h HashQuery) Kinds() []types.StorageLocationType {
 	return h.kinds
 }
 
-func (h *HashQuery) DecodeMessage(dec *msgpack.Decoder) error {
+func (h *HashQuery) DecodeMessage(dec *msgpack.Decoder, message base.IncomingMessageData) error {
 	hash, err := dec.DecodeBytes()
 
 	if err != nil {
@@ -90,7 +87,10 @@ func (h HashQuery) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return nil
 }
 
-func (h *HashQuery) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
+func (h *HashQuery) HandleMessage(message base.IncomingMessageData) error {
+	node := message.Node
+	peer := message.Peer
+
 	mapLocations, err := node.GetCachedStorageLocations(h.hash, h.kinds)
 	if err != nil {
 		log.Printf("Error getting cached storage locations: %v", err)
@@ -173,7 +173,7 @@ func (h *HashQuery) HandleMessage(node interfaces.Node, peer net.Peer, verifyId 
 	for _, val := range node.Services().P2P().Peers().Values() {
 		peerVal := val.(net.Peer)
 		if !peerVal.Id().Equals(peer.Id()) {
-			err := peerVal.SendMessage(h.IncomingMessage().Original())
+			err := peerVal.SendMessage(message.Original)
 			if err != nil {
 				node.Logger().Error("Failed to send message", zap.Error(err))
 			}

@@ -1,20 +1,17 @@
 package protocol
 
 import (
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
-	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-var _ base.IncomingMessageTyped = (*RegistryQuery)(nil)
+var _ base.IncomingMessage = (*RegistryQuery)(nil)
 var _ base.EncodeableMessage = (*RegistryQuery)(nil)
 
 type RegistryQuery struct {
 	pk []byte
-	base.IncomingMessageTypedImpl
-	base.IncomingMessageHandler
+	base.HandshakeRequirement
 }
 
 func NewEmptyRegistryQuery() *RegistryQuery {
@@ -42,7 +39,7 @@ func (s *RegistryQuery) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return nil
 }
 
-func (s *RegistryQuery) DecodeMessage(dec *msgpack.Decoder) error {
+func (s *RegistryQuery) DecodeMessage(dec *msgpack.Decoder, message base.IncomingMessageData) error {
 	pk, err := dec.DecodeBytes()
 	if err != nil {
 		return err
@@ -53,7 +50,9 @@ func (s *RegistryQuery) DecodeMessage(dec *msgpack.Decoder) error {
 	return nil
 }
 
-func (s *RegistryQuery) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
+func (s *RegistryQuery) HandleMessage(message base.IncomingMessageData) error {
+	node := message.Node
+	peer := message.Peer
 	sre, err := node.Services().Registry().Get(s.pk)
 	if err != nil {
 		return err

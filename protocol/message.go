@@ -10,10 +10,6 @@ var (
 	messageTypes map[int]func() base.IncomingMessage
 )
 
-var (
-	_ base.IncomingMessage = (*base.IncomingMessageImpl)(nil)
-)
-
 func Init() {
 	messageTypes = make(map[int]func() base.IncomingMessage)
 

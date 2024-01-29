@@ -1,6 +1,8 @@
 package service
 
 import (
+	"bytes"
+	"context"
 	ed25519p "crypto/ed25519"
 	"errors"
 	"fmt"
@@ -8,6 +10,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	"git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
@@ -398,15 +401,6 @@ func (p *P2PImpl) OnNewPeer(peer net.Peer, verifyId bool) error {
 	return nil
 }
 func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
-
-	var pid string
-
-	if peer.Id() != nil {
-		pid, _ = peer.Id().ToString()
-	} else {
-		pid = "unknown"
-	}
-
 	onDone := net.CloseCallback(func() {
 		if peer.Id() != nil {
 			pid, err := peer.Id().ToString()
@@ -431,32 +425,42 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 	})
 
 	peer.ListenForMessages(func(message []byte) error {
-		imsg := base.NewIncomingMessageUnknown()
+		var reader base.IncomingMessageReader
 
-		err := msgpack.Unmarshal(message, imsg)
-		p.logger.Debug("ListenForMessages", zap.Any("message", imsg), zap.String("peer", pid))
+		err := msgpack.Unmarshal(message, &reader)
 		if err != nil {
+			p.logger.Error("Error decoding basic message info", zap.Error(err))
 			return err
 		}
 
-		handler, ok := protocol.GetMessageType(imsg.Kind())
+		// Now, get the specific message handler based on the message kind
+		handler, ok := protocol.GetMessageType(reader.Kind)
+		if !ok {
+			p.logger.Error("Unknown message type", zap.Int("type", reader.Kind))
+			return fmt.Errorf("unknown message type: %d", reader.Kind)
+		}
 
-		if ok {
-			if handler.RequiresHandshake() && !peer.IsHandshakeDone() {
-				p.logger.Debug("Peer is not handshake done, ignoring message", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(imsg.Kind())]))
-				return nil
-			}
-			imsg.SetOriginal(message)
-			handler.SetIncomingMessage(imsg)
-			handler.SetSelf(handler)
-			err := msgpack.Unmarshal(imsg.Data(), handler)
-			if err != nil {
-				return err
-			}
-			err = handler.HandleMessage(p.node, peer, verifyId)
-			if err != nil {
-				return err
-			}
+		data := base.IncomingMessageData{
+			Original: message,
+			Data:     reader.Data,
+			Ctx:      context.Background(),
+			Node:     p.node.(*node.NodeImpl),
+			Peer:     peer,
+			VerifyId: verifyId,
+		}
+
+		dec := msgpack.NewDecoder(bytes.NewReader(reader.Data))
+
+		err = handler.DecodeMessage(dec, data)
+		if err != nil {
+			p.logger.Error("Error decoding message", zap.Error(err))
+			return err
+		}
+
+		// Directly decode and handle the specific message type
+		if err := handler.HandleMessage(data); err != nil {
+			p.logger.Error("Error handling message", zap.Error(err))
+			return err
 		}
 
 		return nil
@@ -465,7 +469,6 @@ func (p *P2PImpl) OnNewPeerListen(peer net.Peer, verifyId bool) {
 		OnError: &onError,
 		Logger:  p.logger,
 	})
-
 }
 
 func (p *P2PImpl) readNodeVotes(nodeId *encoding.NodeId) (interfaces.NodeVotes, error) {

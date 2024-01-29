@@ -1,24 +1,21 @@
 package protocol
 
 import (
-	"errors"
 	"fmt"
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
-	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-var _ base.IncomingMessageTyped = (*HandshakeOpen)(nil)
+var _ base.EncodeableMessage = (*HandshakeOpen)(nil)
+var _ base.IncomingMessage = (*HandshakeOpen)(nil)
 
 type HandshakeOpen struct {
 	challenge []byte
 	networkId string
 	handshake []byte
-	base.IncomingMessageTypedImpl
-	base.IncomingMessageHandler
+	base.HandshakeRequirement
 }
 
 func (h *HandshakeOpen) SetHandshake(handshake []byte) {
@@ -34,9 +31,6 @@ func (h HandshakeOpen) NetworkId() string {
 }
 
 var _ base.EncodeableMessage = (*HandshakeOpen)(nil)
-var (
-	errInvalidChallenge = errors.New("Invalid challenge")
-)
 
 func NewHandshakeOpen(challenge []byte, networkId string) *HandshakeOpen {
 	ho := &HandshakeOpen{
@@ -68,7 +62,7 @@ func (h HandshakeOpen) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return nil
 }
 
-func (h *HandshakeOpen) DecodeMessage(dec *msgpack.Decoder) error {
+func (h *HandshakeOpen) DecodeMessage(dec *msgpack.Decoder, message base.IncomingMessageData) error {
 	handshake, err := dec.DecodeBytes()
 
 	if err != nil {
@@ -99,19 +93,22 @@ func (h *HandshakeOpen) DecodeMessage(dec *msgpack.Decoder) error {
 	return nil
 }
 
-func (h *HandshakeOpen) HandleMessage(node interfaces.Node, peer net.Peer, verifyId bool) error {
+func (h *HandshakeOpen) HandleMessage(message base.IncomingMessageData) error {
+	node := message.Node
+	peer := message.Peer
+
 	if h.networkId != node.NetworkId() {
 		return fmt.Errorf("Peer is in different network: %s", h.networkId)
 	}
 
 	handshake := signed.NewHandshakeDoneRequest(h.handshake, types.SupportedFeatures, node.Services().P2P().SelfConnectionUris())
-	message, err := msgpack.Marshal(handshake)
+	hsMessage, err := msgpack.Marshal(handshake)
 
 	if err != nil {
 		return err
 	}
 
-	secureMessage, err := node.Services().P2P().SignMessageSimple(message)
+	secureMessage, err := node.Services().P2P().SignMessageSimple(hsMessage)
 
 	if err != nil {
 		return err
