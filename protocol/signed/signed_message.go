@@ -4,7 +4,7 @@ import (
 	"crypto/ed25519"
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
+	_node "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
@@ -171,7 +171,7 @@ func (s *SignedMessage) EncodeMsgpack(enc *msgpack.Encoder) error {
 
 	return nil
 }
-func (s *SignedMessage) Sign(node interfaces.Node) error {
+func (s *SignedMessage) Sign(node *_node.Node) error {
 	if s.nodeId == nil {
 		panic("nodeId is nil")
 	}

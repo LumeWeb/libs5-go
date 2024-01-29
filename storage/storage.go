@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	"git.lumeweb.com/LumeWeb/libs5-go/interfaces"
+	_node "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.uber.org/zap"
@@ -184,7 +184,7 @@ func NewStorageLocationMap() StorageLocationMap {
 }
 
 type StorageLocationProviderImpl struct {
-	node            interfaces.Node
+	node            *_node.Node
 	hash            *encoding.Multihash
 	types           []types.StorageLocationType
 	timeoutDuration time.Duration
@@ -336,7 +336,7 @@ func (s *StorageLocationProviderImpl) Downvote(uri SignedStorageLocation) error 
 	return nil
 }
 
-func NewStorageLocationProvider(node interfaces.Node, hash *encoding.Multihash, locationTypes ...types.StorageLocationType) StorageLocationProvider {
+func NewStorageLocationProvider(node *_node.Node, hash *encoding.Multihash, locationTypes ...types.StorageLocationType) StorageLocationProvider {
 	if locationTypes == nil {
 		locationTypes = []types.StorageLocationType{
 			types.StorageLocationTypeFull,
