@@ -9,7 +9,6 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/ed25519"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	_node "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
@@ -36,12 +35,10 @@ var (
 const nodeBucketName = "nodes"
 
 type P2PService struct {
-	logger                  *zap.Logger
 	nodeKeyPair             *ed25519.KeyPairEd25519
 	localNodeID             *encoding.NodeId
 	networkID               string
 	nodesBucket             *bolt.Bucket
-	node                    *_node.Node
 	inited                  bool
 	reconnectDelay          structs.Map
 	peers                   structs.Map
@@ -52,19 +49,19 @@ type P2PService struct {
 	incomingIPBlocklist     structs.Map
 	outgoingPeerFailures    structs.Map
 	maxOutgoingPeerFailures uint
+	connections             sync.WaitGroup
+	ServiceBase
 }
 
-func NewP2P(node *_node.Node) *P2PService {
-	uri, err := url.Parse(fmt.Sprintf("wss://%s:%d/s5/p2p", node.Config().HTTP.API.Domain, node.Config().HTTP.API.Port))
+func NewP2P(params ServiceParams) *P2PService {
+	uri, err := url.Parse(fmt.Sprintf("wss://%s:%d/s5/p2p", params.Config.HTTP.API.Domain, params.Config.HTTP.API.Port))
 	if err != nil {
-		node.Logger().Fatal("failed to HTTP API URL Config", zap.Error(err))
+		params.Logger.Fatal("failed to parse HTTP API URL", zap.Error(err))
 	}
 
 	service := &P2PService{
-		logger:                  node.Logger(),
-		nodeKeyPair:             node.Config().KeyPair,
-		networkID:               node.Config().P2P.Network,
-		node:                    node,
+		nodeKeyPair:             params.Config.KeyPair,
+		networkID:               params.Config.P2P.Network,
 		inited:                  false,
 		reconnectDelay:          structs.NewMap(),
 		peers:                   structs.NewMap(),
@@ -74,7 +71,12 @@ func NewP2P(node *_node.Node) *P2PService {
 		incomingPeerBlockList:   structs.NewMap(),
 		incomingIPBlocklist:     structs.NewMap(),
 		outgoingPeerFailures:    structs.NewMap(),
-		maxOutgoingPeerFailures: node.Config().P2P.MaxOutgoingPeerFailures,
+		maxOutgoingPeerFailures: params.Config.P2P.MaxOutgoingPeerFailures,
+		ServiceBase: ServiceBase{
+			logger: params.Logger,
+			config: params.Config,
+			db:     params.Db,
+		},
 	}
 
 	return service
@@ -84,16 +86,12 @@ func (p *P2PService) SelfConnectionUris() []*url.URL {
 	return p.selfConnectionUris
 }
 
-func (p *P2PService) Node() *_node.Node {
-	return p.node
-}
-
 func (p *P2PService) Peers() structs.Map {
 	return p.peers
 }
 
 func (p *P2PService) Start() error {
-	config := p.Node().Config()
+	config := p.config
 	if len(config.P2P.Peers.Initial) > 0 {
 		initialPeers := config.P2P.Peers.Initial
 
@@ -117,7 +115,7 @@ func (p *P2PService) Start() error {
 }
 
 func (p *P2PService) Stop() error {
-	panic("implement me")
+	return nil
 }
 
 func (p *P2PService) Init() error {
@@ -126,7 +124,7 @@ func (p *P2PService) Init() error {
 	}
 	p.localNodeID = encoding.NewNodeId(p.nodeKeyPair.PublicKey())
 
-	err := utils.CreateBucket(nodeBucketName, p.Node().Db())
+	err := utils.CreateBucket(nodeBucketName, p.db)
 
 	if err != nil {
 		return err
@@ -137,7 +135,7 @@ func (p *P2PService) Init() error {
 	return nil
 }
 func (p *P2PService) ConnectToNode(connectionUris []*url.URL, retried bool, fromPeer net.Peer) error {
-	if !p.Node().IsStarted() {
+	if !p.services.IsStarted() {
 		return nil
 	}
 
@@ -322,7 +320,7 @@ func (p *P2PService) ConnectToNode(connectionUris []*url.URL, retried bool, from
 
 	peer.SetId(id)
 
-	p.Node().ConnectionTracker().Add(1)
+	p.services.P2P().ConnectionTracker().Add(1)
 
 	peerId, err := peer.Id().ToString()
 	if err != nil {
@@ -335,7 +333,7 @@ func (p *P2PService) ConnectToNode(connectionUris []*url.URL, retried bool, from
 		if err != nil && !peer.Abuser() {
 			p.logger.Error("peer error", zap.Error(err))
 		}
-		p.Node().ConnectionTracker().Done()
+		p.services.P2P().ConnectionTracker().Done()
 	}()
 
 	return nil
@@ -443,7 +441,6 @@ func (p *P2PService) OnNewPeerListen(peer net.Peer, verifyId bool) {
 			Original: message,
 			Data:     reader.Data,
 			Ctx:      context.Background(),
-			Node:     p.node,
 			Peer:     peer,
 			VerifyId: verifyId,
 		}
@@ -473,7 +470,7 @@ func (p *P2PService) OnNewPeerListen(peer net.Peer, verifyId bool) {
 func (p *P2PService) readNodeVotes(nodeId *encoding.NodeId) (NodeVotes, error) {
 	var value []byte
 	var found bool
-	err := p.node.Db().View(func(tx *bolt.Tx) error {
+	err := p.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(nodeBucketName))
 		if b == nil {
 			return fmt.Errorf("Bucket %s not found", nodeBucketName)
@@ -509,7 +506,7 @@ func (p *P2PService) saveNodeVotes(nodeId *encoding.NodeId, votes NodeVotes) err
 	}
 
 	// Use a transaction to save the data
-	err = p.node.Db().Update(func(tx *bolt.Tx) error {
+	err = p.db.Update(func(tx *bolt.Tx) error {
 		// Get or create the bucket
 		b := tx.Bucket([]byte(nodeBucketName))
 
@@ -557,7 +554,7 @@ func (p *P2PService) SignMessageSimple(message []byte) ([]byte, error) {
 	signedMessage := signed.NewSignedMessageRequest(message)
 	signedMessage.SetNodeId(p.localNodeID)
 
-	err := signedMessage.Sign(p.Node())
+	err := signedMessage.Sign(p.config)
 
 	if err != nil {
 		return nil, err
@@ -615,7 +612,7 @@ func (p *P2PService) SendHashRequest(hash *encoding.Multihash, kinds []types.Sto
 	for _, peer := range p.peers.Values() {
 		peerValue, ok := peer.(net.Peer)
 		if !ok {
-			p.node.Logger().Error("failed to cast peer to net.Peer")
+			p.logger.Error("failed to cast peer to net.Peer")
 			continue
 		}
 		err = peerValue.SendMessage(message)
@@ -705,4 +702,12 @@ func (p *P2PService) PrepareProvideMessage(hash *encoding.Multihash, location st
 
 	// Return the final byte slice.
 	return finalList
+}
+
+func (p *P2PService) WaitOnConnectedPeers() {
+	p.connections.Wait()
+}
+
+func (p *P2PService) ConnectionTracker() *sync.WaitGroup {
+	return &p.connections
 }

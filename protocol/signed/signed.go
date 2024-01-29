@@ -22,7 +22,7 @@ var (
 	messageTypes map[int]func() IncomingMessageSigned
 )
 
-func Init() {
+func RegisterSignedProtocols() {
 	messageTypes = make(map[int]func() IncomingMessageSigned)
 
 	RegisterMessageType(int(types.ProtocolMethodHandshakeDone), func() IncomingMessageSigned {

@@ -3,8 +3,8 @@ package signed
 import (
 	"crypto/ed25519"
 	"errors"
+	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	_node "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
@@ -171,7 +171,7 @@ func (s *SignedMessage) EncodeMsgpack(enc *msgpack.Encoder) error {
 
 	return nil
 }
-func (s *SignedMessage) Sign(node *_node.Node) error {
+func (s *SignedMessage) Sign(cfg *config.NodeConfig) error {
 	if s.nodeId == nil {
 		panic("nodeId is nil")
 	}
@@ -180,7 +180,7 @@ func (s *SignedMessage) Sign(node *_node.Node) error {
 		panic("message is nil")
 	}
 
-	s.signature = ed25519.Sign(node.Config().KeyPair.ExtractBytes(), s.message)
+	s.signature = ed25519.Sign(cfg.KeyPair.ExtractBytes(), s.message)
 
 	return nil
 }

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	_node "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
@@ -23,14 +22,9 @@ var (
 )
 
 type RegistryService struct {
-	node    *_node.Node
-	logger  *zap.Logger
 	streams structs.Map
 	subs    structs.Map
-}
-
-func (r *RegistryService) Node() *_node.Node {
-	return r.node
+	ServiceBase
 }
 
 func (r *RegistryService) Start() error {
@@ -42,15 +36,18 @@ func (r *RegistryService) Stop() error {
 }
 
 func (r *RegistryService) Init() error {
-	return utils.CreateBucket(registryBucketName, r.node.Db())
+	return utils.CreateBucket(registryBucketName, r.db)
 }
 
-func NewRegistry(node *_node.Node) *RegistryService {
+func NewRegistry(params ServiceParams) *RegistryService {
 	return &RegistryService{
-		node:    node,
-		logger:  node.Logger(),
 		streams: structs.NewMap(),
 		subs:    structs.NewMap(),
+		ServiceBase: ServiceBase{
+			logger: params.Logger,
+			config: params.Config,
+			db:     params.Db,
+		},
 	}
 }
 func (r *RegistryService) Set(sre protocol.SignedRegistryEntry, trusted bool, receivedFrom net.Peer) error {
@@ -120,7 +117,7 @@ func (r *RegistryService) Set(sre protocol.SignedRegistryEntry, trusted bool, re
 		go event.Emit("fire", sre)
 	}
 
-	err = r.node.Db().Update(func(txn *bbolt.Tx) error {
+	err = r.db.Update(func(txn *bbolt.Tx) error {
 		bucket := txn.Bucket([]byte(registryBucketName))
 		err := bucket.Put(sre.PK(), protocol.MarshalSignedRegistryEntry(sre))
 		if err != nil {
@@ -153,7 +150,7 @@ func (r *RegistryService) BroadcastEntry(sre protocol.SignedRegistryEntry, recei
 	r.logger.Debug("[registry] broadcastEntry", zap.String("pk", hashString), zap.Uint64("revision", sre.Revision()), zap.String("receivedFrom", pid))
 	updateMessage := protocol.MarshalSignedRegistryEntry(sre)
 
-	for _, p := range r.node.Services().P2P().Peers().Values() {
+	for _, p := range r.services.P2P().Peers().Values() {
 		peer, ok := p.(net.Peer)
 		if !ok {
 			continue
@@ -182,7 +179,7 @@ func (r *RegistryService) SendRegistryRequest(pk []byte) error {
 	}
 
 	// Iterate over peers and send the request
-	for _, peerVal := range r.node.Services().P2P().Peers().Values() {
+	for _, peerVal := range r.services.P2P().Peers().Values() {
 		peer, ok := peerVal.(net.Peer)
 		if !ok {
 			continue
@@ -295,7 +292,7 @@ func (r *RegistryService) Listen(pk []byte, cb func(sre protocol.SignedRegistryE
 }
 
 func (r *RegistryService) getFromDB(pk []byte) (sre protocol.SignedRegistryEntry, err error) {
-	err = r.node.Db().View(func(txn *bbolt.Tx) error {
+	err = r.db.View(func(txn *bbolt.Tx) error {
 		bucket := txn.Bucket([]byte(registryBucketName))
 		val := bucket.Get(pk)
 		if val != nil {

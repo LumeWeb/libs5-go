@@ -3,7 +3,6 @@ package service
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/build"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	_node "git.lumeweb.com/LumeWeb/libs5-go/node"
 	"github.com/julienschmidt/httprouter"
 	"go.sia.tech/jape"
 	"go.uber.org/zap"
@@ -23,12 +22,16 @@ type P2PNodeResponse struct {
 }
 
 type HTTPService struct {
-	node *_node.Node
+	ServiceBase
 }
 
-func NewHTTP(node *_node.Node) *HTTPService {
+func NewHTTP(params ServiceParams) *HTTPService {
 	return &HTTPService{
-		node: node,
+		ServiceBase: ServiceBase{
+			logger: params.Logger,
+			config: params.Config,
+			db:     params.Db,
+		},
 	}
 }
 
@@ -44,10 +47,6 @@ func (h *HTTPService) GetHttpRouter(inject map[string]jape.Handler) *httprouter.
 	}
 
 	return jape.Mux(routes)
-}
-
-func (h *HTTPService) Node() *_node.Node {
-	return h.node
 }
 
 func (h *HTTPService) Start() error {
@@ -68,7 +67,7 @@ func (h *HTTPService) versionHandler(ctx jape.Context) {
 func (h *HTTPService) p2pHandler(ctx jape.Context) {
 	c, err := websocket.Accept(ctx.ResponseWriter, ctx.Request, nil)
 	if err != nil {
-		h.node.Logger().Error("error accepting websocket connection", zap.Error(err))
+		h.logger.Error("error accepting websocket connection", zap.Error(err))
 		return
 	}
 
@@ -78,33 +77,33 @@ func (h *HTTPService) p2pHandler(ctx jape.Context) {
 	})
 
 	if err != nil {
-		h.node.Logger().Error("error creating transport peer", zap.Error(err))
+		h.logger.Error("error creating transport peer", zap.Error(err))
 		err := c.Close(websocket.StatusInternalError, "the sky is falling")
 		if err != nil {
-			h.node.Logger().Error("error closing websocket connection", zap.Error(err))
+			h.logger.Error("error closing websocket connection", zap.Error(err))
 		}
 		return
 	}
 
-	h.Node().ConnectionTracker().Add(1)
+	h.services.P2P().ConnectionTracker().Add(1)
 
 	go func() {
-		err := h.node.Services().P2P().OnNewPeer(peer, false)
+		err := h.services.P2P().OnNewPeer(peer, false)
 		if err != nil {
-			h.node.Logger().Error("error handling new peer", zap.Error(err))
+			h.logger.Error("error handling new peer", zap.Error(err))
 		}
-		h.node.ConnectionTracker().Done()
+		h.services.P2P().ConnectionTracker().Done()
 	}()
 }
 
 func (h *HTTPService) p2pNodesHandler(ctx jape.Context) {
-	localId, err := h.node.Services().P2P().NodeId().ToString()
+	localId, err := h.services.P2P().NodeId().ToString()
 
 	if ctx.Check("error getting local node id", err) != nil {
 		return
 	}
 
-	uris := h.node.Services().P2P().SelfConnectionUris()
+	uris := h.services.P2P().SelfConnectionUris()
 
 	nodeList := make([]P2PNodeResponse, len(uris))
 

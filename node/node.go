@@ -17,7 +17,6 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
-	"sync"
 	"time"
 )
 
@@ -26,11 +25,9 @@ const cacheBucketName = "object-cache"
 type Node struct {
 	nodeConfig            *config.NodeConfig
 	metadataCache         structs.Map
-	started               bool
 	hashQueryRoutingTable structs.Map
 	services              service.Services
 	httpClient            *resty.Client
-	connections           sync.WaitGroup
 	providerStore         storage.ProviderStore
 }
 
@@ -42,24 +39,21 @@ func (n *Node) Services() service.Services {
 	return n.services
 }
 
-func NewNode(config *config.NodeConfig) *Node {
-	n := &Node{
+func NewNode(config *config.NodeConfig, services service.Services) *Node {
+	return &Node{
 		nodeConfig:            config,
 		metadataCache:         structs.NewMap(),
-		started:               false,
 		hashQueryRoutingTable: structs.NewMap(),
 		httpClient:            resty.New(),
+		services:              services, // Services are passed in, not created here
 	}
-	n.services = NewServices(service.NewP2P(n), service.NewRegistry(n), service.NewHTTP(n))
-
-	return n
 }
 func (n *Node) HashQueryRoutingTable() structs.Map {
 	return n.hashQueryRoutingTable
 }
 
 func (n *Node) IsStarted() bool {
-	return n.started
+	return n.services.IsStarted()
 }
 
 func (n *Node) Config() *config.NodeConfig {
@@ -81,8 +75,8 @@ func (n *Node) Db() *bolt.DB {
 }
 
 func (n *Node) Start() error {
-	protocol.Init()
-	signed.Init()
+	protocol.RegisterProtocols()
+	signed.RegisterSignedProtocols()
 	err :=
 		utils.CreateBucket(cacheBucketName, n.Db())
 
@@ -90,22 +84,13 @@ func (n *Node) Start() error {
 		return err
 	}
 
-	n.started = true
-
-	for _, svc := range n.services.All() {
-		err := svc.Init()
-		if err != nil {
-			return err
-		}
-
-		err = svc.Start()
-		if err != nil {
-			return err
-		}
-	}
-	n.started = true
-	return nil
+	return n.services.Start()
 }
+
+func (n *Node) Stop() error {
+	return n.services.Stop()
+}
+
 func (n *Node) GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType) (map[string]storage.StorageLocation, error) {
 	locations := make(map[string]storage.StorageLocation)
 
@@ -325,11 +310,7 @@ func (n *Node) GetMetadataByCID(cid *encoding.CID) (md metadata.Metadata, err er
 	return md, nil
 }
 func (n *Node) WaitOnConnectedPeers() {
-	n.connections.Wait()
-}
-
-func (n *Node) ConnectionTracker() *sync.WaitGroup {
-	return &n.connections
+	n.services.P2P().WaitOnConnectedPeers()
 }
 
 func (n *Node) SetProviderStore(store storage.ProviderStore) {
@@ -338,4 +319,27 @@ func (n *Node) SetProviderStore(store storage.ProviderStore) {
 
 func (n *Node) ProviderStore() storage.ProviderStore {
 	return n.providerStore
+}
+
+func DefaultNode(config *config.NodeConfig) *Node {
+	params := service.ServiceParams{
+		Logger: config.Logger,
+		Config: config,
+		Db:     config.DB,
+	}
+
+	// Initialize services first
+	p2pService := service.NewP2P(params)
+	registryService := service.NewRegistry(params)
+	httpService := service.NewHTTP(params)
+
+	// Aggregate services
+	services := NewServices(ServicesParams{
+		P2P:      p2pService,
+		Registry: registryService,
+		HTTP:     httpService,
+	})
+
+	// Now create the node with the services
+	return NewNode(config, services)
 }

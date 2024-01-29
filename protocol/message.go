@@ -10,7 +10,7 @@ var (
 	messageTypes map[int]func() base.IncomingMessage
 )
 
-func Init() {
+func RegisterProtocols() {
 	messageTypes = make(map[int]func() base.IncomingMessage)
 
 	// Register factory functions instead of instances

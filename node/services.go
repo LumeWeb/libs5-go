@@ -8,10 +8,17 @@ var (
 	_ service.Services = (*ServicesImpl)(nil)
 )
 
+type ServicesParams struct {
+	P2P      *service.P2PService
+	Registry *service.RegistryService
+	HTTP     *service.HTTPService
+}
+
 type ServicesImpl struct {
 	p2p      *service.P2PService
 	registry *service.RegistryService
 	http     *service.HTTPService
+	started  bool
 }
 
 func (s *ServicesImpl) HTTP() *service.HTTPService {
@@ -31,14 +38,50 @@ func (s *ServicesImpl) Registry() *service.RegistryService {
 	return s.registry
 }
 
-func NewServices(p2p *service.P2PService, registry *service.RegistryService, http *service.HTTPService) service.Services {
-	return &ServicesImpl{
-		p2p:      p2p,
-		registry: registry,
-		http:     http,
+func NewServices(params ServicesParams) service.Services {
+	sc := &ServicesImpl{
+		p2p:      params.P2P,
+		registry: params.Registry,
+		http:     params.HTTP,
+		started:  false,
 	}
+
+	for _, svc := range sc.All() {
+		svc.SetServices(sc)
+	}
+
+	return sc
 }
 
 func (s *ServicesImpl) P2P() *service.P2PService {
 	return s.p2p
+}
+
+func (s *ServicesImpl) IsStarted() bool {
+	return s.started
+}
+
+func (s *ServicesImpl) Start() error {
+	for _, svc := range s.All() {
+		err := svc.Start()
+		if err != nil {
+			return err
+		}
+	}
+
+	s.started = true
+
+	return nil
+}
+func (s *ServicesImpl) Stop() error {
+	for _, svc := range s.All() {
+		err := svc.Stop()
+		if err != nil {
+			return err
+		}
+	}
+
+	s.started = false
+
+	return nil
 }
