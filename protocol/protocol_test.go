@@ -1,8 +1,6 @@
 package protocol
 
 import (
-	"git.lumeweb.com/LumeWeb/libs5-go/mocks/interfaces"
-	"git.lumeweb.com/LumeWeb/libs5-go/mocks/net"
 	"github.com/golang/mock/gomock"
 	"os"
 	"testing"
