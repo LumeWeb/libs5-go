@@ -2,6 +2,7 @@ package node
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
+	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
@@ -64,6 +65,10 @@ func (n *Node) WaitOnConnectedPeers() {
 
 func (n *Node) NetworkId() string {
 	return n.services.P2P().NetworkId()
+}
+
+func (n *Node) NodeId() *encoding.NodeId {
+	return n.services.P2P().NodeId()
 }
 
 func DefaultNode(config *config.NodeConfig) *Node {
