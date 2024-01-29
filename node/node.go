@@ -73,12 +73,14 @@ func DefaultNode(config *config.NodeConfig) *Node {
 	p2pService := service.NewP2P(params)
 	registryService := service.NewRegistry(params)
 	httpService := service.NewHTTP(params)
+	storageService := service.NewStorage(params)
 
 	// Aggregate services
 	services := NewServices(ServicesParams{
 		P2P:      p2pService,
 		Registry: registryService,
 		HTTP:     httpService,
+		Storage:  storageService,
 	})
 
 	// Now create the node with the services
