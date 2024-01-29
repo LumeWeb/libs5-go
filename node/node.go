@@ -62,6 +62,10 @@ func (n *Node) WaitOnConnectedPeers() {
 	n.services.P2P().WaitOnConnectedPeers()
 }
 
+func (n *Node) NetworkId() string {
+	return n.services.P2P().NetworkId()
+}
+
 func DefaultNode(config *config.NodeConfig) *Node {
 	params := service.ServiceParams{
 		Logger: config.Logger,
