@@ -3,7 +3,6 @@ package service
 import (
 	"bytes"
 	"context"
-	ed25519p "crypto/ed25519"
 	"errors"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/ed25519"
@@ -12,7 +11,6 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
-	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
@@ -445,6 +443,7 @@ func (p *P2PService) OnNewPeerListen(peer net.Peer, verifyId bool) {
 			Ctx:      context.Background(),
 			Peer:     peer,
 			VerifyId: verifyId,
+			Config:   p.config,
 		}
 
 		dec := msgpack.NewDecoder(bytes.NewReader(reader.Data))
@@ -662,48 +661,6 @@ func (p *P2PService) vote(nodeId *encoding.NodeId, upvote bool) error {
 }
 func (p *P2PService) NodeId() *encoding.NodeId {
 	return p.localNodeID
-}
-
-func (p *P2PService) PrepareProvideMessage(hash *encoding.Multihash, location storage.StorageLocation) []byte {
-	// Initialize the list with the record type.
-	list := []byte{byte(types.RecordTypeStorageLocation)}
-
-	// Append the full bytes of the hash.
-	list = append(list, hash.FullBytes()...)
-
-	// Append the location type.
-	list = append(list, byte(location.Type()))
-
-	// Append the expiry time of the location, encoded as 4 bytes.
-	list = append(list, utils.EncodeEndian(uint64(location.Expiry()), 4)...)
-
-	// Append the number of parts in the location.
-	list = append(list, byte(len(location.Parts())))
-
-	// Iterate over each part in the location.
-	for _, part := range location.Parts() {
-		// Convert part to bytes.
-		bytes := []byte(part)
-
-		// Encode the length of the part as 4 bytes and append.
-		list = append(list, utils.EncodeEndian(uint64(len(bytes)), 2)...)
-
-		// Append the actual part bytes.
-		list = append(list, bytes...)
-	}
-
-	// Append a null byte at the end of the list.
-	list = append(list, 0)
-
-	// Sign the list using the node's private key.
-	signature := ed25519p.Sign(p.nodeKeyPair.ExtractBytes(), list)
-
-	// Append the public key and signature to the list.
-	finalList := append(list, p.nodeKeyPair.PublicKey()...)
-	finalList = append(finalList, signature...)
-
-	// Return the final byte slice.
-	return finalList
 }
 
 func (p *P2PService) WaitOnConnectedPeers() {

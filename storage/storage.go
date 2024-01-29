@@ -25,67 +25,11 @@ type StorageLocationMap map[int]NodeStorage
 type NodeStorage map[string]NodeDetailsStorage
 type NodeDetailsStorage map[int]interface{}
 
-type StorageLocationImpl struct {
-	kind            int
-	parts           []string
-	binaryParts     [][]byte
-	expiry          int64
-	providerMessage []byte
-}
-
 type StorageLocationProviderParams struct {
 	Services      service.Services
 	Hash          *encoding.Multihash
 	LocationTypes []types.StorageLocationType
 	service.ServiceParams
-}
-
-func (s *StorageLocationImpl) Type() int {
-	return s.kind
-}
-
-func (s *StorageLocationImpl) Parts() []string {
-	return s.parts
-}
-
-func (s *StorageLocationImpl) BinaryParts() [][]byte {
-	return s.binaryParts
-}
-
-func (s *StorageLocationImpl) Expiry() int64 {
-	return s.expiry
-}
-
-func (s *StorageLocationImpl) SetType(t int) {
-	s.kind = t
-}
-
-func (s *StorageLocationImpl) SetParts(p []string) {
-	s.parts = p
-}
-
-func (s *StorageLocationImpl) SetBinaryParts(bp [][]byte) {
-	s.binaryParts = bp
-}
-
-func (s *StorageLocationImpl) SetExpiry(e int64) {
-	s.expiry = e
-}
-
-func (s *StorageLocationImpl) SetProviderMessage(msg []byte) {
-	s.providerMessage = msg
-}
-
-func (s *StorageLocationImpl) ProviderMessage() []byte {
-	return s.providerMessage
-}
-
-func NewStorageLocation(Type int, Parts []string, Expiry int64) StorageLocation {
-	return &StorageLocationImpl{
-		kind:   Type,
-		parts:  Parts,
-		expiry: Expiry,
-	}
 }
 
 func (s *StorageLocationImpl) BytesURL() string {
@@ -372,30 +316,4 @@ type StorageLocationProvider interface {
 	Next() (SignedStorageLocation, error)
 	Upvote(uri SignedStorageLocation) error
 	Downvote(uri SignedStorageLocation) error
-}
-
-type StorageLocation interface {
-	BytesURL() string
-	OutboardBytesURL() string
-	String() string
-	ProviderMessage() []byte
-	Type() int
-	Parts() []string
-	BinaryParts() [][]byte
-	Expiry() int64
-	SetProviderMessage(msg []byte)
-	SetType(t int)
-	SetParts(p []string)
-	SetBinaryParts(bp [][]byte)
-	SetExpiry(e int64)
-}
-type SignedStorageLocation interface {
-	String() string
-	NodeId() *encoding.NodeId
-	Location() StorageLocation
-}
-
-type ProviderStore interface {
-	CanProvide(hash *encoding.Multihash, kind []types.StorageLocationType) bool
-	Provide(hash *encoding.Multihash, kind []types.StorageLocationType) (StorageLocation, error)
 }

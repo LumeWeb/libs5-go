@@ -4,6 +4,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
+	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/vmihailenco/msgpack/v5"
@@ -91,6 +92,7 @@ func (h *HashQuery) HandleMessage(message base.IncomingMessageData) error {
 	peer := message.Peer
 	services := message.Services
 	logger := message.Logger
+	config := message.Config
 
 	mapLocations, err := services.Storage().GetCachedStorageLocations(h.hash, h.kinds)
 	if err != nil {
@@ -136,7 +138,7 @@ func (h *HashQuery) HandleMessage(message base.IncomingMessageData) error {
 				return err
 			}
 
-			message := services.P2P().PrepareProvideMessage(h.hash, location)
+			message := storage.PrepareProvideMessage(config.KeyPair, h.hash, location)
 
 			err = services.Storage().AddStorageLocation(h.hash, services.P2P().NodeId(), location, message)
 			if err != nil {

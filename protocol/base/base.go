@@ -2,6 +2,7 @@ package base
 
 import (
 	"context"
+	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"github.com/vmihailenco/msgpack/v5"
@@ -26,6 +27,7 @@ type IncomingMessageData struct {
 	Services service.Services
 	Logger   *zap.Logger
 	Peer     net.Peer
+	Config   *config.NodeConfig
 	VerifyId bool
 }
 
