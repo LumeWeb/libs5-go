@@ -439,6 +439,7 @@ func (p *P2PServiceDefault) OnNewPeerListen(peer net.Peer, verifyId bool) {
 			Peer:     peer,
 			VerifyId: verifyId,
 			Config:   p.Config(),
+			Logger:   p.Logger(),
 			Mediator: NewMediator(service.ServiceParams{
 				Logger: p.Logger(),
 				Config: p.Config(),
