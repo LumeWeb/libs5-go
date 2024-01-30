@@ -1,11 +1,10 @@
-package signed
+package protocol
 
 import (
 	"crypto/ed25519"
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.uber.org/zap"
@@ -13,9 +12,9 @@ import (
 )
 
 var (
-	_ protocol.IncomingMessage = (*SignedMessage)(nil)
-	_ msgpack.CustomDecoder    = (*signedMessageReader)(nil)
-	_ msgpack.CustomEncoder    = (*SignedMessage)(nil)
+	_ IncomingMessage       = (*SignedMessage)(nil)
+	_ msgpack.CustomDecoder = (*signedMessageReader)(nil)
+	_ msgpack.CustomEncoder = (*SignedMessage)(nil)
 )
 
 var (
@@ -26,7 +25,7 @@ type SignedMessage struct {
 	nodeId    *encoding.NodeId
 	signature []byte
 	message   []byte
-	protocol.HandshakeRequirement
+	HandshakeRequirement
 }
 
 func (s *SignedMessage) NodeId() *encoding.NodeId {
@@ -81,7 +80,7 @@ func NewSignedMessage() *SignedMessage {
 	return sm
 }
 
-func (s *SignedMessage) HandleMessage(message protocol.IncomingMessageData) error {
+func (s *SignedMessage) HandleMessage(message IncomingMessageData) error {
 	var payload signedMessageReader
 	peer := message.Peer
 	logger := message.Logger
@@ -91,7 +90,7 @@ func (s *SignedMessage) HandleMessage(message protocol.IncomingMessageData) erro
 		return err
 	}
 
-	if msgHandler, valid := GetMessageType(payload.kind); valid {
+	if msgHandler, valid := GetSignedMessageType(payload.kind); valid {
 		logger.Debug("SignedMessage", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
 		if msgHandler.RequiresHandshake() && !peer.IsHandshakeDone() {
 			logger.Debug("Peer is not handshake done, ignoring message", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
@@ -116,7 +115,7 @@ func (s *SignedMessage) HandleMessage(message protocol.IncomingMessageData) erro
 	return nil
 }
 
-func (s *SignedMessage) DecodeMessage(dec *msgpack.Decoder, message protocol.IncomingMessageData) error {
+func (s *SignedMessage) DecodeMessage(dec *msgpack.Decoder, message IncomingMessageData) error {
 	nodeId, err := dec.DecodeBytes()
 	if err != nil {
 		return err

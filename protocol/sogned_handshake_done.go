@@ -1,11 +1,10 @@
-package signed
+package protocol
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
@@ -13,7 +12,7 @@ import (
 )
 
 var _ IncomingMessageSigned = (*HandshakeDone)(nil)
-var _ protocol.EncodeableMessage = (*HandshakeDone)(nil)
+var _ EncodeableMessage = (*HandshakeDone)(nil)
 
 type HandshakeDone struct {
 	challenge         []byte
@@ -21,7 +20,7 @@ type HandshakeDone struct {
 	supportedFeatures int
 	connectionUris    []*url.URL
 	handshake         []byte
-	protocol.HandshakeRequirement
+	HandshakeRequirement
 }
 
 func NewHandshakeDoneRequest(handshake []byte, supportedFeatures int, connectionUris []*url.URL) *HandshakeDone {

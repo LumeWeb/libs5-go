@@ -4,7 +4,6 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	_default "git.lumeweb.com/LumeWeb/libs5-go/service/default"
 	bolt "go.etcd.io/bbolt"
@@ -51,7 +50,7 @@ func (n *Node) Db() *bolt.DB {
 
 func (n *Node) Start() error {
 	protocol.RegisterProtocols()
-	signed.RegisterSignedProtocols()
+	protocol.RegisterSignedProtocols()
 
 	return n.services.Start()
 }

@@ -2,7 +2,6 @@ package protocol
 
 import (
 	"fmt"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -98,7 +97,7 @@ func (h *HandshakeOpen) HandleMessage(message IncomingMessageData) error {
 		return fmt.Errorf("Peer is in different network: %s", h.networkId)
 	}
 
-	handshake := signed.NewHandshakeDoneRequest(h.handshake, types.SupportedFeatures, services.P2P().SelfConnectionUris())
+	handshake := NewHandshakeDoneRequest(h.handshake, types.SupportedFeatures, services.P2P().SelfConnectionUris())
 	hsMessage, err := msgpack.Marshal(handshake)
 
 	if err != nil {

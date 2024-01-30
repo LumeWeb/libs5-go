@@ -1,4 +1,4 @@
-package signed
+package protocol
 
 import (
 	"bytes"

@@ -427,7 +427,7 @@ func (p *P2PServiceDefault) OnNewPeerListen(peer net.Peer, verifyId bool) {
 		}
 
 		// Now, get the specific message handler based on the message kind
-		handler, ok := protocol.GetMessageType(reader.Kind)
+		handler, ok := protocol.GetSignedMessageType(reader.Kind)
 		if !ok {
 			p.Logger().Error("Unknown message type", zap.Int("type", reader.Kind))
 			return fmt.Errorf("unknown message type: %d", reader.Kind)

@@ -1,7 +1,6 @@
 package protocol
 
 import (
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 )
 
@@ -29,7 +28,7 @@ func RegisterProtocols() {
 		return NewEmptyRegistryQuery()
 	})
 	RegisterMessageType(int(types.ProtocolMethodSignedMessage), func() IncomingMessage {
-		return signed.NewSignedMessage()
+		return NewSignedMessage()
 	})
 
 }
