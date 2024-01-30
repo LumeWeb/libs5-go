@@ -9,7 +9,6 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
@@ -427,7 +426,7 @@ func (p *P2PServiceDefault) OnNewPeerListen(peer net.Peer, verifyId bool) {
 		}
 
 		// Now, get the specific message handler based on the message kind
-		handler, ok := protocol.GetSignedMessageType(reader.Kind)
+		handler, ok := protocol.GetMessageType(reader.Kind)
 		if !ok {
 			p.Logger().Error("Unknown message type", zap.Int("type", reader.Kind))
 			return fmt.Errorf("unknown message type: %d", reader.Kind)
@@ -548,7 +547,7 @@ func (p *P2PServiceDefault) SortNodesByScore(nodes []*encoding.NodeId) ([]*encod
 	return nodes, errOccurred
 }
 func (p *P2PServiceDefault) SignMessageSimple(message []byte) ([]byte, error) {
-	signedMessage := signed.NewSignedMessageRequest(message)
+	signedMessage := protocol.NewSignedMessageRequest(message)
 	signedMessage.SetNodeId(p.localNodeID)
 
 	err := signedMessage.Sign(p.Config())
@@ -581,7 +580,7 @@ func (p *P2PServiceDefault) AddPeer(peer net.Peer) error {
 	return nil
 }
 func (p *P2PServiceDefault) SendPublicPeersToPeer(peer net.Peer, peersToSend []net.Peer) error {
-	announceRequest := signed.NewAnnounceRequest(peer, peersToSend)
+	announceRequest := protocol.NewAnnounceRequest(peer, peersToSend)
 
 	message, err := msgpack.Marshal(announceRequest)
 
