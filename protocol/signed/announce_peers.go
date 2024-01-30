@@ -3,7 +3,7 @@ package signed
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 	"net/url"
@@ -17,7 +17,7 @@ type AnnouncePeers struct {
 	peer           net.Peer
 	connectionUris []*url.URL
 	peersToSend    []net.Peer
-	base.HandshakeRequirement
+	protocol.HandshakeRequirement
 }
 
 func (a *AnnouncePeers) PeersToSend() []net.Peer {

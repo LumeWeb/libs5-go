@@ -13,12 +13,12 @@ import (
 )
 
 var _ base.EncodeableMessage = (*HashQuery)(nil)
-var _ base.IncomingMessage = (*HashQuery)(nil)
+var _ IncomingMessage = (*HashQuery)(nil)
 
 type HashQuery struct {
 	hash  *encoding.Multihash
 	kinds []types.StorageLocationType
-	base.HandshakeRequirement
+	HandshakeRequirement
 }
 
 func NewHashQuery() *HashQuery {
@@ -47,7 +47,7 @@ func (h HashQuery) Kinds() []types.StorageLocationType {
 	return h.kinds
 }
 
-func (h *HashQuery) DecodeMessage(dec *msgpack.Decoder, message base.IncomingMessageData) error {
+func (h *HashQuery) DecodeMessage(dec *msgpack.Decoder, message IncomingMessageData) error {
 	hash, err := dec.DecodeBytes()
 
 	if err != nil {
@@ -88,7 +88,7 @@ func (h HashQuery) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return nil
 }
 
-func (h *HashQuery) HandleMessage(message base.IncomingMessageData) error {
+func (h *HashQuery) HandleMessage(message IncomingMessageData) error {
 	peer := message.Peer
 	services := message.Services
 	logger := message.Logger

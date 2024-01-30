@@ -2,20 +2,20 @@ package signed
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
 type IncomingMessageDataSigned struct {
-	base.IncomingMessageData
+	protocol.IncomingMessageData
 	NodeId *encoding.NodeId
 }
 
 type IncomingMessageSigned interface {
 	HandleMessage(message IncomingMessageDataSigned) error
 	DecodeMessage(dec *msgpack.Decoder, message IncomingMessageDataSigned) error
-	base.HandshakeRequirer
+	protocol.HandshakeRequirer
 }
 
 var (

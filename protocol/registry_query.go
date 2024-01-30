@@ -1,17 +1,16 @@
 package protocol
 
 import (
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-var _ base.IncomingMessage = (*RegistryQuery)(nil)
-var _ base.EncodeableMessage = (*RegistryQuery)(nil)
+var _ IncomingMessage = (*RegistryQuery)(nil)
+var _ EncodeableMessage = (*RegistryQuery)(nil)
 
 type RegistryQuery struct {
 	pk []byte
-	base.HandshakeRequirement
+	HandshakeRequirement
 }
 
 func NewEmptyRegistryQuery() *RegistryQuery {
@@ -39,7 +38,7 @@ func (s *RegistryQuery) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return nil
 }
 
-func (s *RegistryQuery) DecodeMessage(dec *msgpack.Decoder, message base.IncomingMessageData) error {
+func (s *RegistryQuery) DecodeMessage(dec *msgpack.Decoder, message IncomingMessageData) error {
 	pk, err := dec.DecodeBytes()
 	if err != nil {
 		return err
@@ -50,7 +49,7 @@ func (s *RegistryQuery) DecodeMessage(dec *msgpack.Decoder, message base.Incomin
 	return nil
 }
 
-func (s *RegistryQuery) HandleMessage(message base.IncomingMessageData) error {
+func (s *RegistryQuery) HandleMessage(message IncomingMessageData) error {
 	services := message.Services
 	peer := message.Peer
 	sre, err := services.Registry().Get(s.pk)

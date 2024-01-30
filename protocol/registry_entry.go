@@ -1,17 +1,16 @@
 package protocol
 
 import (
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-var _ base.IncomingMessage = (*RegistryEntryRequest)(nil)
-var _ base.EncodeableMessage = (*RegistryEntryRequest)(nil)
+var _ IncomingMessage = (*RegistryEntryRequest)(nil)
+var _ EncodeableMessage = (*RegistryEntryRequest)(nil)
 
 type RegistryEntryRequest struct {
 	sre SignedRegistryEntry
-	base.HandshakeRequirement
+	HandshakeRequirement
 }
 
 func NewEmptyRegistryEntryRequest() *RegistryEntryRequest {
@@ -39,7 +38,7 @@ func (s *RegistryEntryRequest) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return nil
 }
 
-func (s *RegistryEntryRequest) DecodeMessage(dec *msgpack.Decoder, message base.IncomingMessageData) error {
+func (s *RegistryEntryRequest) DecodeMessage(dec *msgpack.Decoder, message IncomingMessageData) error {
 	sre, err := UnmarshalSignedRegistryEntry(message.Data)
 	if err != nil {
 		return err
@@ -50,7 +49,7 @@ func (s *RegistryEntryRequest) DecodeMessage(dec *msgpack.Decoder, message base.
 	return nil
 }
 
-func (s *RegistryEntryRequest) HandleMessage(message base.IncomingMessageData) error {
+func (s *RegistryEntryRequest) HandleMessage(message IncomingMessageData) error {
 	peer := message.Peer
 	services := message.Services
 	return services.Registry().Set(s.sre, false, peer)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
@@ -14,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var _ base.IncomingMessage = (*StorageLocation)(nil)
+var _ IncomingMessage = (*StorageLocation)(nil)
 
 type StorageLocation struct {
 	hash      *encoding.Multihash
@@ -23,7 +22,7 @@ type StorageLocation struct {
 	parts     []string
 	publicKey []byte
 	signature []byte
-	base.HandshakeRequirement
+	HandshakeRequirement
 }
 
 func NewStorageLocation() *StorageLocation {
@@ -34,11 +33,11 @@ func NewStorageLocation() *StorageLocation {
 	return sl
 }
 
-func (s *StorageLocation) DecodeMessage(dec *msgpack.Decoder, message base.IncomingMessageData) error {
+func (s *StorageLocation) DecodeMessage(dec *msgpack.Decoder, message IncomingMessageData) error {
 	// nop, we use the incoming message -> original already stored
 	return nil
 }
-func (s *StorageLocation) HandleMessage(message base.IncomingMessageData) error {
+func (s *StorageLocation) HandleMessage(message IncomingMessageData) error {
 	msg := message.Original
 	services := message.Services
 	peer := message.Peer

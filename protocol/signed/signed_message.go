@@ -5,7 +5,7 @@ import (
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.uber.org/zap"
@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	_ base.IncomingMessage  = (*SignedMessage)(nil)
-	_ msgpack.CustomDecoder = (*signedMessageReader)(nil)
-	_ msgpack.CustomEncoder = (*SignedMessage)(nil)
+	_ protocol.IncomingMessage = (*SignedMessage)(nil)
+	_ msgpack.CustomDecoder    = (*signedMessageReader)(nil)
+	_ msgpack.CustomEncoder    = (*SignedMessage)(nil)
 )
 
 var (
@@ -26,7 +26,7 @@ type SignedMessage struct {
 	nodeId    *encoding.NodeId
 	signature []byte
 	message   []byte
-	base.HandshakeRequirement
+	protocol.HandshakeRequirement
 }
 
 func (s *SignedMessage) NodeId() *encoding.NodeId {
@@ -81,7 +81,7 @@ func NewSignedMessage() *SignedMessage {
 	return sm
 }
 
-func (s *SignedMessage) HandleMessage(message base.IncomingMessageData) error {
+func (s *SignedMessage) HandleMessage(message protocol.IncomingMessageData) error {
 	var payload signedMessageReader
 	peer := message.Peer
 	logger := message.Logger
@@ -116,7 +116,7 @@ func (s *SignedMessage) HandleMessage(message base.IncomingMessageData) error {
 	return nil
 }
 
-func (s *SignedMessage) DecodeMessage(dec *msgpack.Decoder, message base.IncomingMessageData) error {
+func (s *SignedMessage) DecodeMessage(dec *msgpack.Decoder, message protocol.IncomingMessageData) error {
 	nodeId, err := dec.DecodeBytes()
 	if err != nil {
 		return err

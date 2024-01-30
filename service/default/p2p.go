@@ -9,7 +9,6 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
@@ -419,7 +418,7 @@ func (p *P2PServiceDefault) OnNewPeerListen(peer net.Peer, verifyId bool) {
 	})
 
 	peer.ListenForMessages(func(message []byte) error {
-		var reader base.IncomingMessageReader
+		var reader protocol.IncomingMessageReader
 
 		err := msgpack.Unmarshal(message, &reader)
 		if err != nil {
@@ -434,7 +433,7 @@ func (p *P2PServiceDefault) OnNewPeerListen(peer net.Peer, verifyId bool) {
 			return fmt.Errorf("unknown message type: %d", reader.Kind)
 		}
 
-		data := base.IncomingMessageData{
+		data := protocol.IncomingMessageData{
 			Original: message,
 			Data:     reader.Data,
 			Ctx:      context.Background(),

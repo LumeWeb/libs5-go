@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
@@ -21,7 +22,7 @@ type HandshakeDone struct {
 	supportedFeatures int
 	connectionUris    []*url.URL
 	handshake         []byte
-	base.HandshakeRequirement
+	protocol.HandshakeRequirement
 }
 
 func NewHandshakeDoneRequest(handshake []byte, supportedFeatures int, connectionUris []*url.URL) *HandshakeDone {

@@ -1,48 +1,47 @@
 package protocol
 
 import (
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 )
 
 var (
-	messageTypes map[int]func() base.IncomingMessage
+	messageTypes map[int]func() IncomingMessage
 )
 
 func RegisterProtocols() {
-	messageTypes = make(map[int]func() base.IncomingMessage)
+	messageTypes = make(map[int]func() IncomingMessage)
 
 	// Register factory functions instead of instances
-	RegisterMessageType(int(types.ProtocolMethodHandshakeOpen), func() base.IncomingMessage {
+	RegisterMessageType(int(types.ProtocolMethodHandshakeOpen), func() IncomingMessage {
 		return NewHandshakeOpen([]byte{}, "")
 	})
-	RegisterMessageType(int(types.ProtocolMethodHashQuery), func() base.IncomingMessage {
+	RegisterMessageType(int(types.ProtocolMethodHashQuery), func() IncomingMessage {
 		return NewHashQuery()
 	})
-	RegisterMessageType(int(types.RecordTypeStorageLocation), func() base.IncomingMessage {
+	RegisterMessageType(int(types.RecordTypeStorageLocation), func() IncomingMessage {
 		return NewStorageLocation()
 	})
-	RegisterMessageType(int(types.RecordTypeRegistryEntry), func() base.IncomingMessage {
+	RegisterMessageType(int(types.RecordTypeRegistryEntry), func() IncomingMessage {
 		return NewEmptyRegistryEntryRequest()
 	})
-	RegisterMessageType(int(types.ProtocolMethodRegistryQuery), func() base.IncomingMessage {
+	RegisterMessageType(int(types.ProtocolMethodRegistryQuery), func() IncomingMessage {
 		return NewEmptyRegistryQuery()
 	})
-	RegisterMessageType(int(types.ProtocolMethodSignedMessage), func() base.IncomingMessage {
+	RegisterMessageType(int(types.ProtocolMethodSignedMessage), func() IncomingMessage {
 		return signed.NewSignedMessage()
 	})
 
 }
 
-func RegisterMessageType(messageType int, factoryFunc func() base.IncomingMessage) {
+func RegisterMessageType(messageType int, factoryFunc func() IncomingMessage) {
 	if factoryFunc == nil {
 		panic("factoryFunc cannot be nil")
 	}
 	messageTypes[messageType] = factoryFunc
 }
 
-func GetMessageType(kind int) (base.IncomingMessage, bool) {
+func GetMessageType(kind int) (IncomingMessage, bool) {
 	value, ok := messageTypes[kind]
 	if !ok {
 		return nil, false

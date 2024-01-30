@@ -2,20 +2,19 @@ package protocol
 
 import (
 	"fmt"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-var _ base.EncodeableMessage = (*HandshakeOpen)(nil)
-var _ base.IncomingMessage = (*HandshakeOpen)(nil)
+var _ EncodeableMessage = (*HandshakeOpen)(nil)
+var _ IncomingMessage = (*HandshakeOpen)(nil)
 
 type HandshakeOpen struct {
 	challenge []byte
 	networkId string
 	handshake []byte
-	base.HandshakeRequirement
+	HandshakeRequirement
 }
 
 func (h *HandshakeOpen) SetHandshake(handshake []byte) {
@@ -29,8 +28,6 @@ func (h HandshakeOpen) Challenge() []byte {
 func (h HandshakeOpen) NetworkId() string {
 	return h.networkId
 }
-
-var _ base.EncodeableMessage = (*HandshakeOpen)(nil)
 
 func NewHandshakeOpen(challenge []byte, networkId string) *HandshakeOpen {
 	ho := &HandshakeOpen{
@@ -62,7 +59,7 @@ func (h HandshakeOpen) EncodeMsgpack(enc *msgpack.Encoder) error {
 	return nil
 }
 
-func (h *HandshakeOpen) DecodeMessage(dec *msgpack.Decoder, message base.IncomingMessageData) error {
+func (h *HandshakeOpen) DecodeMessage(dec *msgpack.Decoder, message IncomingMessageData) error {
 	handshake, err := dec.DecodeBytes()
 
 	if err != nil {
@@ -93,7 +90,7 @@ func (h *HandshakeOpen) DecodeMessage(dec *msgpack.Decoder, message base.Incomin
 	return nil
 }
 
-func (h *HandshakeOpen) HandleMessage(message base.IncomingMessageData) error {
+func (h *HandshakeOpen) HandleMessage(message IncomingMessageData) error {
 	peer := message.Peer
 	services := message.Services
 
