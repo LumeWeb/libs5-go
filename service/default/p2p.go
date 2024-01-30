@@ -462,7 +462,7 @@ func (p *P2PServiceDefault) OnNewPeerListen(peer net.Peer, verifyId bool) {
 		}
 
 		// Directly decode and handle the specific message type
-		if err := handler.HandleMessage(data); err != nil {
+		if err = handler.HandleMessage(data); err != nil {
 			p.Logger().Error("Error handling message", zap.Error(err))
 			return err
 		}
