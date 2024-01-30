@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
+	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
 	"strconv"
 	"time"
@@ -126,4 +127,35 @@ type StorageLocationProvider interface {
 	Next() (SignedStorageLocation, error)
 	Upvote(uri SignedStorageLocation) error
 	Downvote(uri SignedStorageLocation) error
+}
+
+type StorageLocationProviderServices interface {
+	P2P() StorageLocationProviderP2PService
+	Storage() StorageLocationProviderStorageService
+}
+type StorageLocationProviderP2PService interface {
+	SortNodesByScore(nodes []*encoding.NodeId) ([]*encoding.NodeId, error)
+	SendHashRequest(hash *encoding.Multihash, kinds []types.StorageLocationType) error
+	UpVote(nodeId *encoding.NodeId) error
+	DownVote(nodeId *encoding.NodeId) error
+}
+type StorageLocationProviderStorageService interface {
+	GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType) (map[string]StorageLocation, error)
+}
+
+type StorageLocationProviderServicesImpl struct {
+	p2p     StorageLocationProviderP2PService
+	storage StorageLocationProviderStorageService
+}
+
+func NewStorageLocationProviderServices(p2p StorageLocationProviderP2PService, storage StorageLocationProviderStorageService) *StorageLocationProviderServicesImpl {
+	return &StorageLocationProviderServicesImpl{p2p: p2p, storage: storage}
+}
+
+func (s *StorageLocationProviderServicesImpl) P2P() StorageLocationProviderP2PService {
+	return s.p2p
+}
+
+func (s *StorageLocationProviderServicesImpl) Storage() StorageLocationProviderStorageService {
+	return s.storage
 }

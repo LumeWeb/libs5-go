@@ -21,6 +21,10 @@ type P2PNodeResponse struct {
 	Uris []string `json:"uris"`
 }
 
+type HTTPServiceInterface interface {
+	GetHttpRouter(inject map[string]jape.Handler) *httprouter.Router
+}
+
 type HTTPService struct {
 	ServiceBase
 }

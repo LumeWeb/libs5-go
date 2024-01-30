@@ -18,8 +18,17 @@ import (
 const registryBucketName = "registry"
 
 var (
-	_ Service = (*RegistryService)(nil)
+	_ Service                  = (*RegistryService)(nil)
+	_ RegistryServiceInterface = (*RegistryService)(nil)
 )
+
+type RegistryServiceInterface interface {
+	Set(sre protocol.SignedRegistryEntry, trusted bool, receivedFrom net.Peer) error
+	BroadcastEntry(sre protocol.SignedRegistryEntry, receivedFrom net.Peer) error
+	SendRegistryRequest(pk []byte) error
+	Get(pk []byte) (protocol.SignedRegistryEntry, error)
+	Listen(pk []byte, cb func(sre protocol.SignedRegistryEntry)) (func(), error)
+}
 
 type RegistryService struct {
 	streams structs.Map

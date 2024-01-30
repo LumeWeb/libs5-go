@@ -13,15 +13,16 @@ type Service interface {
 	SetServices(services Services)
 }
 type Services interface {
-	P2P() *P2PService
-	Registry() *RegistryService
-	HTTP() *HTTPService
-	Storage() *StorageService
+	P2P() P2PServiceInterface
+	Registry() RegistryServiceInterface
+	HTTP() HTTPServiceInterface
+	Storage() StorageServiceInterface
 	All() []Service
 	IsStarted() bool
 	Start() error
 	Stop() error
 }
+
 type ServiceParams struct {
 	Logger *zap.Logger
 	Config *config.NodeConfig

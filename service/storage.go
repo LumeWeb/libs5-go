@@ -20,8 +20,20 @@ import (
 const cacheBucketName = "object-cache"
 
 var (
-	_ Service = (*StorageService)(nil)
+	_ Service                                       = (*StorageService)(nil)
+	_ storage.StorageLocationProviderStorageService = (*StorageService)(nil)
+	_ StorageServiceInterface                       = (*StorageService)(nil)
 )
+
+type StorageServiceInterface interface {
+	SetProviderStore(store storage.ProviderStore)
+	ProviderStore() storage.ProviderStore
+	GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType) (map[string]storage.StorageLocation, error)
+	AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location storage.StorageLocation, message []byte) error
+	DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error)
+	DownloadBytesByCID(cid *encoding.CID) ([]byte, error)
+	GetMetadataByCID(cid *encoding.CID) (metadata.Metadata, error)
+}
 
 type StorageService struct {
 	httpClient    *resty.Client
@@ -198,7 +210,7 @@ func (s *StorageService) AddStorageLocation(hash *encoding.Multihash, nodeId *en
 func (s *StorageService) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error) {
 	// Initialize the download URI provider
 	dlUriProvider := provider.NewStorageLocationProvider(provider.StorageLocationProviderParams{
-		Services: s.services,
+		Services: storage.NewStorageLocationProviderServices(s.services.P2P(), s.services.Storage()),
 		Hash:     hash,
 		LocationTypes: []types.StorageLocationType{
 			types.StorageLocationTypeFull,

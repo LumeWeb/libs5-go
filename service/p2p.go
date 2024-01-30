@@ -11,6 +11,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
+	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
@@ -24,6 +25,8 @@ import (
 )
 
 var _ Service = (*P2PService)(nil)
+var _ storage.StorageLocationProviderP2PService = (*P2PService)(nil)
+var _ P2PServiceInterface = (*P2PService)(nil)
 
 var (
 	errUnsupportedProtocol       = errors.New("unsupported protocol")
@@ -31,6 +34,26 @@ var (
 )
 
 const nodeBucketName = "nodes"
+
+type P2PServiceInterface interface {
+	SelfConnectionUris() []*url.URL
+	Peers() structs.Map
+	ConnectToNode(connectionUris []*url.URL, retried bool, fromPeer net.Peer) error
+	OnNewPeer(peer net.Peer, verifyId bool) error
+	GetNodeScore(nodeId *encoding.NodeId) (float64, error)
+	SortNodesByScore(nodes []*encoding.NodeId) ([]*encoding.NodeId, error)
+	SignMessageSimple(message []byte) ([]byte, error)
+	AddPeer(peer net.Peer) error
+	SendPublicPeersToPeer(peer net.Peer, peersToSend []net.Peer) error
+	SendHashRequest(hash *encoding.Multihash, kinds []types.StorageLocationType) error
+	UpVote(nodeId *encoding.NodeId) error
+	DownVote(nodeId *encoding.NodeId) error
+	NodeId() *encoding.NodeId
+	WaitOnConnectedPeers()
+	ConnectionTracker() *sync.WaitGroup
+	NetworkId() string
+	HashQueryRoutingTable() structs.Map
+}
 
 type P2PService struct {
 	nodeKeyPair             *ed25519.KeyPairEd25519

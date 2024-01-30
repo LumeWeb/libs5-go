@@ -15,7 +15,7 @@ import (
 var _ storage.StorageLocationProvider = (*StorageLocationProviderImpl)(nil)
 
 type StorageLocationProviderImpl struct {
-	services        service.Services
+	services        storage.StorageLocationProviderServices
 	hash            *encoding.Multihash
 	types           []types.StorageLocationType
 	timeoutDuration time.Duration
@@ -192,7 +192,7 @@ func containsNode(slice []*encoding.NodeId, item *encoding.NodeId) bool {
 }
 
 type StorageLocationProviderParams struct {
-	Services      service.Services
+	Services      storage.StorageLocationProviderServices
 	Hash          *encoding.Multihash
 	LocationTypes []types.StorageLocationType
 	service.ServiceParams
