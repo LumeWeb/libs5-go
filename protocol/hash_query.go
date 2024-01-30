@@ -3,7 +3,6 @@ package protocol
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/protocol/base"
 	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/emirpasic/gods/sets/hashset"
@@ -12,7 +11,7 @@ import (
 	"log"
 )
 
-var _ base.EncodeableMessage = (*HashQuery)(nil)
+var _ EncodeableMessage = (*HashQuery)(nil)
 var _ IncomingMessage = (*HashQuery)(nil)
 
 type HashQuery struct {
