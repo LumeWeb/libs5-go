@@ -6,6 +6,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/metadata"
 	"git.lumeweb.com/LumeWeb/libs5-go/storage"
+	"git.lumeweb.com/LumeWeb/libs5-go/storage/provider"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
@@ -196,7 +197,7 @@ func (s *StorageService) AddStorageLocation(hash *encoding.Multihash, nodeId *en
 
 func (s *StorageService) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error) {
 	// Initialize the download URI provider
-	dlUriProvider := storage.NewStorageLocationProvider(storage.StorageLocationProviderParams{
+	dlUriProvider := provider.NewStorageLocationProvider(provider.StorageLocationProviderParams{
 		Services: s.services,
 		Hash:     hash,
 		LocationTypes: []types.StorageLocationType{
