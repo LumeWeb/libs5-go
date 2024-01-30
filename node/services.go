@@ -9,25 +9,25 @@ var (
 )
 
 type ServicesParams struct {
-	P2P      *service.P2PService
-	Registry *service.RegistryService
-	HTTP     *service.HTTPService
-	Storage  *service.StorageService
+	P2P      service.P2PService
+	Registry service.RegistryService
+	HTTP     service.HTTPService
+	Storage  service.StorageService
 }
 
 type ServicesImpl struct {
-	p2p      *service.P2PService
-	registry *service.RegistryService
-	http     *service.HTTPService
-	storage  *service.StorageService
+	p2p      service.P2PService
+	registry service.RegistryService
+	http     service.HTTPService
+	storage  service.StorageService
 	started  bool
 }
 
-func (s *ServicesImpl) HTTP() *service.HTTPService {
+func (s *ServicesImpl) HTTP() service.HTTPService {
 	return s.http
 }
 
-func (s *ServicesImpl) Storage() *service.StorageService {
+func (s *ServicesImpl) Storage() service.StorageService {
 	return s.storage
 }
 
@@ -41,7 +41,7 @@ func (s *ServicesImpl) All() []service.Service {
 	return services
 }
 
-func (s *ServicesImpl) Registry() *service.RegistryService {
+func (s *ServicesImpl) Registry() service.RegistryService {
 	return s.registry
 }
 
@@ -61,7 +61,7 @@ func NewServices(params ServicesParams) service.Services {
 	return sc
 }
 
-func (s *ServicesImpl) P2P() *service.P2PService {
+func (s *ServicesImpl) P2P() service.P2PService {
 	return s.p2p
 }
 

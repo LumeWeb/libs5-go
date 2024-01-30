@@ -6,6 +6,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol/signed"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
+	_default "git.lumeweb.com/LumeWeb/libs5-go/service/default"
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
 )
@@ -79,10 +80,10 @@ func DefaultNode(config *config.NodeConfig) *Node {
 	}
 
 	// Initialize services first
-	p2pService := service.NewP2P(params)
-	registryService := service.NewRegistry(params)
-	httpService := service.NewHTTP(params)
-	storageService := service.NewStorage(params)
+	p2pService := _default.NewP2P(params)
+	registryService := _default.NewRegistry(params)
+	httpService := _default.NewHTTP(params)
+	storageService := _default.NewStorage(params)
 
 	// Aggregate services
 	services := NewServices(ServicesParams{
