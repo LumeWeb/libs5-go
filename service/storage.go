@@ -216,11 +216,9 @@ func (s *StorageService) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, 
 			types.StorageLocationTypeFull,
 			types.StorageLocationTypeFile,
 		},
-		ServiceParams: ServiceParams{
-			Logger: s.logger,
-			Config: s.config,
-			Db:     s.db,
-		},
+		Logger: s.logger,
+		Config: s.config,
+		Db:     s.db,
 	})
 	err := dlUriProvider.Start()
 	if err != nil {
