@@ -3,6 +3,7 @@ package fx
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
+	_default "git.lumeweb.com/LumeWeb/libs5-go/service/default"
 	"go.uber.org/fx"
 )
 
@@ -25,19 +26,19 @@ type ServicesParams struct {
 	node.ServicesParams
 }
 
-func newP2P(params ServiceParams) *service.P2PService {
-	return service.NewP2P(params.ServiceParams)
+func newP2P(params ServiceParams) service.P2PService {
+	return _default.NewP2P(params.ServiceParams)
 }
 
-func newRegistry(params ServiceParams) *service.RegistryService {
-	return service.NewRegistry(params.ServiceParams)
+func newRegistry(params ServiceParams) service.RegistryService {
+	return _default.NewRegistry(params.ServiceParams)
 }
-func newHTTP(params ServiceParams) *service.HTTPService {
-	return service.NewHTTP(params.ServiceParams)
+func newHTTP(params ServiceParams) service.HTTPService {
+	return _default.NewHTTP(params.ServiceParams)
 }
 
-func newStorage(params ServiceParams) *service.StorageService {
-	return service.NewStorage(params.ServiceParams)
+func newStorage(params ServiceParams) service.StorageService {
+	return _default.NewStorage(params.ServiceParams)
 }
 
 func newServices(params ServicesParams) service.Services {
