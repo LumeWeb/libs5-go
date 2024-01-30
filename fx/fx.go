@@ -23,7 +23,10 @@ type ServiceParams struct {
 
 type ServicesParams struct {
 	fx.In
-	node.ServicesParams
+	P2P      service.P2PService
+	Registry service.RegistryService
+	HTTP     service.HTTPService
+	Storage  service.StorageService
 }
 
 func newP2P(params ServiceParams) service.P2PService {
@@ -42,5 +45,10 @@ func newStorage(params ServiceParams) service.StorageService {
 }
 
 func newServices(params ServicesParams) service.Services {
-	return node.NewServices(params.ServicesParams)
+	return node.NewServices(node.ServicesParams{
+		P2P:      params.P2P,
+		Registry: params.Registry,
+		HTTP:     params.HTTP,
+		Storage:  params.Storage,
+	})
 }
