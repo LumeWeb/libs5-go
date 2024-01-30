@@ -6,14 +6,18 @@ import (
 	"go.uber.org/zap"
 )
 
+type ServicesSetter interface {
+	SetServices(services Services)
+}
+
 type Service interface {
 	Start() error
 	Stop() error
 	Init() error
-	SetServices(services Services)
 	Logger() *zap.Logger
 	Config() *config.NodeConfig
 	Db() *bbolt.DB
+	ServicesSetter
 }
 type Services interface {
 	P2P() P2PService
