@@ -69,6 +69,17 @@ func (s *ServicesImpl) IsStarted() bool {
 	return s.started
 }
 
+func (s *ServicesImpl) Init() error {
+	for _, svc := range s.All() {
+		err := svc.Init()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (s *ServicesImpl) Start() error {
 	for _, svc := range s.All() {
 		err := svc.Start()

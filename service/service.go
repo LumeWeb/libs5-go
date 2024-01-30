@@ -21,6 +21,7 @@ type Services interface {
 	HTTP() HTTPService
 	Storage() StorageService
 	All() []Service
+	Init() error
 	IsStarted() bool
 	Start() error
 	Stop() error

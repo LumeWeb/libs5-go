@@ -55,6 +55,10 @@ func (n *Node) Start() error {
 	return n.services.Start()
 }
 
+func (n *Node) Init() error {
+	return n.services.Init()
+}
+
 func (n *Node) Stop() error {
 	return n.services.Stop()
 }
