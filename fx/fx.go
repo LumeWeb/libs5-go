@@ -1,10 +1,13 @@
 package fx
 
 import (
+	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	_default "git.lumeweb.com/LumeWeb/libs5-go/service/default"
+	"go.etcd.io/bbolt"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 var Module = fx.Module("libs5",
@@ -18,7 +21,9 @@ var Module = fx.Module("libs5",
 
 type ServiceParams struct {
 	fx.In
-	service.ServiceParams
+	Logger *zap.Logger
+	Config *config.NodeConfig
+	Db     *bbolt.DB
 }
 
 type ServicesParams struct {
@@ -30,18 +35,34 @@ type ServicesParams struct {
 }
 
 func newP2P(params ServiceParams) service.P2PService {
-	return _default.NewP2P(params.ServiceParams)
+	return _default.NewP2P(service.ServiceParams{
+		Logger: params.Logger,
+		Config: params.Config,
+		Db:     params.Db,
+	})
 }
 
 func newRegistry(params ServiceParams) service.RegistryService {
-	return _default.NewRegistry(params.ServiceParams)
+	return _default.NewRegistry(service.ServiceParams{
+		Logger: params.Logger,
+		Config: params.Config,
+		Db:     params.Db,
+	})
 }
 func newHTTP(params ServiceParams) service.HTTPService {
-	return _default.NewHTTP(params.ServiceParams)
+	return _default.NewHTTP(service.ServiceParams{
+		Logger: params.Logger,
+		Config: params.Config,
+		Db:     params.Db,
+	})
 }
 
 func newStorage(params ServiceParams) service.StorageService {
-	return _default.NewStorage(params.ServiceParams)
+	return _default.NewStorage(service.ServiceParams{
+		Logger: params.Logger,
+		Config: params.Config,
+		Db:     params.Db,
+	})
 }
 
 func newServices(params ServicesParams) service.Services {
