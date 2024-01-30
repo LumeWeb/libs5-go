@@ -39,7 +39,7 @@ func (s *StorageLocation) DecodeMessage(dec *msgpack.Decoder, message IncomingMe
 }
 func (s *StorageLocation) HandleMessage(message IncomingMessageData) error {
 	msg := message.Original
-	services := message.Services
+	mediator := message.Mediator
 	peer := message.Peer
 	logger := message.Logger
 
@@ -79,9 +79,7 @@ func (s *StorageLocation) HandleMessage(message IncomingMessageData) error {
 
 	nodeId := encoding.NewNodeId(publicKey)
 
-	// Assuming `node` is an instance of your NodeImpl structure
-	err := services.Storage().AddStorageLocation(hash, nodeId, storage.NewStorageLocation(int(typeOfData), parts, int64(expiry)), msg) // Implement AddStorageLocation
-
+	err := mediator.AddStorageLocation(hash, nodeId, storage.NewStorageLocation(int(typeOfData), parts, int64(expiry)), msg)
 	if err != nil {
 		return fmt.Errorf("Failed to add storage location: %s", err)
 	}
@@ -92,7 +90,7 @@ func (s *StorageLocation) HandleMessage(message IncomingMessageData) error {
 	}
 
 	var list *hashset.Set
-	listVal, ok := services.P2P().HashQueryRoutingTable().Get(hashStr) // Implement HashQueryRoutingTable method
+	listVal, ok := mediator.HashQueryRoutingTable().Get(hashStr) // Implement HashQueryRoutingTable method
 	if !ok {
 		list = hashset.New()
 	} else {
@@ -109,7 +107,8 @@ func (s *StorageLocation) HandleMessage(message IncomingMessageData) error {
 		if err != nil {
 			return err
 		}
-		if peerVal, ok := services.P2P().Peers().Get(peerIdStr); ok {
+
+		if peerVal, ok := mediator.Peers().Get(peerIdStr); ok {
 			foundPeer := peerVal.(net.Peer)
 			err := foundPeer.SendMessage(msg)
 			if err != nil {
@@ -118,7 +117,7 @@ func (s *StorageLocation) HandleMessage(message IncomingMessageData) error {
 			}
 		}
 
-		services.P2P().HashQueryRoutingTable().Remove(hash.HashCode())
+		mediator.HashQueryRoutingTable().Remove(hashStr)
 	}
 
 	return nil

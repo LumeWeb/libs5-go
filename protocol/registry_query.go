@@ -50,9 +50,9 @@ func (s *RegistryQuery) DecodeMessage(dec *msgpack.Decoder, message IncomingMess
 }
 
 func (s *RegistryQuery) HandleMessage(message IncomingMessageData) error {
-	services := message.Services
+	mediator := message.Mediator
 	peer := message.Peer
-	sre, err := services.Registry().Get(s.pk)
+	sre, err := mediator.RegistryGet(s.pk)
 	if err != nil {
 		return err
 	}

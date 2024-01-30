@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
-	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.uber.org/zap"
 	"io"
@@ -51,11 +50,11 @@ type IncomingMessageData struct {
 	Original []byte
 	Data     []byte
 	Ctx      context.Context
-	Services service.Services
 	Logger   *zap.Logger
 	Peer     net.Peer
 	Config   *config.NodeConfig
 	VerifyId bool
+	Mediator Mediator
 }
 
 type IncomingMessageReader struct {

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
@@ -76,13 +75,13 @@ func NewHandshakeDone() *HandshakeDone {
 }
 
 func (h HandshakeDone) HandleMessage(message IncomingMessageDataSigned) error {
-	services := message.Services
+	mediator := message.Mediator
 	peer := message.Peer
 	verifyId := message.VerifyId
 	nodeId := message.NodeId
 	logger := message.Logger
 
-	if !services.IsStarted() {
+	if !mediator.ServicesStarted() {
 		err := peer.End()
 		if err != nil {
 			return nil
@@ -108,7 +107,7 @@ func (h HandshakeDone) HandleMessage(message IncomingMessageDataSigned) error {
 	if h.supportedFeatures != types.SupportedFeatures {
 		return fmt.Errorf("Remote node does not support required features")
 	}
-	err := services.P2P().AddPeer(peer)
+	err := mediator.AddPeer(peer)
 	if err != nil {
 		return err
 	}
@@ -123,7 +122,7 @@ func (h HandshakeDone) HandleMessage(message IncomingMessageDataSigned) error {
 
 	logger.Info(fmt.Sprintf("[+] %s (%s)", peerId, peer.RenderLocationURI()))
 
-	err = services.P2P().SendPublicPeersToPeer(peer, []net.Peer{peer})
+	err = mediator.ConnectToNode([]*url.URL{h.connectionUris[0]}, false, peer)
 	if err != nil {
 		return err
 	}

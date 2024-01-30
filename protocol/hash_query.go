@@ -89,11 +89,11 @@ func (h HashQuery) EncodeMsgpack(enc *msgpack.Encoder) error {
 
 func (h *HashQuery) HandleMessage(message IncomingMessageData) error {
 	peer := message.Peer
-	services := message.Services
+	mediator := message.Mediator
 	logger := message.Logger
 	config := message.Config
 
-	mapLocations, err := services.Storage().GetCachedStorageLocations(h.hash, h.kinds)
+	mapLocations, err := mediator.GetCachedStorageLocations(h.hash, h.kinds)
 	if err != nil {
 		log.Printf("Error getting cached storage locations: %v", err)
 		return err
@@ -111,7 +111,7 @@ func (h *HashQuery) HandleMessage(message IncomingMessageData) error {
 			availableNodes = append(availableNodes, nodeId)
 		}
 
-		score, err := services.P2P().SortNodesByScore(availableNodes)
+		score, err := mediator.SortNodesByScore(availableNodes)
 		if err != nil {
 			return err
 		}
@@ -130,16 +130,16 @@ func (h *HashQuery) HandleMessage(message IncomingMessageData) error {
 		}
 	}
 
-	if services.Storage().ProviderStore() != nil {
-		if services.Storage().ProviderStore().CanProvide(h.hash, h.kinds) {
-			location, err := services.Storage().ProviderStore().Provide(h.hash, h.kinds)
+	if mediator.ProviderStore() != nil {
+		if mediator.ProviderStore().CanProvide(h.hash, h.kinds) {
+			location, err := mediator.ProviderStore().Provide(h.hash, h.kinds)
 			if err != nil {
 				return err
 			}
 
 			message := storage.PrepareProvideMessage(config.KeyPair, h.hash, location)
 
-			err = services.Storage().AddStorageLocation(h.hash, services.P2P().NodeId(), location, message)
+			err = mediator.AddStorageLocation(h.hash, mediator.NodeId(), location, message)
 			if err != nil {
 				return err
 			}
@@ -157,7 +157,7 @@ func (h *HashQuery) HandleMessage(message IncomingMessageData) error {
 	if err != nil {
 		return err
 	}
-	peersVal, ok := services.P2P().HashQueryRoutingTable().Get(hashString) // Implement HashQueryRoutingTable method
+	peersVal, ok := mediator.HashQueryRoutingTable().Get(hashString)
 	if ok {
 		peers = peersVal.(*hashset.Set)
 		if !peers.Contains(peer.Id()) {
@@ -170,9 +170,9 @@ func (h *HashQuery) HandleMessage(message IncomingMessageData) error {
 	peerList := hashset.New()
 	peerList.Add(peer.Id())
 
-	services.P2P().HashQueryRoutingTable().Put(hashString, peerList)
+	mediator.HashQueryRoutingTable().Put(hashString, peerList)
 
-	for _, val := range services.P2P().Peers().Values() {
+	for _, val := range mediator.Peers().Values() {
 		peerVal := val.(net.Peer)
 		if !peerVal.Id().Equals(peer.Id()) {
 			err := peerVal.SendMessage(message.Original)

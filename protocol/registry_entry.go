@@ -50,7 +50,5 @@ func (s *RegistryEntryRequest) DecodeMessage(dec *msgpack.Decoder, message Incom
 }
 
 func (s *RegistryEntryRequest) HandleMessage(message IncomingMessageData) error {
-	peer := message.Peer
-	services := message.Services
-	return services.Registry().Set(s.sre, false, peer)
+	return message.Mediator.RegistrySet(s.sre, false, message.Peer)
 }
