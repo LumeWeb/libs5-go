@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"bytes"
 	"crypto/ed25519"
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
@@ -96,18 +97,22 @@ func (s *SignedMessage) HandleMessage(message IncomingMessageData) error {
 			logger.Debug("Peer is not handshake done, ignoring message", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
 			return nil
 		}
-		err := msgpack.Unmarshal(payload.message, &msgHandler)
-		if err != nil {
-			return err
-		}
 
-		data := IncomingMessageDataSigned{
+		signedDec := msgpack.NewDecoder(bytes.NewReader(payload.message))
+		signedMsg := IncomingMessageDataSigned{
 			IncomingMessageData: message,
 			NodeId:              s.nodeId,
 		}
 
-		err = msgHandler.HandleMessage(data)
+		err = msgHandler.DecodeMessage(signedDec, signedMsg)
+
 		if err != nil {
+			logger.Error("Error decoding signed message", zap.Error(err))
+			return err
+		}
+
+		if err = msgHandler.HandleMessage(signedMsg); err != nil {
+			logger.Error("Error handling signed message", zap.Error(err))
 			return err
 		}
 	}
