@@ -446,6 +446,12 @@ func (p *P2PServiceDefault) OnNewPeerListen(peer net.Peer, verifyId bool) {
 			}),
 		}
 
+		if mediator, ok := data.Mediator.(service.Service); ok {
+			mediator.SetServices(p.Services())
+		} else {
+			p.Logger().Fatal("failed to cast mediator to service.Service")
+		}
+
 		dec := msgpack.NewDecoder(bytes.NewReader(reader.Data))
 
 		err = handler.DecodeMessage(dec, data)
