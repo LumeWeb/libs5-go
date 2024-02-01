@@ -112,6 +112,10 @@ func (h HandshakeDone) HandleMessage(message IncomingMessageDataSigned) error {
 		return err
 	}
 
+	if len(h.connectionUris) == 0 {
+		return nil
+	}
+
 	peer.SetConnectionURIs(h.connectionUris)
 
 	peerId, err := peer.Id().ToString()
