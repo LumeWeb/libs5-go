@@ -14,18 +14,18 @@ type NodeConfig struct {
 	HTTP    HTTPConfig
 }
 type P2PConfig struct {
-	Network                 string
+	Network                 string `mapstructure:"network"`
 	Peers                   PeersConfig
-	MaxOutgoingPeerFailures uint
+	MaxOutgoingPeerFailures uint `mapstructure:"max_outgoing_peer_failures"`
 }
 
 type PeersConfig struct {
-	Initial []string
+	Initial []string `mapstructure:"initial"`
 }
 
 type HTTPAPIConfig struct {
-	Domain string
-	Port   uint
+	Domain string `mapstructure:"domain"`
+	Port   uint   `mapstructure:"port"`
 }
 
 type HTTPConfig struct {
