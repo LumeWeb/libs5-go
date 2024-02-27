@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"go.etcd.io/bbolt"
 	"go.uber.org/zap"
@@ -11,9 +12,9 @@ type ServicesSetter interface {
 }
 
 type Service interface {
-	Start() error
-	Stop() error
-	Init() error
+	Start(ctx context.Context) error
+	Stop(ctx context.Context) error
+	Init(ctx context.Context) error
 	Logger() *zap.Logger
 	Config() *config.NodeConfig
 	Db() *bbolt.DB
@@ -25,10 +26,10 @@ type Services interface {
 	HTTP() HTTPService
 	Storage() StorageService
 	All() []Service
-	Init() error
+	Init(ctx context.Context) error
 	IsStarted() bool
-	Start() error
-	Stop() error
+	Start(ctx context.Context) error
+	Stop(ctx context.Context) error
 }
 
 type ServiceParams struct {

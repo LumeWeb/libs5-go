@@ -1,6 +1,7 @@
 package _default
 
 import (
+	"context"
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
@@ -29,15 +30,15 @@ type RegistryServiceDefault struct {
 	service.ServiceBase
 }
 
-func (r *RegistryServiceDefault) Start() error {
+func (r *RegistryServiceDefault) Start(ctx context.Context) error {
 	return nil
 }
 
-func (r *RegistryServiceDefault) Stop() error {
+func (r *RegistryServiceDefault) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (r *RegistryServiceDefault) Init() error {
+func (r *RegistryServiceDefault) Init(ctx context.Context) error {
 	return utils.CreateBucket(registryBucketName, r.Db())
 }
 

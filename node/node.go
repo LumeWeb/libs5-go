@@ -1,6 +1,7 @@
 package node
 
 import (
+	"context"
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
@@ -48,19 +49,19 @@ func (n *Node) Db() *bolt.DB {
 	return nil
 }
 
-func (n *Node) Start() error {
+func (n *Node) Start(ctx context.Context) error {
 	protocol.RegisterProtocols()
 	protocol.RegisterSignedProtocols()
 
-	return n.services.Start()
+	return n.services.Start(ctx)
 }
 
-func (n *Node) Init() error {
-	return n.services.Init()
+func (n *Node) Init(ctx context.Context) error {
+	return n.services.Init(ctx)
 }
 
-func (n *Node) Stop() error {
-	return n.services.Stop()
+func (n *Node) Stop(ctx context.Context) error {
+	return n.services.Stop(ctx)
 }
 
 func (n *Node) WaitOnConnectedPeers() {

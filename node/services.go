@@ -1,6 +1,7 @@
 package node
 
 import (
+	"context"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 )
 
@@ -69,9 +70,9 @@ func (s *ServicesImpl) IsStarted() bool {
 	return s.started
 }
 
-func (s *ServicesImpl) Init() error {
+func (s *ServicesImpl) Init(ctx context.Context) error {
 	for _, svc := range s.All() {
-		err := svc.Init()
+		err := svc.Init(ctx)
 		if err != nil {
 			return err
 		}
@@ -80,9 +81,9 @@ func (s *ServicesImpl) Init() error {
 	return nil
 }
 
-func (s *ServicesImpl) Start() error {
+func (s *ServicesImpl) Start(ctx context.Context) error {
 	for _, svc := range s.All() {
-		err := svc.Start()
+		err := svc.Start(ctx)
 		if err != nil {
 			return err
 		}
@@ -92,9 +93,9 @@ func (s *ServicesImpl) Start() error {
 
 	return nil
 }
-func (s *ServicesImpl) Stop() error {
+func (s *ServicesImpl) Stop(ctx context.Context) error {
 	for _, svc := range s.All() {
-		err := svc.Stop()
+		err := svc.Stop(ctx)
 		if err != nil {
 			return err
 		}

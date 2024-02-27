@@ -1,6 +1,7 @@
 package _default
 
 import (
+	"context"
 	"git.lumeweb.com/LumeWeb/libs5-go/build"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
@@ -46,15 +47,15 @@ func (h *HTTPServiceDefault) GetHttpRouter(inject map[string]jape.Handler) *http
 	return jape.Mux(routes)
 }
 
-func (h *HTTPServiceDefault) Start() error {
+func (h *HTTPServiceDefault) Start(ctx context.Context) error {
 	return nil
 }
 
-func (h *HTTPServiceDefault) Stop() error {
+func (h *HTTPServiceDefault) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (h *HTTPServiceDefault) Init() error {
+func (h *HTTPServiceDefault) Init(ctx context.Context) error {
 	return nil
 }
 

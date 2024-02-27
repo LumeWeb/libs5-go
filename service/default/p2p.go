@@ -85,7 +85,7 @@ func (p *P2PServiceDefault) Peers() structs.Map {
 	return p.peers
 }
 
-func (p *P2PServiceDefault) Start() error {
+func (p *P2PServiceDefault) Start(ctx context.Context) error {
 	config := p.Config()
 	if len(config.P2P.Peers.Initial) > 0 {
 		initialPeers := config.P2P.Peers.Initial
@@ -109,11 +109,11 @@ func (p *P2PServiceDefault) Start() error {
 	return nil
 }
 
-func (p *P2PServiceDefault) Stop() error {
+func (p *P2PServiceDefault) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (p *P2PServiceDefault) Init() error {
+func (p *P2PServiceDefault) Init(ctx context.Context) error {
 	if p.inited {
 		return nil
 	}

@@ -1,6 +1,7 @@
 package _default
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
@@ -40,7 +41,7 @@ func NewStorage(params service.ServiceParams) *StorageService {
 	}
 }
 
-func (s *StorageService) Start() error {
+func (s *StorageService) Start(ctx context.Context) error {
 	err :=
 		utils.CreateBucket(cacheBucketName, s.Db())
 
@@ -51,11 +52,11 @@ func (s *StorageService) Start() error {
 	return nil
 }
 
-func (s *StorageService) Stop() error {
+func (s *StorageService) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (s *StorageService) Init() error {
+func (s *StorageService) Init(ctx context.Context) error {
 	return nil
 }
 
