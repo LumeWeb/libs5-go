@@ -124,6 +124,7 @@ func NewStorageLocationMap() StorageLocationMap {
 type StorageLocationProvider interface {
 	Start() error
 	Next() (SignedStorageLocation, error)
+	All() ([]SignedStorageLocation, error)
 	Upvote(uri SignedStorageLocation) error
 	Downvote(uri SignedStorageLocation) error
 }

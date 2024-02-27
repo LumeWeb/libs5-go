@@ -7,6 +7,7 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 	"sync"
 	"time"
@@ -142,6 +143,45 @@ func (s *StorageLocationProviderImpl) Next() (storage.SignedStorageLocation, err
 			}
 
 			return storage.NewSignedStorageLocation(nodeId, uri), nil
+		}
+
+		s.isWaitingForUri = true
+		if s.isTimedOut {
+			hashStr, err := s.hash.ToString()
+			if err != nil {
+				return nil, err
+			}
+			return nil, fmt.Errorf("Could not download raw file: Timed out after %s %s", s.timeoutDuration.String(), hashStr)
+		}
+
+		time.Sleep(10 * time.Millisecond) // Replace with a proper wait/notify mechanism if applicable
+	}
+}
+
+func (s *StorageLocationProviderImpl) All() ([]storage.SignedStorageLocation, error) {
+	s.timeout = time.Now().Add(s.timeoutDuration)
+
+	for {
+		if len(s.availableNodes) > 0 {
+			s.isWaitingForUri = false
+
+			return lo.FilterMap[*encoding.NodeId, storage.SignedStorageLocation](s.availableNodes, func(nodeId *encoding.NodeId, index int) (storage.SignedStorageLocation, bool) {
+				nodIdStr, err := nodeId.ToString()
+
+				if err != nil {
+					s.logger.Error("Error decoding node id", zap.Error(err))
+					return nil, false
+				}
+
+				uri, exists := s.uris[nodIdStr]
+
+				if !exists {
+					s.logger.Error("Could not find uri for node id", zap.String("nodeId", nodIdStr))
+					return nil, false
+				}
+
+				return storage.NewSignedStorageLocation(nodeId, uri), true
+			}), nil
 		}
 
 		s.isWaitingForUri = true
