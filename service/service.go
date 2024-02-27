@@ -28,6 +28,7 @@ type Services interface {
 	All() []Service
 	Init(ctx context.Context) error
 	IsStarted() bool
+	IsStarting() bool
 	Start(ctx context.Context) error
 	Stop(ctx context.Context) error
 }

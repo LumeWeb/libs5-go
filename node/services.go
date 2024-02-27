@@ -22,6 +22,7 @@ type ServicesImpl struct {
 	http     service.HTTPService
 	storage  service.StorageService
 	started  bool
+	starting bool
 }
 
 func (s *ServicesImpl) HTTP() service.HTTPService {
@@ -70,6 +71,10 @@ func (s *ServicesImpl) IsStarted() bool {
 	return s.started
 }
 
+func (s *ServicesImpl) IsStarting() bool {
+	return s.starting
+}
+
 func (s *ServicesImpl) Init(ctx context.Context) error {
 	for _, svc := range s.All() {
 		err := svc.Init(ctx)
@@ -82,6 +87,9 @@ func (s *ServicesImpl) Init(ctx context.Context) error {
 }
 
 func (s *ServicesImpl) Start(ctx context.Context) error {
+
+	s.starting = true
+
 	for _, svc := range s.All() {
 		err := svc.Start(ctx)
 		if err != nil {
@@ -90,6 +98,7 @@ func (s *ServicesImpl) Start(ctx context.Context) error {
 	}
 
 	s.started = true
+	s.starting = false
 
 	return nil
 }
