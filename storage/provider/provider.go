@@ -26,6 +26,7 @@ type StorageLocationProviderImpl struct {
 	isWaitingForUri bool
 	mutex           sync.Mutex
 	logger          *zap.Logger
+	excludeNodes    []*encoding.NodeId
 }
 
 func (s *StorageLocationProviderImpl) Start() error {
@@ -40,6 +41,10 @@ func (s *StorageLocationProviderImpl) Start() error {
 	for k := range s.uris {
 		nodeId, err := encoding.DecodeNodeId(k)
 		if err != nil {
+			continue
+		}
+
+		if containsNode(s.excludeNodes, nodeId) {
 			continue
 		}
 
@@ -89,6 +94,9 @@ func (s *StorageLocationProviderImpl) Start() error {
 					nodeId, err := encoding.DecodeNodeId(k)
 					if err != nil {
 						s.logger.Error("Error decoding node id", zap.Error(err))
+						continue
+					}
+					if containsNode(s.excludeNodes, nodeId) {
 						continue
 					}
 					if !containsNode(s.availableNodes, nodeId) {
@@ -180,6 +188,7 @@ func NewStorageLocationProvider(params StorageLocationProviderParams) *StorageLo
 		timeoutDuration: 60 * time.Second,
 		uris:            make(map[string]storage.StorageLocation),
 		logger:          params.Logger,
+		excludeNodes:    params.ExcludeNodes,
 	}
 }
 func containsNode(slice []*encoding.NodeId, item *encoding.NodeId) bool {
@@ -195,5 +204,6 @@ type StorageLocationProviderParams struct {
 	Services      service.Services
 	Hash          *encoding.Multihash
 	LocationTypes []types.StorageLocationType
+	ExcludeNodes  []*encoding.NodeId
 	service.ServiceParams
 }
