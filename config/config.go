@@ -7,16 +7,16 @@ import (
 )
 
 type NodeConfig struct {
-	P2P     P2PConfig
+	P2P     P2PConfig `mapstructure:"p2p"`
 	KeyPair *ed25519.KeyPairEd25519
 	DB      *bolt.DB
 	Logger  *zap.Logger
-	HTTP    HTTPConfig
+	HTTP    HTTPConfig `mapstructure:"http"`
 }
 type P2PConfig struct {
-	Network                 string `mapstructure:"network"`
-	Peers                   PeersConfig
-	MaxOutgoingPeerFailures uint `mapstructure:"max_outgoing_peer_failures"`
+	Network                 string      `mapstructure:"network"`
+	Peers                   PeersConfig `mapstructure:"peers"`
+	MaxOutgoingPeerFailures uint        `mapstructure:"max_outgoing_peer_failures"`
 }
 
 type PeersConfig struct {
@@ -29,5 +29,5 @@ type HTTPAPIConfig struct {
 }
 
 type HTTPConfig struct {
-	API HTTPAPIConfig
+	API HTTPAPIConfig `mapstructure:"api"`
 }
