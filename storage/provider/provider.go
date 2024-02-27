@@ -3,12 +3,10 @@ package provider
 import (
 	"bytes"
 	"fmt"
-	"git.lumeweb.com/LumeWeb/libs5-go/config"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/storage"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
-	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
 	"sync"
 	"time"
@@ -197,8 +195,5 @@ type StorageLocationProviderParams struct {
 	Services      service.Services
 	Hash          *encoding.Multihash
 	LocationTypes []types.StorageLocationType
-	Logger        *zap.Logger
-	Config        *config.NodeConfig
-	Db            *bolt.DB
 	service.ServiceParams
 }
