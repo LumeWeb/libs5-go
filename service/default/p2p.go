@@ -131,7 +131,9 @@ func (p *P2PServiceDefault) Init(ctx context.Context) error {
 }
 func (p *P2PServiceDefault) ConnectToNode(connectionUris []*url.URL, retried bool, fromPeer net.Peer) error {
 	if !p.Services().IsStarted() {
-		return nil
+		if !p.Services().IsStarting() {
+			return nil
+		}
 	}
 
 	unsupported, _ := url.Parse("http://0.0.0.0")
