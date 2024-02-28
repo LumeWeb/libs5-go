@@ -434,6 +434,11 @@ func (p *P2PServiceDefault) OnNewPeerListen(peer net.Peer, verifyId bool) {
 			return fmt.Errorf("unknown message type: %d", reader.Kind)
 		}
 
+		if handler.RequiresHandshake() && !peer.IsHandshakeDone() {
+			p.Logger().Debug("Peer is not handshake done, ignoring message", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(reader.Kind)]))
+			return nil
+		}
+
 		data := protocol.IncomingMessageData{
 			Original: message,
 			Data:     reader.Data,
