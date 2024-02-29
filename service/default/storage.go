@@ -12,10 +12,13 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
-	"github.com/go-resty/resty/v2"
+	"github.com/ddo/rq"
+	_ "github.com/ddo/rq"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.etcd.io/bbolt"
 	"go.uber.org/zap"
+	"io"
+	"net/http"
 	"time"
 )
 
@@ -27,7 +30,6 @@ var (
 )
 
 type StorageService struct {
-	httpClient    *resty.Client
 	metadataCache structs.Map
 	providerStore storage.ProviderStore
 	service.ServiceBase
@@ -35,7 +37,6 @@ type StorageService struct {
 
 func NewStorage(params service.ServiceParams) *StorageService {
 	return &StorageService{
-		httpClient:    resty.New(),
 		metadataCache: structs.NewMap(),
 		ServiceBase:   service.NewServiceBase(params.Logger, params.Config, params.Db),
 	}
@@ -223,7 +224,13 @@ func (s *StorageService) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, 
 
 		s.Logger().Debug("Trying to download from", zap.String("url", dlUri.Location().BytesURL()))
 
-		res, err := s.httpClient.R().Get(dlUri.Location().BytesURL())
+		req := rq.Get(dlUri.Location().BytesURL())
+		httpReq, err := req.ParseRequest()
+		if err != nil {
+			return nil, err
+		}
+
+		res, err := http.DefaultClient.Do(httpReq)
 		if err != nil {
 			err := dlUriProvider.Downvote(dlUri)
 			if err != nil {
@@ -236,7 +243,25 @@ func (s *StorageService) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, 
 			continue
 		}
 
-		bodyBytes := res.Body()
+		defer func(Body io.ReadCloser) {
+			err := Body.Close()
+			if err != nil {
+				s.Logger().Error("error closing body", zap.Error(err))
+			}
+		}(res.Body)
+
+		if res.StatusCode != 200 {
+			err := dlUriProvider.Downvote(dlUri)
+			if err != nil {
+				return nil, err
+			}
+			continue
+		}
+
+		bodyBytes, err := io.ReadAll(res.Body)
+		if err != nil {
+			return nil, err
+		}
 
 		return bodyBytes, nil
 	}

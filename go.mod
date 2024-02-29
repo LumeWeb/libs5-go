@@ -3,8 +3,8 @@ module git.lumeweb.com/LumeWeb/libs5-go
 go 1.20
 
 require (
+	github.com/ddo/rq v0.0.0-20190828174524-b3daa55fcaba
 	github.com/emirpasic/gods v1.18.1
-	github.com/go-resty/resty/v2 v2.11.0
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.6.0
 	github.com/julienschmidt/httprouter v1.3.0
@@ -30,8 +30,8 @@ require (
 	go.uber.org/dig v1.17.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
-	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
