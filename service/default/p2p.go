@@ -504,7 +504,7 @@ func (p *P2PServiceDefault) readNodeVotes(nodeId *encoding.NodeId) (service.Node
 		return service.NewNodeVotes(), nil
 	}
 
-	var score service.NodeVotes
+	score := service.NewNodeVotes()
 	err = msgpack.Unmarshal(value, &score)
 	if err != nil {
 		return nil, err
