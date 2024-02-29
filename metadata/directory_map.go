@@ -11,9 +11,29 @@ import (
 type directoryReferenceMap struct {
 	linkedhashmap.Map
 }
+
+func (drm directoryReferenceMap) Items() map[string]*DirectoryReference {
+	files := make(map[string]*DirectoryReference)
+	iter := drm.Iterator()
+	for iter.Next() {
+		files[iter.Key().(string)] = iter.Value().(*DirectoryReference)
+	}
+	return files
+}
+
 type fileReferenceMap struct {
 	linkedhashmap.Map
 }
+
+func (drm fileReferenceMap) Items() map[string]*FileReference {
+	files := make(map[string]*FileReference)
+	iter := drm.Iterator()
+	for iter.Next() {
+		files[iter.Key().(string)] = iter.Value().(*FileReference)
+	}
+	return files
+}
+
 type fileReferenceSerializationMap struct {
 	linkedhashmap.Map
 }
