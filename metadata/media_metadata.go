@@ -80,13 +80,15 @@ func (m *MediaMetadata) decodeProof(dec *msgpack.Decoder) error {
 
 	proofSectionLength := utils.DecodeEndian(all[0:2])
 
-	bodyBytes := all[2+proofSectionLength:]
+	all = all[2:]
+
+	bodyBytes := all[proofSectionLength:]
 
 	if proofSectionLength == 0 {
 		return nil
 	}
 
-	childDec := msgpack.NewDecoder(bytes.NewReader(all[2 : 2+proofSectionLength]))
+	childDec := msgpack.NewDecoder(bytes.NewReader(all[:proofSectionLength]))
 
 	b3hash := blake3.Sum256(bodyBytes)
 
