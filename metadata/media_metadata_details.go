@@ -29,6 +29,8 @@ func (mmd *MediaMetadataDetails) DecodeMsgpack(dec *msgpack.Decoder) error {
 		return err
 	}
 
+	mmd.Data = make(map[int]interface{}, mapLen)
+
 	for i := 0; i < mapLen; i++ {
 		key, err := dec.DecodeInt8()
 		if err != nil {
