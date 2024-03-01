@@ -220,6 +220,8 @@ func (m *mediaMap) DecodeMsgpack(dec *msgpack.Decoder) error {
 		return err
 	}
 
+	*m = make(map[string][]MediaFormat, mapLen)
+
 	for i := 0; i < mapLen; i++ {
 		typ, err := dec.DecodeString()
 		if err != nil {
