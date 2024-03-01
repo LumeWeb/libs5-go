@@ -86,7 +86,7 @@ func (m *MediaMetadata) decodeProof(dec *msgpack.Decoder) error {
 		return nil
 	}
 
-	childDec := msgpack.NewDecoder(bytes.NewReader(all[2 : proofSectionLength+4]))
+	childDec := msgpack.NewDecoder(bytes.NewReader(all[2 : 2+proofSectionLength]))
 
 	b3hash := blake3.Sum256(bodyBytes)
 
