@@ -103,10 +103,11 @@ func (m *MediaMetadata) decodeProof(dec *msgpack.Decoder) error {
 			return err
 		}
 
+		var hashType int8
+		var pubkey []byte
+		var signature []byte
+
 		for j := 0; j < len(proofData); j++ {
-			var hashType int8
-			var pubkey []byte
-			var signature []byte
 
 			switch j {
 			case 0:
