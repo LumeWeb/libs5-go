@@ -90,7 +90,7 @@ func (m *MediaMetadata) decodeProof(dec *msgpack.Decoder) error {
 
 	childDec := msgpack.NewDecoder(bytes.NewReader(all[:proofSectionLength]))
 
-	b3hash := blake3.Sum256(bodyBytes)
+	b3hash := blake3.Sum256(append([]byte{byte(types.HashTypeBlake3)}, bodyBytes...))
 
 	arrayLen, err := childDec.DecodeArrayLen()
 	if err != nil {
