@@ -103,11 +103,10 @@ func (m *MediaMetadata) decodeProof(dec *msgpack.Decoder) error {
 			return err
 		}
 
-		var hashType int8
-		var pubkey []byte
-		var signature []byte
-
 		for j := 0; j < len(proofData); j++ {
+			var hashType int8
+			var pubkey []byte
+			var signature []byte
 
 			switch j {
 			case 0:
@@ -134,7 +133,7 @@ func (m *MediaMetadata) decodeProof(dec *msgpack.Decoder) error {
 			case 3:
 				signature = proofData[j].([]byte)
 
-				if valid := ed25519.Verify(pubkey, b3hash[:], signature); !valid {
+				if valid := ed25519.Verify(pubkey[1:], b3hash[:], signature); !valid {
 					return errors.New("Invalid signature")
 				}
 
