@@ -101,7 +101,7 @@ func (mmd *MediaFormat) DecodeMsgpack(dec *msgpack.Decoder) error {
 		case 14:
 			mmd.Fps = value.(int)
 		case 15:
-			mmd.Bitrate = value.(int)
+			mmd.Bitrate = int(value.(uint16))
 		case 18:
 			mmd.AudioChannels = value.(int)
 		case 19:
