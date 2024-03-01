@@ -33,7 +33,7 @@ func NewDirectoryMetadata(details DirectoryMetadataDetails, directories director
 	return dirMetadata
 }
 func (dm *DirectoryMetadata) EncodeMsgpack(enc *msgpack.Encoder) error {
-	err := serialize.InitMarshaller(types.MetadataTypeDirectory, enc)
+	err := serialize.InitMarshaller(enc, types.MetadataTypeDirectory)
 	if err != nil {
 		return err
 	}

@@ -38,7 +38,7 @@ func NewEmptyWebAppMetadata() *WebAppMetadata {
 }
 
 func (wm *WebAppMetadata) EncodeMsgpack(enc *msgpack.Encoder) error {
-	err := serialize.InitMarshaller(types.MetadataTypeWebApp, enc)
+	err := serialize.InitMarshaller(enc, types.MetadataTypeWebApp)
 	if err != nil {
 		return err
 	}

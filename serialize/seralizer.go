@@ -7,7 +7,7 @@ import (
 	"slices"
 )
 
-func InitMarshaller(kind types.MetadataType, enc *msgpack.Encoder) error {
+func InitMarshaller(enc *msgpack.Encoder, kind types.MetadataType) error {
 	err := enc.EncodeInt(types.MetadataMagicByte)
 	if err != nil {
 		return err
