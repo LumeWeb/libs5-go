@@ -107,6 +107,10 @@ func (m *MediaMetadata) decodeProof(dec *msgpack.Decoder) error {
 		var pubkey []byte
 		var signature []byte
 
+		if len(proofData) != 4 {
+			return errors.New("Invalid proof data length")
+		}
+
 		for j := 0; j < len(proofData); j++ {
 
 			switch j {
