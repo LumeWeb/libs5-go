@@ -152,7 +152,18 @@ func (m *MediaMetadata) decodeProof(dec *msgpack.Decoder) error {
 
 	m.provenPubKeys = provenPubKeys
 
-	return m.decodeMedia(msgpack.NewDecoder(bytes.NewReader(bodyBytes)))
+	mediaDec := msgpack.NewDecoder(bytes.NewReader(bodyBytes))
+
+	mediaByte, err := mediaDec.DecodeUint8()
+	if err != nil {
+		return err
+	}
+
+	if types.MetadataType(mediaByte) != types.MetadataTypeMedia {
+		return errors.New("Invalid metadata type")
+	}
+
+	return m.decodeMedia(mediaDec)
 }
 
 func (m *MediaMetadata) decodeMedia(dec *msgpack.Decoder) error {
