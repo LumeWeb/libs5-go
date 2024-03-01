@@ -64,7 +64,7 @@ func (wm *WebAppMetadata) EncodeMsgpack(enc *msgpack.Encoder) error {
 }
 
 func (wm *WebAppMetadata) DecodeMsgpack(dec *msgpack.Decoder) error {
-	err := serialize.InitUnmarshaller(types.MetadataTypeWebApp, dec)
+	_, err := serialize.InitUnmarshaller(dec, types.MetadataTypeWebApp)
 	if err != nil {
 		return err
 	}

@@ -49,7 +49,7 @@ func (dm *DirectoryMetadata) EncodeMsgpack(enc *msgpack.Encoder) error {
 }
 
 func (dm *DirectoryMetadata) DecodeMsgpack(dec *msgpack.Decoder) error {
-	err := serialize.InitUnmarshaller(types.MetadataTypeDirectory, dec)
+	_, err := serialize.InitUnmarshaller(dec, types.MetadataTypeDirectory)
 	if err != nil {
 		return err
 	}

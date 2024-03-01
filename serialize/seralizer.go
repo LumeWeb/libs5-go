@@ -4,6 +4,7 @@ import (
 	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
+	"slices"
 )
 
 func InitMarshaller(kind types.MetadataType, enc *msgpack.Encoder) error {
@@ -19,24 +20,29 @@ func InitMarshaller(kind types.MetadataType, enc *msgpack.Encoder) error {
 	return nil
 }
 
-func InitUnmarshaller(kind types.MetadataType, enc *msgpack.Decoder) error {
+func InitUnmarshaller(enc *msgpack.Decoder, kinds ...types.MetadataType) (types.MetadataType, error) {
 	val, err := enc.DecodeUint8()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if val != types.MetadataMagicByte {
-		return errors.New("Invalid magic byte")
+		return 0, errors.New("Invalid magic byte")
 	}
 
 	val, err = enc.DecodeUint8()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	if val != uint8(kind) {
-		return errors.New("Invalid metadata type")
+	convertedKinds := make([]uint8, len(kinds))
+	for i, v := range kinds {
+		convertedKinds[i] = uint8(v)
 	}
 
-	return nil
+	if !slices.Contains(convertedKinds, val) {
+		return 0, errors.New("Invalid metadata type")
+	}
+
+	return types.MetadataType(val), nil
 }
