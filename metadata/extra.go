@@ -124,6 +124,8 @@ func (em *ExtraMetadata) DecodeMsgpack(dec *msgpack.Decoder) error {
 		return err
 	}
 
+	em.Data = make(map[int]interface{}, mapLen)
+
 	for i := 0; i < mapLen; i++ {
 		key, err := dec.DecodeInt8()
 		if err != nil {
