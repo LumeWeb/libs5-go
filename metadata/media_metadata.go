@@ -104,18 +104,18 @@ func (m *MediaMetadata) decodeProof(dec *msgpack.Decoder) error {
 		}
 
 		for j := 0; j < len(proofData); j++ {
-			var mhashType int
+			var mhashType int8
 			var pubkey []byte
 			var signature []byte
 
 			switch j {
 			case 0:
-				sigType := proofData[j].(int)
+				sigType := proofData[j].(int8)
 				if types.MetadataProofType(sigType) != types.MetadataProofTypeSignature {
 					return errors.New("Invalid proof type")
 				}
 			case 1:
-				mhashType = proofData[j].(int)
+				mhashType = proofData[j].(int8)
 				if types.HashType(mhashType) != types.HashTypeBlake3 {
 					return errors.New("Invalid hash type")
 				}
