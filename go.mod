@@ -1,6 +1,6 @@
 module git.lumeweb.com/LumeWeb/libs5-go
 
-go 1.20
+go 1.21.6
 
 require (
 	github.com/ddo/rq v0.0.0-20190828174524-b3daa55fcaba
