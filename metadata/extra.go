@@ -104,8 +104,7 @@ func (em *ExtraMetadata) decodeItem(pair keyValue) error {
 	}
 
 	if metadataKey == int(types.MetadataExtensionUpdateCID) {
-		// Convert string to CID bytes for MetadataExtensionUpdateCID
-		cid, err := encoding.CIDFromString(pair.Value.(string))
+		cid, err := encoding.CIDFromBytes([]byte(pair.Value.(string)))
 		if err != nil {
 			return err
 		}
