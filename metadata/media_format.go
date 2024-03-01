@@ -103,7 +103,7 @@ func (mmd *MediaFormat) DecodeMsgpack(dec *msgpack.Decoder) error {
 		case 15:
 			mmd.Bitrate = int(value.(uint16))
 		case 18:
-			mmd.AudioChannels = value.(int)
+			mmd.AudioChannels = int(value.(int8))
 		case 19:
 			mmd.Vcodec = value.(string)
 		case 20:
