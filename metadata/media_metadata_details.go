@@ -23,25 +23,12 @@ func (mmd *MediaMetadataDetails) EncodeMsgpack(enc *msgpack.Encoder) error {
 }
 
 func (mmd *MediaMetadataDetails) DecodeMsgpack(dec *msgpack.Decoder) error {
-	mapLen, err := dec.DecodeMapLen()
-
+	intMap, err := decodeIntMap(dec)
 	if err != nil {
 		return err
 	}
 
-	mmd.Data = make(map[int]interface{}, mapLen)
-
-	for i := 0; i < mapLen; i++ {
-		key, err := dec.DecodeInt8()
-		if err != nil {
-			return err
-		}
-		value, err := dec.DecodeInterface()
-		if err != nil {
-			return err
-		}
-		mmd.Data[int(key)] = value
-	}
+	mmd.Data = intMap
 
 	return nil
 }
