@@ -91,24 +91,19 @@ func (mmd *MediaFormat) DecodeMsgpack(dec *msgpack.Decoder) error {
 		case 4:
 			mmd.Ext = value.(string)
 		case 10:
-			mmd.Height = value.(int)
+			mmd.Height = intParse(value)
 		case 11:
-			mmd.Width = value.(int)
+			mmd.Width = intParse(value)
 		case 12:
 			mmd.Languages = value.([]string)
 		case 13:
-			mmd.Asr = int(value.(uint16))
+			mmd.Asr = intParse(value)
 		case 14:
-			mmd.Fps = value.(int)
+			mmd.Fps = intParse(value)
 		case 15:
-			switch value.(type) {
-			case uint16:
-				mmd.Bitrate = int(value.(uint16))
-			case uint32:
-				mmd.Bitrate = int(value.(uint32))
-			}
+			mmd.Bitrate = intParse(value)
 		case 18:
-			mmd.AudioChannels = int(value.(int8))
+			mmd.AudioChannels = intParse(value)
 		case 19:
 			mmd.Vcodec = value.(string)
 		case 20:
@@ -122,13 +117,13 @@ func (mmd *MediaFormat) DecodeMsgpack(dec *msgpack.Decoder) error {
 		case 24:
 			mmd.Value = value.([]byte)
 		case 25:
-			mmd.Duration = value.(int)
+			mmd.Duration = intParse(value)
 		case 26:
-			mmd.Rows = value.(int)
+			mmd.Rows = intParse(value)
 		case 27:
-			mmd.Columns = value.(int)
+			mmd.Columns = intParse(value)
 		case 28:
-			mmd.Index = value.(int)
+			mmd.Index = intParse(value)
 		case 29:
 			mmd.InitRange = value.(string)
 		case 30:
@@ -139,4 +134,22 @@ func (mmd *MediaFormat) DecodeMsgpack(dec *msgpack.Decoder) error {
 	}
 
 	return nil
+}
+
+func intParse(value interface{}) int {
+	switch value.(type) {
+	case int:
+		return value.(int)
+	case uint:
+		return int(value.(uint))
+	case uint16:
+		return int(value.(uint16))
+	case uint32:
+		return int(value.(uint32))
+	case int16:
+		return int(value.(int16))
+	case int8:
+		return int(value.(int8))
+	}
+	return 0
 }
