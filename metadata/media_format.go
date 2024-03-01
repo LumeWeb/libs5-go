@@ -97,7 +97,7 @@ func (mmd *MediaFormat) DecodeMsgpack(dec *msgpack.Decoder) error {
 		case 12:
 			mmd.Languages = value.([]string)
 		case 13:
-			mmd.Asr = value.(int)
+			mmd.Asr = int(value.(int16))
 		case 14:
 			mmd.Fps = value.(int)
 		case 15:
