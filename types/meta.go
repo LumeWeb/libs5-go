@@ -57,3 +57,15 @@ var MetadataTypeMap = map[string]MetadataType{
 	"Proof":        MetadataTypeProof,
 	"UserIdentity": MetadataTypeUserIdentity,
 }
+
+type MetadataProofType uint8
+
+const (
+	MetadataProofTypeSignature MetadataProofType = 0x01
+	MetadataProofTypeTimestamp MetadataProofType = 0x02
+)
+
+var MetadataProofTypeMap = map[string]MetadataProofType{
+	"Signature": MetadataProofTypeSignature,
+	"Timestamp": MetadataProofTypeTimestamp,
+}

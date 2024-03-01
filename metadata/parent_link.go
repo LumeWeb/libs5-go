@@ -18,6 +18,11 @@ type MetadataParentLink struct {
 	Type   types.ParentLinkType
 	Role   string
 	Signed bool
+	parent *MediaMetadata
+}
+
+func (m *MetadataParentLink) SetParent(parent *MediaMetadata) {
+	m.parent = parent
 }
 
 func (m *MetadataParentLink) EncodeMsgpack(enc *msgpack.Encoder) error {
@@ -30,6 +35,8 @@ func (m *MetadataParentLink) DecodeMsgpack(dec *msgpack.Decoder) error {
 	if err != nil {
 		return err
 	}
+
+	cid := &encoding.CID{}
 
 	for i := 0; i < mapLen; i++ {
 		key, err := dec.DecodeInt8()
@@ -45,7 +52,7 @@ func (m *MetadataParentLink) DecodeMsgpack(dec *msgpack.Decoder) error {
 		case 0:
 			m.Type = types.ParentLinkType(value.(int))
 		case 1:
-			cid, err := encoding.CIDFromBytes(value.([]byte))
+			cid, err = encoding.CIDFromBytes(value.([]byte))
 			if err != nil {
 				return err
 			}
@@ -59,6 +66,15 @@ func (m *MetadataParentLink) DecodeMsgpack(dec *msgpack.Decoder) error {
 	}
 
 	m.Signed = false
+
+	if m.parent != nil {
+		for _, key := range m.parent.ProvenPubKeys() {
+			if cid.Hash.Equals(key) {
+				m.Signed = true
+				break
+			}
+		}
+	}
 
 	return nil
 }
