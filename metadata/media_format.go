@@ -95,7 +95,11 @@ func (mmd *MediaFormat) DecodeMsgpack(dec *msgpack.Decoder) error {
 		case 11:
 			mmd.Width = intParse(value)
 		case 12:
-			mmd.Languages = value.([]string)
+			vals := value.([]interface{})
+
+			for _, val := range vals {
+				mmd.Languages = append(mmd.Languages, val.(string))
+			}
 		case 13:
 			mmd.Asr = intParse(value)
 		case 14:
