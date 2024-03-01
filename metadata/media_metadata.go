@@ -122,7 +122,7 @@ func (m *MediaMetadata) decodeProof(dec *msgpack.Decoder) error {
 
 			case 2:
 				pubkey = proofData[j].([]byte)
-				if types.HashType(mhashType) != types.HashTypeEd25519 {
+				if types.HashType(pubkey[0]) != types.HashTypeEd25519 {
 					return errors.New("Invalid public key type")
 				}
 
