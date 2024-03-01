@@ -1,8 +1,15 @@
 package metadata
 
 import (
+	"errors"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
+	"github.com/vmihailenco/msgpack/v5"
+)
+
+var (
+	_ msgpack.CustomDecoder = (*MetadataParentLink)(nil)
+	_ msgpack.CustomEncoder = (*MetadataParentLink)(nil)
 )
 
 // MetadataParentLink represents the structure for Metadata Parent Link.
@@ -11,6 +18,49 @@ type MetadataParentLink struct {
 	Type   types.ParentLinkType
 	Role   string
 	Signed bool
+}
+
+func (m *MetadataParentLink) EncodeMsgpack(enc *msgpack.Encoder) error {
+	return errors.New("Not implemented")
+}
+
+func (m *MetadataParentLink) DecodeMsgpack(dec *msgpack.Decoder) error {
+	mapLen, err := dec.DecodeMapLen()
+
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < mapLen; i++ {
+		key, err := dec.DecodeInt8()
+		if err != nil {
+			return err
+		}
+		value, err := dec.DecodeInterface()
+		if err != nil {
+			return err
+		}
+
+		switch key {
+		case 0:
+			m.Type = types.ParentLinkType(value.(int))
+		case 1:
+			cid, err := encoding.CIDFromBytes(value.([]byte))
+			if err != nil {
+				return err
+			}
+
+			m.CID = cid
+		}
+	}
+
+	if m.Type == 0 {
+		m.Type = types.ParentLinkTypeUserIdentity
+	}
+
+	m.Signed = false
+
+	return nil
 }
 
 // NewMetadataParentLink creates a new MetadataParentLink with the provided values.
