@@ -49,6 +49,22 @@ func (drm fileReferenceMap) Items() map[string]*FileReference {
 	return files
 }
 
+func (drm fileReferenceMap) Get(key string) *FileReference {
+	ret, found := drm.Map.Get(key)
+
+	if !found {
+		return nil
+	}
+
+	return ret.(*FileReference)
+}
+
+func (drm fileReferenceMap) Has(key string) bool {
+	_, found := drm.Map.Get(key)
+	return found
+
+}
+
 type fileReferenceSerializationMap struct {
 	linkedhashmap.Map
 }
