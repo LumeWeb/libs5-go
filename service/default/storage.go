@@ -29,6 +29,10 @@ var (
 	_ service.StorageService = (*StorageService)(nil)
 )
 
+var (
+	ErrUnsupportedMetaFormat = errors.New("unsupported metadata format")
+)
+
 type StorageService struct {
 	metadataCache structs.Map
 	providerStore storage.ProviderStore
@@ -316,7 +320,7 @@ func (s *StorageService) GetMetadataByCID(cid *encoding.CID) (md metadata.Metada
 			return nil, err
 		}
 	default:
-		return nil, errors.New("unsupported metadata format")
+		return nil, ErrUnsupportedMetaFormat
 	}
 
 	s.metadataCache.Put(hashStr, md)
