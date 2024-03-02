@@ -80,8 +80,19 @@ func (s *StorageService) GetCachedStorageLocations(hash *encoding.Multihash, kin
 	if err != nil {
 		return nil, err
 	}
+
+	local := s.getLocalStorageLocation(hash, kinds)
+	if local != nil {
+		nodeIDStr, err := s.Services().P2P().NodeId().ToString()
+		if err != nil {
+			return nil, err
+		}
+
+		locations[nodeIDStr] = local
+	}
+
 	if len(locationMap) == 0 {
-		return make(map[string]storage.StorageLocation), nil
+		return locations, nil
 	}
 
 	ts := time.Now().Unix()
@@ -125,17 +136,6 @@ func (s *StorageService) GetCachedStorageLocations(hash *encoding.Multihash, kin
 			locations[key] = storageLocation
 		}
 	}
-
-	local := s.getLocalStorageLocation(hash, kinds)
-	if local != nil {
-		nodeIDStr, err := s.Services().P2P().NodeId().ToString()
-		if err != nil {
-			return nil, err
-		}
-
-		locations[nodeIDStr] = local
-	}
-
 	return locations, nil
 }
 
