@@ -125,8 +125,36 @@ func (s *StorageService) GetCachedStorageLocations(hash *encoding.Multihash, kin
 			locations[key] = storageLocation
 		}
 	}
+
+	local := s.getLocalStorageLocation(hash, kinds)
+	if local != nil {
+		nodeIDStr, err := s.Services().P2P().NodeId().ToString()
+		if err != nil {
+			return nil, err
+		}
+
+		locations[nodeIDStr] = local
+	}
+
 	return locations, nil
 }
+
+func (s *StorageService) getLocalStorageLocation(hash *encoding.Multihash, kinds []types.StorageLocationType) storage.StorageLocation {
+	if s.ProviderStore() != nil {
+		if s.ProviderStore().CanProvide(hash, kinds) {
+			location, _ := s.ProviderStore().Provide(hash, kinds)
+
+			message := storage.PrepareProvideMessage(s.Services().P2P().Config().KeyPair, hash, location)
+
+			location.SetProviderMessage(message)
+
+			return location
+		}
+	}
+
+	return nil
+}
+
 func (s *StorageService) readStorageLocationsFromDB(hash *encoding.Multihash) (storage.StorageLocationMap, error) {
 	var locationMap storage.StorageLocationMap
 

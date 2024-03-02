@@ -62,17 +62,6 @@ func (s *StorageLocationProviderImpl) Start() error {
 	s.isTimedOut = false
 	s.mutex.Unlock()
 
-	local := s.checkLocal()
-	if local != nil {
-		s.availableNodes = append([]*encoding.NodeId{local.NodeId()}, s.availableNodes...)
-		nodeIdStr, err := local.NodeId().ToString()
-		if err != nil {
-			s.logger.Error("Error decoding node id", zap.Error(err))
-			return err
-		}
-		s.uris[nodeIdStr] = local.Location()
-	}
-
 	go func() {
 		requestSent := false
 
@@ -109,7 +98,7 @@ func (s *StorageLocationProviderImpl) Start() error {
 						s.logger.Error("Error decoding node id", zap.Error(err))
 						continue
 					}
-					if containsNode(s.excludeNodes, nodeId) {
+					if containsNode(s.excludeNodes, nodeId) && requestSent {
 						continue
 					}
 					if !containsNode(s.availableNodes, nodeId) {
@@ -223,22 +212,6 @@ func (s *StorageLocationProviderImpl) Downvote(uri storage.SignedStorageLocation
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func (s *StorageLocationProviderImpl) checkLocal() storage.SignedStorageLocation {
-	if s.services.Storage().ProviderStore() != nil {
-		if s.services.Storage().ProviderStore().CanProvide(s.hash, s.types) {
-			location, _ := s.services.Storage().ProviderStore().Provide(s.hash, s.types)
-
-			message := storage.PrepareProvideMessage(s.services.P2P().Config().KeyPair, s.hash, location)
-
-			location.SetProviderMessage(message)
-
-			return storage.NewSignedStorageLocation(s.services.P2P().NodeId(), location)
-		}
-	}
-
 	return nil
 }
 
