@@ -21,6 +21,21 @@ func (drm directoryReferenceMap) Items() map[string]*DirectoryReference {
 	return files
 }
 
+func (drm directoryReferenceMap) Get(key string) *DirectoryReference {
+	ret, found := drm.Map.Get(key)
+
+	if !found {
+		return nil
+	}
+
+	return ret.(*DirectoryReference)
+}
+
+func (drm directoryReferenceMap) Has(key string) bool {
+	_, found := drm.Map.Get(key)
+	return found
+}
+
 type fileReferenceMap struct {
 	linkedhashmap.Map
 }
