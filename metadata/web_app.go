@@ -55,7 +55,7 @@ func (wm *WebAppMetadata) EncodeMsgpack(enc *msgpack.Encoder) error {
 
 	items[0] = wm.Name
 	items[1] = wm.TryFiles
-	items[2] = wm.ErrorPages
+	items[2] = &wm.ErrorPages
 	items[3] = wm.Paths
 	items[4] = wm.ExtraMetadata
 
