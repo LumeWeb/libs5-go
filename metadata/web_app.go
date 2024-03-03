@@ -21,14 +21,14 @@ type WebAppErrorPages map[int]string
 
 type WebAppMetadata struct {
 	BaseMetadata
-	Name          string         `json:"name"`
-	TryFiles      []string       `json:"tryFiles"`
-	ErrorPages    map[int]string `json:"errorPages"`
-	ExtraMetadata ExtraMetadata  `json:"extraMetadata"`
-	Paths         *WebAppFileMap `json:"paths"`
+	Name          string           `json:"name"`
+	TryFiles      []string         `json:"tryFiles"`
+	ErrorPages    WebAppErrorPages `json:"errorPages"`
+	ExtraMetadata ExtraMetadata    `json:"extraMetadata"`
+	Paths         *WebAppFileMap   `json:"paths"`
 }
 
-func NewWebAppMetadata(name string, tryFiles []string, extraMetadata ExtraMetadata, errorPages map[int]string, paths *WebAppFileMap) *WebAppMetadata {
+func NewWebAppMetadata(name string, tryFiles []string, extraMetadata ExtraMetadata, errorPages WebAppErrorPages, paths *WebAppFileMap) *WebAppMetadata {
 	return &WebAppMetadata{
 		Name:          name,
 		TryFiles:      tryFiles,
