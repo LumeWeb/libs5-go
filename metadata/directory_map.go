@@ -118,14 +118,14 @@ func unmarshalMapMsgpack(dec *msgpack.Decoder, m *linkedhashmap.Map, placeholder
 			if err := dec.Decode(&value); err != nil {
 				return err
 			}
-			m.Put(key, value)
+			m.Put(key, &value)
 
 		case *FileReference:
 			var file FileReference
 			if err := dec.Decode(&file); err != nil {
 				return err
 			}
-			m.Put(key, file)
+			m.Put(key, &file)
 
 		default:
 			return fmt.Errorf("unsupported type for decoding")
@@ -161,11 +161,11 @@ func marshallMapMsgpack(enc *msgpack.Encoder, m *linkedhashmap.Map) error {
 
 		value := iter.Value()
 		switch v := value.(type) {
-		case FileReference:
+		case *FileReference:
 			if err := enc.Encode(&v); err != nil {
 				return err
 			}
-		case DirectoryReference:
+		case *DirectoryReference:
 			if err := enc.Encode(&v); err != nil {
 				return err
 			}
