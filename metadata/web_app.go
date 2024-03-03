@@ -49,6 +49,10 @@ func (wm *WebAppMetadata) EncodeMsgpack(enc *msgpack.Encoder) error {
 
 	items := make([]interface{}, 5)
 
+	if wm.ErrorPages == nil {
+		wm.ErrorPages = make(WebAppErrorPages)
+	}
+
 	items[0] = wm.Name
 	items[1] = wm.TryFiles
 	items[2] = wm.ErrorPages
