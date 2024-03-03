@@ -174,6 +174,11 @@ func (wafm *WebAppFileMap) Sort() {
 func (wafm *WebAppFileMap) EncodeMsgpack(encoder *msgpack.Encoder) error {
 	wafm.Sort()
 
+	err := encoder.EncodeArrayLen(wafm.Size())
+	if err != nil {
+		return err
+	}
+
 	for _, key := range wafm.Keys() {
 		value, _ := wafm.Get(key)
 
