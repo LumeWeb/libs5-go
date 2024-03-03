@@ -235,19 +235,21 @@ func (wafm *WebAppFileMap) DecodeMsgpack(decoder *msgpack.Decoder) error {
 	return nil
 }
 
-func (w WebAppErrorPages) EncodeMsgpack(enc *msgpack.Encoder) error {
-	err := enc.EncodeMapLen(len(w))
+func (w *WebAppErrorPages) EncodeMsgpack(enc *msgpack.Encoder) error {
+	if w == nil || *w == nil {
+		return enc.EncodeMapLen(0)
+	}
+
+	err := enc.EncodeMapLen(len(*w))
 	if err != nil {
 		return err
 	}
 
-	for k, v := range w {
-		err = enc.EncodeInt(int64(k))
-		if err != nil {
+	for k, v := range *w {
+		if err := enc.EncodeInt(int64(k)); err != nil {
 			return err
 		}
-		err = enc.EncodeString(v)
-		if err != nil {
+		if err := enc.EncodeString(v); err != nil {
 			return err
 		}
 	}
@@ -256,6 +258,10 @@ func (w WebAppErrorPages) EncodeMsgpack(enc *msgpack.Encoder) error {
 }
 
 func (w *WebAppErrorPages) DecodeMsgpack(dec *msgpack.Decoder) error {
+	if *w == nil {
+		*w = make(map[int]string)
+	}
+
 	mapLen, err := dec.DecodeMapLen()
 	if err != nil {
 		return err
