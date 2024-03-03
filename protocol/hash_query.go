@@ -139,11 +139,6 @@ func (h *HashQuery) HandleMessage(message IncomingMessageData) error {
 
 			message := storage.PrepareProvideMessage(config.KeyPair, h.hash, location)
 
-			err = mediator.AddStorageLocation(h.hash, mediator.NodeId(), location, message)
-			if err != nil {
-				return err
-			}
-
 			err = peer.SendMessage(message)
 			if err != nil {
 				return err
