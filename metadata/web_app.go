@@ -141,6 +141,15 @@ func (wafm *WebAppFileMap) Keys() []string {
 	return ret
 }
 
+func (wafm *WebAppFileMap) Values() []WebAppMetadataFileReference {
+	values := wafm.Map.Values()
+	ret := make([]WebAppMetadataFileReference, len(values))
+	for i, value := range values {
+		ret[i] = value.(WebAppMetadataFileReference)
+	}
+	return ret
+}
+
 func (wafm *WebAppFileMap) Sort() {
 	keys := wafm.Keys()
 	newMap := NewWebAppFileMap()
