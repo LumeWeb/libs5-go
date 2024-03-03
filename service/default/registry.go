@@ -240,21 +240,19 @@ func (r *RegistryServiceDefault) Get(pk []byte) (protocol.SignedRegistryEntry, e
 		return res, nil
 	}
 
-	if res == nil {
-		r.Logger().Debug("[registry] get (cached)", zap.String("key", keyString))
-		for i := 0; i < 200; i++ {
-			time.Sleep(10 * time.Millisecond)
-			res, err := r.getFromDB(pk)
-			if err != nil {
-				return nil, err
-			}
-			if res != nil {
-				break
-			}
+	r.Logger().Debug("[registry] get (cached)", zap.String("key", keyString))
+	for i := 0; i < 200; i++ {
+		time.Sleep(10 * time.Millisecond)
+		res, err = r.getFromDB(pk)
+		if err != nil {
+			return nil, err
+		}
+		if res != nil {
+			break
 		}
 	}
 
-	return nil, nil
+	return res, nil
 }
 
 func (r *RegistryServiceDefault) Listen(pk []byte, cb func(sre protocol.SignedRegistryEntry)) (func(), error) {
