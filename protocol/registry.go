@@ -100,7 +100,7 @@ func (r *RegistryEntryImpl) Sign() SignedRegistryEntry {
 }
 
 func SignRegistryEntry(kp ed25519.KeyPairEd25519, data []byte, revision uint64) SignedRegistryEntry {
-	buffer := MarshalRegistryEntry(data, revision)
+	buffer := MarshalRegistryEntry(kp.PublicKey(), data, revision)
 
 	privateKey := kp.ExtractBytes()
 	signature := ed25519p.Sign(privateKey, buffer)
@@ -108,21 +108,22 @@ func SignRegistryEntry(kp ed25519.KeyPairEd25519, data []byte, revision uint64) 
 	return NewSignedRegistryEntry(kp.PublicKey(), uint64(revision), data, signature)
 }
 func VerifyRegistryEntry(sre SignedRegistryEntry) bool {
-	buffer := MarshalRegistryEntry(sre.Data(), sre.Revision())
+	buffer := MarshalRegistryEntry(sre.PK(), sre.Data(), sre.Revision())
 	publicKey := sre.PK()[1:]
 
 	return ed25519p.Verify(publicKey, buffer, sre.Signature())
 }
 
 func MarshalSignedRegistryEntry(sre SignedRegistryEntry) []byte {
-	buffer := MarshalRegistryEntry(sre.Data(), sre.Revision())
+	buffer := MarshalRegistryEntry(sre.PK(), sre.Data(), sre.Revision())
 	buffer = append(buffer, sre.Signature()...)
 
 	return buffer
 }
-func MarshalRegistryEntry(data []byte, revision uint64) []byte {
+func MarshalRegistryEntry(pk []byte, data []byte, revision uint64) []byte {
 	var buffer []byte
 	buffer = append(buffer, byte(types.RecordTypeRegistryEntry))
+	buffer = append(buffer, pk...)
 
 	revBytes := utils.EncodeEndian(revision, 8)
 	buffer = append(buffer, revBytes...)
