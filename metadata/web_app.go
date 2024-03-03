@@ -14,7 +14,10 @@ var (
 	_ Metadata             = (*WebAppMetadata)(nil)
 	_ SerializableMetadata = (*WebAppMetadata)(nil)
 	_ SerializableMetadata = (*WebAppFileMap)(nil)
+	_ SerializableMetadata = (*WebAppErrorPages)(nil)
 )
+
+type WebAppErrorPages map[int]string
 
 type WebAppMetadata struct {
 	BaseMetadata
@@ -228,6 +231,51 @@ func (wafm *WebAppFileMap) DecodeMsgpack(decoder *msgpack.Decoder) error {
 	}
 
 	wafm.Sort()
+
+	return nil
+}
+
+func (w WebAppErrorPages) EncodeMsgpack(enc *msgpack.Encoder) error {
+	err := enc.EncodeMapLen(len(w))
+	if err != nil {
+		return err
+	}
+
+	for k, v := range w {
+		err = enc.EncodeInt(int64(k))
+		if err != nil {
+			return err
+		}
+		err = enc.EncodeString(v)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (w *WebAppErrorPages) DecodeMsgpack(dec *msgpack.Decoder) error {
+	mapLen, err := dec.DecodeMapLen()
+	if err != nil {
+		return err
+	}
+
+	*w = make(map[int]string, mapLen)
+
+	for i := 0; i < mapLen; i++ {
+		key, err := dec.DecodeInt()
+		if err != nil {
+			return err
+		}
+
+		value, err := dec.DecodeString()
+		if err != nil {
+			return err
+		}
+
+		(*w)[key] = value
+	}
 
 	return nil
 }
