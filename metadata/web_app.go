@@ -2,10 +2,9 @@ package metadata
 
 import (
 	"errors"
-	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/serialize"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
-	"github.com/samber/lo"
+	"github.com/emirpasic/gods/maps/linkedhashmap"
 	"github.com/vmihailenco/msgpack/v5"
 	"sort"
 )
@@ -13,18 +12,19 @@ import (
 var (
 	_ Metadata             = (*WebAppMetadata)(nil)
 	_ SerializableMetadata = (*WebAppMetadata)(nil)
+	_ SerializableMetadata = (*WebAppFileMap)(nil)
 )
 
 type WebAppMetadata struct {
 	BaseMetadata
-	Name          string                                 `json:"name"`
-	TryFiles      []string                               `json:"tryFiles"`
-	ErrorPages    map[int]string                         `json:"errorPages"`
-	ExtraMetadata ExtraMetadata                          `json:"extraMetadata"`
-	Paths         map[string]WebAppMetadataFileReference `json:"paths"`
+	Name          string         `json:"name"`
+	TryFiles      []string       `json:"tryFiles"`
+	ErrorPages    map[int]string `json:"errorPages"`
+	ExtraMetadata ExtraMetadata  `json:"extraMetadata"`
+	Paths         WebAppFileMap  `json:"paths"`
 }
 
-func NewWebAppMetadata(name string, tryFiles []string, extraMetadata ExtraMetadata, errorPages map[int]string, paths map[string]WebAppMetadataFileReference) *WebAppMetadata {
+func NewWebAppMetadata(name string, tryFiles []string, extraMetadata ExtraMetadata, errorPages map[int]string, paths WebAppFileMap) *WebAppMetadata {
 	return &WebAppMetadata{
 		Name:          name,
 		TryFiles:      tryFiles,
@@ -43,21 +43,12 @@ func (wm *WebAppMetadata) EncodeMsgpack(enc *msgpack.Encoder) error {
 		return err
 	}
 
-	keys := lo.Keys[string, WebAppMetadataFileReference](wm.Paths)
-	sort.Strings(keys)
-
-	paths := make([]WebAppMetadataFileReference, len(wm.Paths))
-
-	for i, v := range keys {
-		paths[i] = wm.Paths[v]
-	}
-
 	items := make([]interface{}, 5)
 
 	items[0] = wm.Name
 	items[1] = wm.TryFiles
 	items[2] = wm.ErrorPages
-	items[3] = paths
+	items[3] = wm.Paths
 	items[4] = wm.ExtraMetadata
 
 	return enc.Encode(items)
@@ -97,29 +88,9 @@ func (wm *WebAppMetadata) DecodeMsgpack(dec *msgpack.Decoder) error {
 				return err
 			}
 		case 3:
-			paths, err := dec.DecodeSlice()
+			err = dec.Decode(&wm.Paths)
 			if err != nil {
 				return err
-			}
-
-			wm.Paths = make(map[string]WebAppMetadataFileReference, len(paths))
-
-			for _, v := range paths {
-				path := v.([]interface{})
-				parsedCid, err := encoding.CIDFromBytes(path[1].([]byte))
-				if err != nil {
-					return err
-				}
-				contentType := ""
-
-				if path[2] != nil {
-					contentType = path[2].(string)
-				}
-
-				wm.Paths[path[0].(string)] = WebAppMetadataFileReference{
-					Cid:         parsedCid,
-					ContentType: contentType,
-				}
 			}
 
 		case 4:
@@ -133,6 +104,94 @@ func (wm *WebAppMetadata) DecodeMsgpack(dec *msgpack.Decoder) error {
 	}
 
 	wm.Type = "web_app"
+
+	return nil
+}
+
+type WebAppFileMap struct {
+	linkedhashmap.Map
+}
+
+func NewWebAppFileMap() *WebAppFileMap {
+	return &WebAppFileMap{*linkedhashmap.New()}
+}
+
+func (wafm *WebAppFileMap) Put(key string, value WebAppMetadataFileReference) {
+	wafm.Map.Put(key, value)
+}
+
+func (wafm *WebAppFileMap) Get(key string) (WebAppMetadataFileReference, bool) {
+	value, found := wafm.Map.Get(key)
+	if !found {
+		return WebAppMetadataFileReference{}, false
+	}
+	return value.(WebAppMetadataFileReference), true
+}
+
+func (wafm *WebAppFileMap) Remove(key string) {
+	wafm.Map.Remove(key)
+}
+
+func (wafm *WebAppFileMap) Keys() []string {
+	keys := wafm.Map.Keys()
+	ret := make([]string, len(keys))
+	for i, key := range keys {
+		ret[i] = key.(string)
+	}
+	return ret
+}
+
+func (wafm *WebAppFileMap) Sort() {
+	keys := wafm.Keys()
+	newMap := NewWebAppFileMap()
+
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		value, _ := wafm.Get(key)
+		newMap.Put(key, value)
+	}
+	wafm.Map = newMap.Map
+}
+
+func (wafm *WebAppFileMap) EncodeMsgpack(encoder *msgpack.Encoder) error {
+	wafm.Sort()
+
+	for _, key := range wafm.Keys() {
+		value, _ := wafm.Get(key)
+		err := encoder.EncodeString(key)
+		if err != nil {
+			return err
+		}
+		err = encoder.Encode(value)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (wafm *WebAppFileMap) DecodeMsgpack(decoder *msgpack.Decoder) error {
+	arrLen, err := decoder.DecodeArrayLen()
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < arrLen; i++ {
+		key, err := decoder.DecodeString()
+		if err != nil {
+			return err
+		}
+		var value WebAppMetadataFileReference
+		err = decoder.Decode(&value)
+		if err != nil {
+			return err
+		}
+		wafm.Put(key, value)
+	}
+
+	wafm.Sort()
 
 	return nil
 }
