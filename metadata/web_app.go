@@ -2,6 +2,7 @@ package metadata
 
 import (
 	"errors"
+	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/serialize"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/emirpasic/gods/maps/linkedhashmap"
@@ -168,11 +169,15 @@ func (wafm *WebAppFileMap) EncodeMsgpack(encoder *msgpack.Encoder) error {
 
 	for _, key := range wafm.Keys() {
 		value, _ := wafm.Get(key)
-		err := encoder.EncodeString(key)
-		if err != nil {
-			return err
-		}
-		err = encoder.Encode(value)
+
+		data :=
+			make([]interface{}, 3)
+
+		data[0] = key
+		data[1] = value.Cid.ToBytes()
+		data[2] = value.ContentType
+
+		err := encoder.Encode(data)
 		if err != nil {
 			return err
 		}
@@ -188,16 +193,38 @@ func (wafm *WebAppFileMap) DecodeMsgpack(decoder *msgpack.Decoder) error {
 	}
 
 	for i := 0; i < arrLen; i++ {
-		key, err := decoder.DecodeString()
+		data := make([]interface{}, 3)
+
+		if len(data) != 3 {
+			return errors.New("Corrupted metadata")
+		}
+
+		err = decoder.Decode(&data)
 		if err != nil {
 			return err
 		}
-		var value WebAppMetadataFileReference
-		err = decoder.Decode(&value)
+
+		path, ok := data[0].(string)
+		if !ok {
+			return errors.New("Corrupted metadata")
+		}
+
+		cidData, ok := data[1].([]byte)
+		if !ok {
+			return errors.New("Corrupted metadata")
+		}
+
+		contentType, ok := data[2].(string)
+		if !ok {
+			return errors.New("Corrupted metadata")
+		}
+
+		cid, err := encoding.CIDFromBytes(cidData)
 		if err != nil {
 			return err
 		}
-		wafm.Put(key, value)
+
+		wafm.Put(path, *NewWebAppMetadataFileReference(cid, contentType))
 	}
 
 	wafm.Sort()
