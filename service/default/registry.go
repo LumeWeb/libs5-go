@@ -65,7 +65,7 @@ func (r *RegistryServiceDefault) Set(sre protocol.SignedRegistryEntry, trusted b
 		if len(sre.PK()) != 33 {
 			return errors.New("Invalid pubkey")
 		}
-		if int(sre.PK()[0]) != int(types.RecordTypeRegistryEntry) {
+		if int(sre.PK()[0]) != int(types.HashTypeEd25519) {
 			return errors.New("Only ed25519 keys are supported")
 		}
 		if sre.Revision() < 0 || sre.Revision() > 281474976710656 {
