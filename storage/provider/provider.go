@@ -33,7 +33,7 @@ type StorageLocationProviderImpl struct {
 func (s *StorageLocationProviderImpl) Start() error {
 	var err error
 
-	s.uris, err = s.services.Storage().GetCachedStorageLocations(s.hash, s.types)
+	s.uris, err = s.services.Storage().GetCachedStorageLocations(s.hash, s.types, true)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (s *StorageLocationProviderImpl) Start() error {
 				break
 			}
 
-			newUris, err := s.services.Storage().GetCachedStorageLocations(s.hash, s.types)
+			newUris, err := s.services.Storage().GetCachedStorageLocations(s.hash, s.types, false)
 			if err != nil {
 				s.mutex.Unlock()
 				break

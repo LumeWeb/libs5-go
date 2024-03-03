@@ -73,7 +73,7 @@ func (n *StorageService) ProviderStore() storage.ProviderStore {
 	return n.providerStore
 }
 
-func (s *StorageService) GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType) (map[string]storage.StorageLocation, error) {
+func (s *StorageService) GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType, local bool) (map[string]storage.StorageLocation, error) {
 	locations := make(map[string]storage.StorageLocation)
 
 	locationMap, err := s.readStorageLocationsFromDB(hash)
@@ -81,14 +81,16 @@ func (s *StorageService) GetCachedStorageLocations(hash *encoding.Multihash, kin
 		return nil, err
 	}
 
-	local := s.getLocalStorageLocation(hash, kinds)
-	if local != nil {
-		nodeIDStr, err := s.Services().P2P().NodeId().ToString()
-		if err != nil {
-			return nil, err
-		}
+	if local {
+		localLocation := s.getLocalStorageLocation(hash, kinds)
+		if localLocation != nil {
+			nodeIDStr, err := s.Services().P2P().NodeId().ToString()
+			if err != nil {
+				return nil, err
+			}
 
-		locations[nodeIDStr] = local
+			locations[nodeIDStr] = localLocation
+		}
 	}
 
 	if len(locationMap) == 0 {

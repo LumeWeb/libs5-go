@@ -34,7 +34,7 @@ func (m MediatorDefault) SignMessageSimple(message []byte) ([]byte, error) {
 }
 
 func (m MediatorDefault) GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType) (map[string]storage.StorageLocation, error) {
-	return m.Services().Storage().GetCachedStorageLocations(hash, kinds)
+	return m.Services().Storage().GetCachedStorageLocations(hash, kinds, false)
 }
 
 func (m MediatorDefault) SortNodesByScore(nodes []*encoding.NodeId) ([]*encoding.NodeId, error) {

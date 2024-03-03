@@ -10,7 +10,7 @@ import (
 type StorageService interface {
 	SetProviderStore(store storage.ProviderStore)
 	ProviderStore() storage.ProviderStore
-	GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType) (map[string]storage.StorageLocation, error)
+	GetCachedStorageLocations(hash *encoding.Multihash, kinds []types.StorageLocationType, local bool) (map[string]storage.StorageLocation, error)
 	AddStorageLocation(hash *encoding.Multihash, nodeId *encoding.NodeId, location storage.StorageLocation, message []byte) error
 	DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error)
 	DownloadBytesByCID(cid *encoding.CID) ([]byte, error)
