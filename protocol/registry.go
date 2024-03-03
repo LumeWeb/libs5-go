@@ -100,7 +100,7 @@ func (r *RegistryEntryImpl) Sign() SignedRegistryEntry {
 }
 
 func SignRegistryEntry(kp ed25519.KeyPairEd25519, data []byte, revision uint64) SignedRegistryEntry {
-	buffer := MarshalRegistryEntry(kp.PublicKey(), data, revision)
+	buffer := MarshalRegistryEntry(nil, data, revision)
 
 	privateKey := kp.ExtractBytes()
 	signature := ed25519p.Sign(privateKey, buffer)
@@ -108,7 +108,7 @@ func SignRegistryEntry(kp ed25519.KeyPairEd25519, data []byte, revision uint64) 
 	return NewSignedRegistryEntry(kp.PublicKey(), uint64(revision), data, signature)
 }
 func VerifyRegistryEntry(sre SignedRegistryEntry) bool {
-	buffer := MarshalRegistryEntry(sre.PK(), sre.Data(), sre.Revision())
+	buffer := MarshalRegistryEntry(nil, sre.Data(), sre.Revision())
 	publicKey := sre.PK()[1:]
 
 	return ed25519p.Verify(publicKey, buffer, sre.Signature())
