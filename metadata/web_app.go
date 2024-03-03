@@ -204,6 +204,8 @@ func (wafm *WebAppFileMap) DecodeMsgpack(decoder *msgpack.Decoder) error {
 		return err
 	}
 
+	wafm.Map = *linkedhashmap.New()
+
 	for i := 0; i < arrLen; i++ {
 		data := make([]interface{}, 3)
 
