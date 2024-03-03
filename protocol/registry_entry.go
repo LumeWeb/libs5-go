@@ -39,7 +39,7 @@ func (s *RegistryEntryRequest) EncodeMsgpack(enc *msgpack.Encoder) error {
 }
 
 func (s *RegistryEntryRequest) DecodeMessage(dec *msgpack.Decoder, message IncomingMessageData) error {
-	sre, err := UnmarshalSignedRegistryEntry(message.Data)
+	sre, err := UnmarshalSignedRegistryEntry(message.Original)
 	if err != nil {
 		return err
 	}
