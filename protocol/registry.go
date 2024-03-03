@@ -123,7 +123,10 @@ func MarshalSignedRegistryEntry(sre SignedRegistryEntry) []byte {
 func MarshalRegistryEntry(pk []byte, data []byte, revision uint64) []byte {
 	var buffer []byte
 	buffer = append(buffer, byte(types.RecordTypeRegistryEntry))
-	buffer = append(buffer, pk...)
+
+	if pk != nil {
+		buffer = append(buffer, pk...)
+	}
 
 	revBytes := utils.EncodeEndian(revision, 8)
 	buffer = append(buffer, revBytes...)
