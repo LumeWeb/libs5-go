@@ -286,6 +286,10 @@ func (s *StorageService) DownloadBytesByHash(hash *encoding.Multihash) ([]byte, 
 
 		if res.StatusCode != 200 {
 			err := dlUriProvider.Downvote(dlUri)
+			retryCount++
+			if retryCount > 32 {
+				return nil, errors.New("too many retries")
+			}
 			if err != nil {
 				return nil, err
 			}
