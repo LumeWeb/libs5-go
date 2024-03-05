@@ -116,13 +116,17 @@ func (h HandshakeDone) HandleMessage(message IncomingMessageDataSigned) error {
 		return nil
 	}
 
-	peer.SetConnectionURIs(h.connectionUris)
-
 	peerId, err := peer.Id().ToString()
 
 	if err != nil {
 		return err
 	}
+
+	for _, uri := range h.connectionUris {
+		uri.User = url.User(peerId)
+	}
+
+	peer.SetConnectionURIs(h.connectionUris)
 
 	logger.Info(fmt.Sprintf("[+] %s (%s)", peerId, peer.RenderLocationURI()))
 
