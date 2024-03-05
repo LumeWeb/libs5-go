@@ -66,7 +66,7 @@ func (m MediatorDefault) RegistryGet(pk []byte) (protocol.SignedRegistryEntry, e
 }
 
 func (m MediatorDefault) ConnectToNode(connectionUris []*url.URL, retried bool, fromPeer net.Peer) error {
-	return m.Services().P2P().ConnectToNode(connectionUris, retried, fromPeer)
+	return m.Services().P2P().ConnectToNode(connectionUris, 0, fromPeer)
 }
 
 func (m MediatorDefault) ServicesStarted() bool {

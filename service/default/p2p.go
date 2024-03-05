@@ -98,7 +98,7 @@ func (p *P2PServiceDefault) Start(ctx context.Context) error {
 
 			peer := peer
 			go func() {
-				err := p.ConnectToNode([]*url.URL{u}, false, nil)
+				err := p.ConnectToNode([]*url.URL{u}, 0, nil)
 				if err != nil {
 					p.Logger().Error("failed to connect to initial peer", zap.Error(err), zap.String("peer", peer))
 				}
@@ -129,7 +129,7 @@ func (p *P2PServiceDefault) Init(ctx context.Context) error {
 
 	return nil
 }
-func (p *P2PServiceDefault) ConnectToNode(connectionUris []*url.URL, retried bool, fromPeer net.Peer) error {
+func (p *P2PServiceDefault) ConnectToNode(connectionUris []*url.URL, retry uint, fromPeer net.Peer) error {
 	if !p.Services().IsStarted() {
 		if !p.Services().IsStarting() {
 			return nil
@@ -237,7 +237,7 @@ func (p *P2PServiceDefault) ConnectToNode(connectionUris []*url.URL, retried boo
 
 	socket, err := net.CreateTransportSocket(scheme, connectionUri)
 	if err != nil {
-		if retried {
+		if retry >= p.Config().P2P.MaxConnectionAttempts {
 			p.Logger().Error("failed to connect, too many retries", zap.String("node", connectionUri.String()), zap.Error(err))
 			counter := uint(0)
 			if p.outgoingPeerFailures.Contains(idString) {
@@ -291,7 +291,7 @@ func (p *P2PServiceDefault) ConnectToNode(connectionUris []*url.URL, retried boo
 			return err
 		}
 
-		retried = true
+		retry++
 
 		p.Logger().Error("failed to connect", zap.String("node", connectionUri.String()), zap.Error(err))
 
@@ -305,7 +305,7 @@ func (p *P2PServiceDefault) ConnectToNode(connectionUris []*url.URL, retried boo
 
 		time.Sleep(time.Duration(delayDeref) * time.Second)
 
-		return p.ConnectToNode(connectionUris, retried, fromPeer)
+		return p.ConnectToNode(connectionUris, retry, fromPeer)
 	}
 
 	if p.outgoingPeerFailures.Contains(idString) {

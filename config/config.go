@@ -17,6 +17,7 @@ type P2PConfig struct {
 	Network                 string      `mapstructure:"network"`
 	Peers                   PeersConfig `mapstructure:"peers"`
 	MaxOutgoingPeerFailures uint        `mapstructure:"max_outgoing_peer_failures"`
+	MaxConnectionAttempts   uint        `mapstructure:"max_connection_attempts"`
 }
 
 type PeersConfig struct {
