@@ -302,6 +302,11 @@ func (p *P2PServiceDefault) ConnectToNode(connectionUris []*url.URL, retried boo
 		return p.ConnectToNode(connectionUris, retried, fromPeer)
 	}
 
+	if errors.Is(err, net.ErrTransportNotSupported) {
+		p.Logger().Debug("failed to connect, unsupported transport", zap.String("node", connectionUri.String()), zap.Error(err))
+		return err
+	}
+
 	if p.outgoingPeerFailures.Contains(idString) {
 		p.outgoingPeerFailures.Remove(idString)
 	}
