@@ -6,6 +6,10 @@ import (
 	"sync"
 )
 
+var (
+	ErrTransportNotSupported = errors.New("no static method registered for type")
+)
+
 type TransportPeerConfig struct {
 	Socket interface{}
 	Uris   []*url.URL
@@ -43,7 +47,7 @@ func RegisterTransport(peerType string, factory interface{}) {
 func CreateTransportSocket(peerType string, uri *url.URL) (interface{}, error) {
 	static, ok := transports.Load(peerType)
 	if !ok {
-		return nil, errors.New("no static method registered for type: " + peerType)
+		return nil, ErrTransportNotSupported
 	}
 
 	t, err := static.(PeerStatic).Connect(uri)
