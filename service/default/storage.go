@@ -331,33 +331,44 @@ func (s *StorageService) GetMetadataByCID(cid *encoding.CID) (md metadata.Metada
 		return nil, err
 	}
 
+	md, err = s.ParseMetadata(bytes, cid)
+	if err != nil {
+		return nil, err
+	}
+
+	s.metadataCache.Put(hashStr, md)
+
+	return md, nil
+}
+
+func (s *StorageService) ParseMetadata(bytes []byte, cid *encoding.CID) (metadata.Metadata, error) {
+	var md metadata.Metadata
+
 	switch cid.Type {
 	case types.CIDTypeMetadataMedia, types.CIDTypeBridge: // Both cases use the same deserialization method
 		md = metadata.NewEmptyMediaMetadata()
 
-		err = msgpack.Unmarshal(bytes, md)
+		err := msgpack.Unmarshal(bytes, md)
 		if err != nil {
 			return nil, err
 		}
 	case types.CIDTypeMetadataWebapp:
 		md = metadata.NewEmptyWebAppMetadata()
 
-		err = msgpack.Unmarshal(bytes, md)
+		err := msgpack.Unmarshal(bytes, md)
 		if err != nil {
 			return nil, err
 		}
 	case types.CIDTypeDirectory:
 		md = metadata.NewEmptyDirectoryMetadata()
 
-		err = msgpack.Unmarshal(bytes, md)
+		err := msgpack.Unmarshal(bytes, md)
 		if err != nil {
 			return nil, err
 		}
 	default:
 		return nil, ErrUnsupportedMetaFormat
 	}
-
-	s.metadataCache.Put(hashStr, md)
 
 	return md, nil
 }

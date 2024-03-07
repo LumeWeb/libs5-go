@@ -15,5 +15,6 @@ type StorageService interface {
 	DownloadBytesByHash(hash *encoding.Multihash) ([]byte, error)
 	DownloadBytesByCID(cid *encoding.CID) ([]byte, error)
 	GetMetadataByCID(cid *encoding.CID) (metadata.Metadata, error)
+	ParseMetadata(bytes []byte, cid *encoding.CID) (metadata.Metadata, error)
 	Service
 }
