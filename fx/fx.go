@@ -2,10 +2,10 @@ package fx
 
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
+	"git.lumeweb.com/LumeWeb/libs5-go/db"
 	"git.lumeweb.com/LumeWeb/libs5-go/node"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	_default "git.lumeweb.com/LumeWeb/libs5-go/service/default"
-	"go.etcd.io/bbolt"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -23,7 +23,7 @@ type ServiceParams struct {
 	fx.In
 	Logger *zap.Logger
 	Config *config.NodeConfig
-	Db     *bbolt.DB
+	Db     db.KVStore
 }
 
 type ServicesParams struct {
