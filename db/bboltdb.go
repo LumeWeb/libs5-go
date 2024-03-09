@@ -15,7 +15,7 @@ type BboltDBKVStore struct {
 	dbPath     string
 }
 
-func (b BboltDBKVStore) Open() error {
+func (b *BboltDBKVStore) Open() error {
 	if b.root && b.db == nil {
 		db, err := bbolt.Open(b.dbPath, 0666, nil)
 		if err != nil {
@@ -41,7 +41,7 @@ func (b BboltDBKVStore) Open() error {
 	return nil
 }
 
-func (b BboltDBKVStore) Close() error {
+func (b *BboltDBKVStore) Close() error {
 	if b.root && b.db != nil {
 		err := b.db.Close()
 		if err != nil {
@@ -52,7 +52,7 @@ func (b BboltDBKVStore) Close() error {
 	return nil
 }
 
-func (b BboltDBKVStore) Get(key []byte) ([]byte, error) {
+func (b *BboltDBKVStore) Get(key []byte) ([]byte, error) {
 	if b.root {
 		return nil, errors.New("Cannot get from root")
 	}
@@ -70,7 +70,7 @@ func (b BboltDBKVStore) Get(key []byte) ([]byte, error) {
 	return val, nil
 }
 
-func (b BboltDBKVStore) Put(key []byte, value []byte) error {
+func (b *BboltDBKVStore) Put(key []byte, value []byte) error {
 
 	if b.root {
 		return errors.New("Cannot put from root")
@@ -88,7 +88,7 @@ func (b BboltDBKVStore) Put(key []byte, value []byte) error {
 	return err
 }
 
-func (b BboltDBKVStore) Delete(key []byte) error {
+func (b *BboltDBKVStore) Delete(key []byte) error {
 	if b.root {
 		return errors.New("Cannot delete from root")
 	}
@@ -105,7 +105,7 @@ func (b BboltDBKVStore) Delete(key []byte) error {
 	return err
 }
 
-func (b BboltDBKVStore) Bucket(prefix string) (KVStore, error) {
+func (b *BboltDBKVStore) Bucket(prefix string) (KVStore, error) {
 	return &BboltDBKVStore{
 		db:         b.db,
 		bucketName: prefix,
