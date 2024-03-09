@@ -21,7 +21,8 @@ type P2PConfig struct {
 }
 
 type PeersConfig struct {
-	Initial []string `mapstructure:"initial"`
+	Initial   []string `mapstructure:"initial"`
+	Blocklist []string `mapstructure:"blocklist"`
 }
 
 type HTTPAPIConfig struct {

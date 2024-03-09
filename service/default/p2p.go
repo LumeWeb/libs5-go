@@ -134,6 +134,16 @@ func (p *P2PServiceDefault) Init(ctx context.Context) error {
 	p.bucket = bucket
 	p.inited = true
 
+	for _, peer := range p.Config().P2P.Peers.Blocklist {
+		_, err := encoding.DecodeNodeId(peer)
+		if err != nil {
+			return err
+		}
+
+		p.incomingPeerBlockList.Put(peer, true)
+		p.outgoingPeerBlocklist.Put(peer, true)
+	}
+
 	return nil
 }
 func (p *P2PServiceDefault) ConnectToNode(connectionUris []*url.URL, retry uint, fromPeer net.Peer) error {
