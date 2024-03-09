@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"git.lumeweb.com/LumeWeb/libs5-go/db"
 	"git.lumeweb.com/LumeWeb/libs5-go/ed25519"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
@@ -12,7 +13,6 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
-	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/vmihailenco/msgpack/v5"
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
@@ -48,6 +48,7 @@ type P2PServiceDefault struct {
 	maxOutgoingPeerFailures uint
 	connections             sync.WaitGroup
 	hashQueryRoutingTable   structs.Map
+	bucket                  db.KVStore
 	service.ServiceBase
 }
 
@@ -117,14 +118,20 @@ func (p *P2PServiceDefault) Init(ctx context.Context) error {
 	if p.inited {
 		return nil
 	}
+
 	p.localNodeID = encoding.NewNodeId(p.nodeKeyPair.PublicKey())
 
-	err := utils.CreateBucket(nodeBucketName, p.Db())
-
+	bucket, err := p.Db().Bucket(nodeBucketName)
 	if err != nil {
 		return err
 	}
 
+	err = bucket.Open()
+	if err != nil {
+		return err
+	}
+
+	p.bucket = bucket
 	p.inited = true
 
 	return nil
@@ -490,23 +497,13 @@ func (p *P2PServiceDefault) OnNewPeerListen(peer net.Peer, verifyId bool) {
 
 func (p *P2PServiceDefault) readNodeVotes(nodeId *encoding.NodeId) (service.NodeVotes, error) {
 	var value []byte
-	var found bool
-	err := p.Db().View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(nodeBucketName))
-		if b == nil {
-			return fmt.Errorf("Bucket %s not found", nodeBucketName)
-		}
-		value = b.Get(nodeId.Raw())
-		if value == nil {
-			return nil
-		}
-		found = true
-		return nil
-	})
+
+	value, err := p.bucket.Get(nodeId.Raw())
 	if err != nil {
 		return nil, err
 	}
-	if !found {
+
+	if value == nil {
 		return service.NewNodeVotes(), nil
 	}
 
@@ -526,16 +523,12 @@ func (p *P2PServiceDefault) saveNodeVotes(nodeId *encoding.NodeId, votes service
 		return err
 	}
 
-	// Use a transaction to save the data
-	err = p.Db().Update(func(tx *bolt.Tx) error {
-		// Get or create the bucket
-		b := tx.Bucket([]byte(nodeBucketName))
+	err = p.bucket.Put(nodeId.Raw(), data)
+	if err != nil {
+		return err
+	}
 
-		// Put the data into the bucket
-		return b.Put(nodeId.Raw(), data)
-	})
-
-	return err
+	return nil
 }
 
 func (p *P2PServiceDefault) GetNodeScore(nodeId *encoding.NodeId) (float64, error) {

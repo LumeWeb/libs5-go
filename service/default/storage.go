@@ -3,7 +3,7 @@ package _default
 import (
 	"context"
 	"errors"
-	"fmt"
+	"git.lumeweb.com/LumeWeb/libs5-go/db"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/metadata"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
@@ -11,11 +11,9 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/storage/provider"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
-	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/ddo/rq"
 	_ "github.com/ddo/rq"
 	"github.com/vmihailenco/msgpack/v5"
-	"go.etcd.io/bbolt"
 	"go.uber.org/zap"
 	"io"
 	"net/http"
@@ -36,6 +34,7 @@ var (
 type StorageService struct {
 	metadataCache structs.Map
 	providerStore storage.ProviderStore
+	bucket        db.KVStore
 	service.ServiceBase
 }
 
@@ -47,12 +46,18 @@ func NewStorage(params service.ServiceParams) *StorageService {
 }
 
 func (s *StorageService) Start(ctx context.Context) error {
-	err :=
-		utils.CreateBucket(cacheBucketName, s.Db())
 
+	bucket, err := s.Db().Bucket(cacheBucketName)
 	if err != nil {
 		return err
 	}
+
+	err = bucket.Open()
+	if err != nil {
+		return err
+	}
+
+	s.bucket = bucket
 
 	return nil
 }
@@ -160,22 +165,18 @@ func (s *StorageService) getLocalStorageLocation(hash *encoding.Multihash, kinds
 func (s *StorageService) readStorageLocationsFromDB(hash *encoding.Multihash) (storage.StorageLocationMap, error) {
 	var locationMap storage.StorageLocationMap
 
-	err := s.Db().View(func(tx *bbolt.Tx) error {
-		b := tx.Bucket([]byte(cacheBucketName)) // Replace with your actual bucket name
-		if b == nil {
-			return fmt.Errorf("bucket %s not found", cacheBucketName)
-		}
+	value, err := s.bucket.Get(hash.FullBytes())
+	if err != nil {
+		return nil, err
+	}
 
-		bytes := b.Get(hash.FullBytes())
-		if bytes == nil {
-			// If no data found, return an empty locationMap but no error
-			locationMap = storage.NewStorageLocationMap()
-			return nil
-		}
+	if value == nil {
+		return storage.NewStorageLocationMap(), nil
+	}
 
-		return msgpack.Unmarshal(bytes, &locationMap)
-	})
+	locationMap = storage.NewStorageLocationMap()
 
+	err = msgpack.Unmarshal(value, &locationMap)
 	if err != nil {
 		return nil, err
 	}
@@ -217,11 +218,8 @@ func (s *StorageService) AddStorageLocation(hash *encoding.Multihash, nodeId *en
 	if err != nil {
 		return err
 	}
-	err = s.Db().Update(func(tx *bbolt.Tx) error {
-		b := tx.Bucket([]byte(cacheBucketName))
 
-		return b.Put(hash.FullBytes(), packedBytes)
-	})
+	err = s.bucket.Put(hash.FullBytes(), packedBytes)
 	if err != nil {
 		return err
 	}

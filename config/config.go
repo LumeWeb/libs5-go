@@ -1,15 +1,15 @@
 package config
 
 import (
+	"git.lumeweb.com/LumeWeb/libs5-go/db"
 	"git.lumeweb.com/LumeWeb/libs5-go/ed25519"
-	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
 )
 
 type NodeConfig struct {
 	P2P     P2PConfig `mapstructure:"p2p"`
 	KeyPair *ed25519.KeyPairEd25519
-	DB      *bolt.DB
+	DB      db.KVStore
 	Logger  *zap.Logger
 	HTTP    HTTPConfig `mapstructure:"http"`
 }

@@ -76,6 +76,11 @@ func (s *ServicesImpl) IsStarting() bool {
 }
 
 func (s *ServicesImpl) Init(ctx context.Context) error {
+	err := s.p2p.Config().DB.Open()
+	if err != nil {
+		return err
+	}
+
 	for _, svc := range s.All() {
 		err := svc.Init(ctx)
 		if err != nil {
@@ -87,7 +92,6 @@ func (s *ServicesImpl) Init(ctx context.Context) error {
 }
 
 func (s *ServicesImpl) Start(ctx context.Context) error {
-
 	s.starting = true
 
 	for _, svc := range s.All() {

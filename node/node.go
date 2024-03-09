@@ -3,11 +3,11 @@ package node
 import (
 	"context"
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
+	"git.lumeweb.com/LumeWeb/libs5-go/db"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	_default "git.lumeweb.com/LumeWeb/libs5-go/service/default"
-	bolt "go.etcd.io/bbolt"
 	"go.uber.org/zap"
 )
 
@@ -42,7 +42,7 @@ func (n *Node) Logger() *zap.Logger {
 	return nil
 }
 
-func (n *Node) Db() *bolt.DB {
+func (n *Node) Db() db.KVStore {
 	if n.nodeConfig != nil {
 		return n.nodeConfig.DB
 	}

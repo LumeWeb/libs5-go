@@ -3,16 +3,15 @@ package _default
 import (
 	"context"
 	"errors"
+	"git.lumeweb.com/LumeWeb/libs5-go/db"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/protocol"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
-	"git.lumeweb.com/LumeWeb/libs5-go/utils"
 	"github.com/olebedev/emitter"
 	"github.com/vmihailenco/msgpack/v5"
-	"go.etcd.io/bbolt"
 	"go.uber.org/zap"
 	"time"
 )
@@ -27,6 +26,7 @@ var (
 type RegistryServiceDefault struct {
 	streams structs.Map
 	subs    structs.Map
+	bucket  db.KVStore
 	service.ServiceBase
 }
 
@@ -39,7 +39,19 @@ func (r *RegistryServiceDefault) Stop(ctx context.Context) error {
 }
 
 func (r *RegistryServiceDefault) Init(ctx context.Context) error {
-	return utils.CreateBucket(registryBucketName, r.Db())
+	bucket, err := r.Db().Bucket(registryBucketName)
+	if err != nil {
+		return err
+	}
+
+	err = bucket.Open()
+	if err != nil {
+		return err
+	}
+
+	r.bucket = bucket
+
+	return nil
 }
 
 func NewRegistry(params service.ServiceParams) *RegistryServiceDefault {
@@ -116,15 +128,7 @@ func (r *RegistryServiceDefault) Set(sre protocol.SignedRegistryEntry, trusted b
 		go event.Emit("fire", sre)
 	}
 
-	err = r.Db().Update(func(txn *bbolt.Tx) error {
-		bucket := txn.Bucket([]byte(registryBucketName))
-		err := bucket.Put(sre.PK(), protocol.MarshalSignedRegistryEntry(sre))
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-
+	err = r.bucket.Put(sre.PK(), protocol.MarshalSignedRegistryEntry(sre))
 	if err != nil {
 		return err
 	}
@@ -289,22 +293,17 @@ func (r *RegistryServiceDefault) Listen(pk []byte, cb func(sre protocol.SignedRe
 }
 
 func (r *RegistryServiceDefault) getFromDB(pk []byte) (sre protocol.SignedRegistryEntry, err error) {
-	err = r.Db().View(func(txn *bbolt.Tx) error {
-		bucket := txn.Bucket([]byte(registryBucketName))
-		val := bucket.Get(pk)
-		if val != nil {
-			entry, err := protocol.UnmarshalSignedRegistryEntry(val)
-			if err != nil {
-				return err
-			}
-			sre = entry
-			return nil
-		}
-		return nil
-	})
+	value, err := r.bucket.Get(pk)
 	if err != nil {
 		return nil, err
 	}
 
-	return sre, nil
+	if value != nil {
+		sre, err = protocol.UnmarshalSignedRegistryEntry(value)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return nil, nil
 }

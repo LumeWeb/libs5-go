@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"git.lumeweb.com/LumeWeb/libs5-go/config"
-	"go.etcd.io/bbolt"
+	"git.lumeweb.com/LumeWeb/libs5-go/db"
 	"go.uber.org/zap"
 )
 
@@ -17,7 +17,7 @@ type Service interface {
 	Init(ctx context.Context) error
 	Logger() *zap.Logger
 	Config() *config.NodeConfig
-	Db() *bbolt.DB
+	Db() db.KVStore
 	ServicesSetter
 }
 type Services interface {
@@ -36,17 +36,17 @@ type Services interface {
 type ServiceParams struct {
 	Logger *zap.Logger
 	Config *config.NodeConfig
-	Db     *bbolt.DB
+	Db     db.KVStore
 }
 
 type ServiceBase struct {
 	logger   *zap.Logger
 	config   *config.NodeConfig
-	db       *bbolt.DB
+	db       db.KVStore
 	services Services
 }
 
-func NewServiceBase(logger *zap.Logger, config *config.NodeConfig, db *bbolt.DB) ServiceBase {
+func NewServiceBase(logger *zap.Logger, config *config.NodeConfig, db db.KVStore) ServiceBase {
 	return ServiceBase{logger: logger, config: config, db: db}
 }
 
@@ -62,6 +62,6 @@ func (s *ServiceBase) Logger() *zap.Logger {
 func (s *ServiceBase) Config() *config.NodeConfig {
 	return s.config
 }
-func (s *ServiceBase) Db() *bbolt.DB {
+func (s *ServiceBase) Db() db.KVStore {
 	return s.db
 }
