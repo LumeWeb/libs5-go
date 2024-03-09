@@ -24,12 +24,23 @@ func (b *BboltDBKVStore) Open() error {
 		b.db = db
 	}
 
-	if b.bucket == nil && len(b.bucketName) > 0 {
+	if len(b.bucketName) > 0 {
 		err := b.db.Update(func(txn *bbolt.Tx) error {
-			bucket, err := txn.CreateBucketIfNotExists([]byte(b.bucketName))
-			if err != nil {
-				return err
+			var bucket *bbolt.Bucket
+			var err error
+
+			if b.bucket == nil {
+				bucket, err = txn.CreateBucketIfNotExists([]byte(b.bucketName))
+				if err != nil {
+					return err
+				}
+			} else {
+				bucket, err = b.bucket.CreateBucketIfNotExists([]byte(b.bucketName))
+				if err != nil {
+					return err
+				}
 			}
+
 			b.bucket = bucket
 			return nil
 		})
@@ -108,6 +119,7 @@ func (b *BboltDBKVStore) Delete(key []byte) error {
 func (b *BboltDBKVStore) Bucket(prefix string) (KVStore, error) {
 	return &BboltDBKVStore{
 		db:         b.db,
+		bucket:     b.bucket,
 		bucketName: prefix,
 		root:       false,
 	}, nil
