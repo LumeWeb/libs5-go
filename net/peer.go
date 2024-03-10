@@ -44,7 +44,7 @@ type Peer interface {
 	ConnectionURIs() []*url.URL
 	IsHandshakeDone() bool
 	SetHandshakeDone(status bool)
-	GetIP() string
+	GetIPString() string
 	Abuser() bool
 }
 
@@ -83,7 +83,7 @@ func (b *BasePeer) End() error {
 func (b *BasePeer) EndForAbuse() error {
 	panic("must implement in child class")
 }
-func (b *BasePeer) GetIP() string {
+func (b *BasePeer) GetIPString() string {
 	panic("must implement in child class")
 }
 

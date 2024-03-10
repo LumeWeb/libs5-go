@@ -222,7 +222,7 @@ func (p *P2PServiceDefault) ConnectToNode(connectionUris []*url.URL, retry uint,
 				}
 			}
 
-			fromPeerIP := fromPeer.GetIP()
+			fromPeerIP := fromPeer.GetIPString()
 
 			if !p.incomingIPBlocklist.Contains(fromPeerIP) {
 				p.incomingIPBlocklist.Put(fromPeerIP, true)
@@ -282,7 +282,7 @@ func (p *P2PServiceDefault) ConnectToNode(connectionUris []*url.URL, retry uint,
 						}
 					}
 
-					fromPeerIP := fromPeer.GetIP()
+					fromPeerIP := fromPeer.GetIPString()
 					if !p.incomingIPBlocklist.Contains(fromPeerIP) {
 						p.incomingIPBlocklist.Put(fromPeerIP, true)
 						blocked = true
@@ -371,7 +371,7 @@ func (p *P2PServiceDefault) OnNewPeer(peer net.Peer, verifyId bool) error {
 		pid = "unknown"
 	}
 
-	pip := peer.GetIP()
+	pip := peer.GetIPString()
 
 	if p.incomingIPBlocklist.Contains(pid) {
 		p.Logger().Error("peer is on identity blocklist", zap.String("peer", pid))

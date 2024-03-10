@@ -137,7 +137,7 @@ func (p *WebSocketPeer) GetChallenge() []byte {
 	return p.challenge
 }
 
-func (b *WebSocketPeer) GetIP() string {
+func (b *WebSocketPeer) GetIPString() string {
 	ctx, cancel := context.WithCancel(context.Background())
 	netConn := websocket.NetConn(ctx, b.socket, websocket.MessageBinary)
 
