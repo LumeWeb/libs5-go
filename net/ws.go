@@ -3,6 +3,7 @@ package net
 import (
 	"context"
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
+	"net"
 	"net/url"
 	"nhooyr.io/websocket"
 	"sync"
@@ -137,16 +138,21 @@ func (p *WebSocketPeer) GetChallenge() []byte {
 	return p.challenge
 }
 
-func (b *WebSocketPeer) GetIPString() string {
+func (p *WebSocketPeer) GetIP() net.Addr {
 	ctx, cancel := context.WithCancel(context.Background())
-	netConn := websocket.NetConn(ctx, b.socket, websocket.MessageBinary)
+	netConn := websocket.NetConn(ctx, p.socket, websocket.MessageBinary)
 
-	ipAddr := netConn.RemoteAddr().String()
+	ipAddr := netConn.RemoteAddr()
 
 	cancel()
 
 	return ipAddr
 }
+
+func (b *WebSocketPeer) GetIPString() string {
+	return b.GetIP().String()
+}
+
 func (p *WebSocketPeer) Abuser() bool {
 	return p.abuser
 }

@@ -3,6 +3,7 @@ package net
 import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"go.uber.org/zap"
+	"net"
 	"net/url"
 )
 
@@ -45,6 +46,7 @@ type Peer interface {
 	IsHandshakeDone() bool
 	SetHandshakeDone(status bool)
 	GetIPString() string
+	GetIP() net.Addr
 	Abuser() bool
 }
 
@@ -84,6 +86,10 @@ func (b *BasePeer) EndForAbuse() error {
 	panic("must implement in child class")
 }
 func (b *BasePeer) GetIPString() string {
+	panic("must implement in child class")
+}
+
+func (b *BasePeer) GetIP() net.Addr {
 	panic("must implement in child class")
 }
 
