@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/url"
 	"nhooyr.io/websocket"
+	"strings"
 )
 
 var _ service.Service = (*HTTPServiceDefault)(nil)
@@ -86,24 +87,42 @@ func (h *HTTPServiceDefault) p2pHandler(ctx jape.Context) {
 
 	ip := peer.GetIP()
 
-	switch v := ip.(type) {
-	case *net.IPNet:
-		if v.IP.IsLoopback() {
-			err := peer.End()
-			if err != nil {
-				h.Logger().Error("error ending peer", zap.Error(err))
-			}
-			return
-		}
+	// Check for reverse proxy headers
+	realIP := ctx.Request.Header.Get("X-Real-IP")
+	forwardedFor := ctx.Request.Header.Get("X-Forwarded-For")
 
-	case *net.TCPAddr:
-		if v.IP.IsLoopback() {
-			err := peer.End()
-			if err != nil {
-				h.Logger().Error("error ending peer", zap.Error(err))
-			}
-			return
+	var clientIP net.IP
+	if realIP != "" {
+		clientIP = net.ParseIP(realIP)
+	} else if forwardedFor != "" {
+		// X-Forwarded-For can contain multiple IP addresses separated by commas
+		// We take the first IP in the list as the client's IP
+		parts := strings.Split(forwardedFor, ",")
+		clientIP = net.ParseIP(parts[0])
+	}
+
+	blockConnection := func(ip net.Addr) bool {
+		// If we have a valid client IP from headers, use that for the loopback check
+		if clientIP != nil {
+			return clientIP.IsLoopback()
 		}
+		// Otherwise, fall back to the peer's IP
+		switch v := ip.(type) {
+		case *net.IPNet:
+			return v.IP.IsLoopback()
+		case *net.TCPAddr:
+			return v.IP.IsLoopback()
+		default:
+			return false
+		}
+	}
+
+	if blockConnection(ip) {
+		err := peer.End()
+		if err != nil {
+			h.Logger().Error("error ending peer", zap.Error(err))
+		}
+		return
 	}
 
 	h.Services().P2P().ConnectionTracker().Add(1)
