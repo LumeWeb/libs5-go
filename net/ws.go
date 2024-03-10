@@ -19,6 +19,7 @@ type WebSocketPeer struct {
 	BasePeer
 	socket *websocket.Conn
 	abuser bool
+	ip     net.Addr
 }
 
 func (p *WebSocketPeer) Connect(uri *url.URL) (interface{}, error) {
@@ -139,6 +140,10 @@ func (p *WebSocketPeer) GetChallenge() []byte {
 }
 
 func (p *WebSocketPeer) GetIP() net.Addr {
+	if p.ip != nil {
+		return p.ip
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	netConn := websocket.NetConn(ctx, p.socket, websocket.MessageBinary)
 

@@ -47,6 +47,7 @@ type Peer interface {
 	SetHandshakeDone(status bool)
 	GetIPString() string
 	GetIP() net.Addr
+	SetIP(ip net.Addr)
 	Abuser() bool
 }
 
@@ -90,6 +91,10 @@ func (b *BasePeer) GetIPString() string {
 }
 
 func (b *BasePeer) GetIP() net.Addr {
+	panic("must implement in child class")
+}
+
+func (b *BasePeer) SetIP(ip net.Addr) {
 	panic("must implement in child class")
 }
 
