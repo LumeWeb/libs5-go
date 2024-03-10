@@ -34,7 +34,7 @@ func NewAnnounceRequest(peer net.Peer, peersToSend []net.Peer) *AnnouncePeers {
 func NewAnnouncePeers() *AnnouncePeers {
 	ap := &AnnouncePeers{peer: nil, connectionUris: nil}
 
-	ap.SetRequiresHandshake(false)
+	ap.SetRequiresHandshake(true)
 
 	return ap
 }
