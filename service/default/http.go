@@ -91,8 +91,18 @@ func (h *HTTPServiceDefault) p2pHandler(ctx jape.Context) {
 		if v.IP.IsLoopback() {
 			err := peer.End()
 			if err != nil {
-				return
+				h.Logger().Error("error ending peer", zap.Error(err))
 			}
+			return
+		}
+
+	case *net.TCPAddr:
+		if v.IP.IsLoopback() {
+			err := peer.End()
+			if err != nil {
+				h.Logger().Error("error ending peer", zap.Error(err))
+			}
+			return
 		}
 	}
 
