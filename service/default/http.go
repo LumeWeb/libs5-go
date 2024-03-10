@@ -125,6 +125,10 @@ func (h *HTTPServiceDefault) p2pHandler(ctx jape.Context) {
 		return
 	}
 
+	if ip != nil {
+		peer.SetIP(ip)
+	}
+
 	h.Services().P2P().ConnectionTracker().Add(1)
 
 	go func() {
