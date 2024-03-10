@@ -94,7 +94,11 @@ func (s *SignedMessage) HandleMessage(message IncomingMessageData) error {
 	if msgHandler, valid := GetSignedMessageType(payload.kind); valid {
 		logger.Debug("SignedMessage", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
 		if msgHandler.RequiresHandshake() && !peer.IsHandshakeDone() {
-			logger.Debug("Peer is not handshake done, ignoring message", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]))
+			nid, err := s.nodeId.ToString()
+			if err != nil {
+				return err
+			}
+			logger.Debug("Peer is not handshake done, ignoring message", zap.Any("type", types.ProtocolMethodMap[types.ProtocolMethod(payload.kind)]), zap.String("peerIP", peer.GetIPString()), zap.String("nodeId", nid))
 			return nil
 		}
 
