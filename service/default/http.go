@@ -85,8 +85,6 @@ func (h *HTTPServiceDefault) p2pHandler(ctx jape.Context) {
 		return
 	}
 
-	ip := peer.GetIP()
-
 	// Check for reverse proxy headers
 	realIP := ctx.Request.Header.Get("X-Real-IP")
 	forwardedFor := ctx.Request.Header.Get("X-Forwarded-For")
@@ -117,7 +115,7 @@ func (h *HTTPServiceDefault) p2pHandler(ctx jape.Context) {
 		}
 	}
 
-	if blockConnection(ip) {
+	if blockConnection(peer.GetIP()) {
 		err := peer.End()
 		if err != nil {
 			h.Logger().Error("error ending peer", zap.Error(err))
@@ -125,8 +123,8 @@ func (h *HTTPServiceDefault) p2pHandler(ctx jape.Context) {
 		return
 	}
 
-	if ip != nil {
-		peer.SetIP(ip)
+	if clientIP != nil {
+		peer.SetIP(&net.IPAddr{IP: clientIP})
 	}
 
 	h.Services().P2P().ConnectionTracker().Add(1)
