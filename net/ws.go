@@ -154,6 +154,10 @@ func (p *WebSocketPeer) GetIP() net.Addr {
 	return ipAddr
 }
 
+func (p *WebSocketPeer) SetIP(ip net.Addr) {
+	p.ip = ip
+}
+
 func (b *WebSocketPeer) GetIPString() string {
 	return b.GetIP().String()
 }
