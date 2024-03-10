@@ -3,11 +3,12 @@ package _default
 import (
 	"context"
 	"git.lumeweb.com/LumeWeb/libs5-go/build"
-	"git.lumeweb.com/LumeWeb/libs5-go/net"
+	s5net "git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/service"
 	"github.com/julienschmidt/httprouter"
 	"go.sia.tech/jape"
 	"go.uber.org/zap"
+	"net"
 	"net/url"
 	"nhooyr.io/websocket"
 )
@@ -69,7 +70,7 @@ func (h *HTTPServiceDefault) p2pHandler(ctx jape.Context) {
 		return
 	}
 
-	peer, err := net.CreateTransportPeer("wss", &net.TransportPeerConfig{
+	peer, err := s5net.CreateTransportPeer("wss", &s5net.TransportPeerConfig{
 		Socket: c,
 		Uris:   []*url.URL{},
 	})
@@ -81,6 +82,18 @@ func (h *HTTPServiceDefault) p2pHandler(ctx jape.Context) {
 			h.Logger().Error("error closing websocket connection", zap.Error(err))
 		}
 		return
+	}
+
+	ip := peer.GetIP()
+
+	switch v := ip.(type) {
+	case *net.IPNet:
+		if v.IP.IsLoopback() {
+			err := peer.End()
+			if err != nil {
+				return
+			}
+		}
 	}
 
 	h.Services().P2P().ConnectionTracker().Add(1)
