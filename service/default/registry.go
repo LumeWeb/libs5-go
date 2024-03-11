@@ -303,6 +303,8 @@ func (r *RegistryServiceDefault) getFromDB(pk []byte) (sre protocol.SignedRegist
 		if err != nil {
 			return nil, err
 		}
+
+		return sre, nil
 	}
 
 	return nil, nil
