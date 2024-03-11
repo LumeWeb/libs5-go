@@ -149,7 +149,7 @@ func (p *WebSocketPeer) GetChallenge() []byte {
 
 func (p *WebSocketPeer) GetIP() net.Addr {
 	p.BasePeer.lock.RLock()
-	defer p.BasePeer.lock.Unlock()
+	defer p.BasePeer.lock.RUnlock()
 	if p.ip != nil {
 		return p.ip
 	}
@@ -176,6 +176,6 @@ func (b *WebSocketPeer) GetIPString() string {
 
 func (p *WebSocketPeer) Abuser() bool {
 	p.BasePeer.lock.RLock()
-	defer p.BasePeer.lock.Unlock()
+	defer p.BasePeer.lock.RUnlock()
 	return p.abuser
 }
