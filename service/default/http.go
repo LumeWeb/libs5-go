@@ -115,16 +115,16 @@ func (h *HTTPServiceDefault) p2pHandler(ctx jape.Context) {
 		}
 	}
 
+	if clientIP != nil {
+		peer.SetIP(&net.IPAddr{IP: clientIP})
+	}
+
 	if blockConnection(peer.GetIP()) {
 		err := peer.End()
 		if err != nil {
 			h.Logger().Error("error ending peer", zap.Error(err))
 		}
 		return
-	}
-
-	if clientIP != nil {
-		peer.SetIP(&net.IPAddr{IP: clientIP})
 	}
 
 	h.Services().P2P().ConnectionTracker().Add(1)
