@@ -40,6 +40,7 @@ func (h *HTTPServiceDefault) GetHttpRouter(inject map[string]jape.Handler) *http
 		"GET /s5/version":   h.versionHandler,
 		"GET /s5/p2p":       h.p2pHandler,
 		"GET /s5/p2p/nodes": h.p2pNodesHandler,
+		"GET /s5/p2p/peers": h.p2pPeersHandler,
 	}
 
 	for k, v := range inject {
@@ -115,16 +116,16 @@ func (h *HTTPServiceDefault) p2pHandler(ctx jape.Context) {
 		}
 	}
 
-	if clientIP != nil {
-		peer.SetIP(&net.IPAddr{IP: clientIP})
-	}
-
 	if blockConnection(peer.GetIP()) {
 		err := peer.End()
 		if err != nil {
 			h.Logger().Error("error ending peer", zap.Error(err))
 		}
 		return
+	}
+
+	if clientIP != nil {
+		peer.SetIP(&net.IPAddr{IP: clientIP})
 	}
 
 	h.Services().P2P().ConnectionTracker().Add(1)
@@ -158,5 +159,41 @@ func (h *HTTPServiceDefault) p2pNodesHandler(ctx jape.Context) {
 
 	ctx.Encode(P2PNodesResponse{
 		Nodes: nodeList,
+	})
+}
+func (h *HTTPServiceDefault) p2pPeersHandler(ctx jape.Context) {
+	peers := h.Services().P2P().Peers().Values()
+	peerList := make([]P2PNodeResponse, 0)
+
+	for _, p := range peers {
+		peer, ok := p.(s5net.Peer)
+		if !ok {
+			continue
+		}
+
+		id, err := peer.Id().ToString()
+		if err != nil {
+			h.Logger().Error("error getting peer id", zap.Error(err))
+			continue
+		}
+
+		if len(peer.ConnectionURIs()) == 0 {
+			continue
+		}
+
+		uris := make([]string, len(peer.ConnectionURIs()))
+
+		for i, uri := range peer.ConnectionURIs() {
+			uris[i] = uri.String()
+		}
+
+		peerList = append(peerList, P2PNodeResponse{
+			Id:   id,
+			Uris: uris,
+		})
+	}
+
+	ctx.Encode(P2PNodesResponse{
+		Nodes: peerList,
 	})
 }
