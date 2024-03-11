@@ -136,7 +136,7 @@ func (p *WebSocketPeer) SetId(id *encoding.NodeId) {
 }
 
 func (p *WebSocketPeer) SetChallenge(challenge []byte) {
-	p.BasePeer.lock.RLock()
+	p.BasePeer.lock.Lock()
 	defer p.BasePeer.lock.Unlock()
 	p.challenge = challenge
 }
