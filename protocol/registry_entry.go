@@ -1,8 +1,11 @@
 package protocol
 
 import (
+	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
+	"git.lumeweb.com/LumeWeb/libs5-go/internal/bases"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"github.com/vmihailenco/msgpack/v5"
+	"go.uber.org/zap"
 )
 
 var _ IncomingMessage = (*RegistryEntryRequest)(nil)
@@ -50,5 +53,18 @@ func (s *RegistryEntryRequest) DecodeMessage(dec *msgpack.Decoder, message Incom
 }
 
 func (s *RegistryEntryRequest) HandleMessage(message IncomingMessageData) error {
+	entry, err := encoding.CIDFromRegistryPublicKey(s.sre.PK())
+	if err != nil {
+		return err
+	}
+	pid, err := message.Peer.Id().ToString()
+	if err != nil {
+		return err
+	}
+	b64, err := bases.ToBase64Url(s.sre.PK())
+	if err != nil {
+		return err
+	}
+	message.Logger.Debug("Handling registry entry set request", zap.Any("entryCID", entry), zap.Any("entryBase64", b64), zap.Any("peer", pid))
 	return message.Mediator.RegistrySet(s.sre, false, message.Peer)
 }
