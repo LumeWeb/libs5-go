@@ -5,6 +5,7 @@ import (
 	"go.uber.org/zap"
 	"net"
 	"net/url"
+	"sync"
 )
 
 var (
@@ -58,13 +59,18 @@ type BasePeer struct {
 	socket         interface{}
 	id             *encoding.NodeId
 	handshaked     bool
+	lock           sync.RWMutex
 }
 
 func (b *BasePeer) IsConnected() bool {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
 	return b.isConnected
 }
 
 func (b *BasePeer) SetConnected(isConnected bool) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
 	b.isConnected = isConnected
 }
 
@@ -99,40 +105,60 @@ func (b *BasePeer) SetIP(ip net.Addr) {
 }
 
 func (b *BasePeer) Challenge() []byte {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
 	return b.challenge
 }
 
 func (b *BasePeer) SetChallenge(challenge []byte) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
 	b.challenge = challenge
 }
 
 func (b *BasePeer) Socket() interface{} {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
 	return b.socket
 }
 
 func (b *BasePeer) SetSocket(socket interface{}) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
 	b.socket = socket
 }
 
 func (b *BasePeer) Id() *encoding.NodeId {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
 	return b.id
 }
 
 func (b *BasePeer) SetId(id *encoding.NodeId) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
 	b.id = id
 }
 func (b *BasePeer) SetConnectionURIs(uris []*url.URL) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
 	b.connectionURIs = uris
 }
 func (b *BasePeer) ConnectionURIs() []*url.URL {
+	b.lock.RLock()
+	b.lock.RUnlock()
 	return b.connectionURIs
 }
 
 func (b *BasePeer) IsHandshakeDone() bool {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
 	return b.handshaked
 }
 
 func (b *BasePeer) SetHandshakeDone(status bool) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
 	b.handshaked = status
 }
 
