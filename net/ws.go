@@ -142,6 +142,8 @@ func (p *WebSocketPeer) SetChallenge(challenge []byte) {
 }
 
 func (p *WebSocketPeer) GetChallenge() []byte {
+	p.BasePeer.lock.RLock()
+	defer p.BasePeer.lock.RUnlock()
 	return p.challenge
 }
 
