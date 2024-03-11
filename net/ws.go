@@ -119,6 +119,8 @@ func (p *WebSocketPeer) End() error {
 	return nil
 }
 func (p *WebSocketPeer) EndForAbuse() error {
+	p.BasePeer.lock.Lock()
+	defer p.BasePeer.lock.Unlock()
 	p.abuser = true
 	err := p.socket.Close(websocket.StatusPolicyViolation, "")
 	if err != nil {
@@ -128,10 +130,14 @@ func (p *WebSocketPeer) EndForAbuse() error {
 	return nil
 }
 func (p *WebSocketPeer) SetId(id *encoding.NodeId) {
+	p.BasePeer.lock.Lock()
+	defer p.BasePeer.lock.Unlock()
 	p.id = id
 }
 
 func (p *WebSocketPeer) SetChallenge(challenge []byte) {
+	p.BasePeer.lock.Lock()
+	defer p.BasePeer.lock.Unlock()
 	p.challenge = challenge
 }
 
@@ -140,6 +146,8 @@ func (p *WebSocketPeer) GetChallenge() []byte {
 }
 
 func (p *WebSocketPeer) GetIP() net.Addr {
+	p.BasePeer.lock.Lock()
+	defer p.BasePeer.lock.Unlock()
 	if p.ip != nil {
 		return p.ip
 	}
@@ -155,6 +163,8 @@ func (p *WebSocketPeer) GetIP() net.Addr {
 }
 
 func (p *WebSocketPeer) SetIP(ip net.Addr) {
+	p.BasePeer.lock.Lock()
+	defer p.BasePeer.lock.Unlock()
 	p.ip = ip
 }
 
@@ -163,5 +173,7 @@ func (b *WebSocketPeer) GetIPString() string {
 }
 
 func (p *WebSocketPeer) Abuser() bool {
+	p.BasePeer.lock.Lock()
+	defer p.BasePeer.lock.Unlock()
 	return p.abuser
 }
