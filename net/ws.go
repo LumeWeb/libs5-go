@@ -130,7 +130,7 @@ func (p *WebSocketPeer) EndForAbuse() error {
 	return nil
 }
 func (p *WebSocketPeer) SetId(id *encoding.NodeId) {
-	p.BasePeer.lock.RLock()
+	p.BasePeer.lock.Lock()
 	defer p.BasePeer.lock.Unlock()
 	p.id = id
 }
