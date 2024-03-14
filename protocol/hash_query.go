@@ -4,8 +4,8 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/storage"
+	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
-	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.uber.org/zap"
 	"log"
@@ -146,7 +146,7 @@ func (h *HashQuery) HandleMessage(message IncomingMessageData) error {
 		}
 	}
 
-	var peers *hashset.Set
+	var peers *structs.SetImpl
 	hashString, err := h.hash.ToString()
 	logger.Debug("HashQuery", zap.Any("hashString", hashString))
 	if err != nil {
@@ -154,7 +154,7 @@ func (h *HashQuery) HandleMessage(message IncomingMessageData) error {
 	}
 	peersVal, ok := mediator.HashQueryRoutingTable().Get(hashString)
 	if ok {
-		peers = peersVal.(*hashset.Set)
+		peers = peersVal.(*structs.SetImpl)
 		if !peers.Contains(peer.Id()) {
 			peers.Add(peer.Id())
 		}
@@ -162,7 +162,7 @@ func (h *HashQuery) HandleMessage(message IncomingMessageData) error {
 		return nil
 	}
 
-	peerList := hashset.New()
+	peerList := structs.NewSet()
 	peerList.Add(peer.Id())
 
 	mediator.HashQueryRoutingTable().Put(hashString, peerList)

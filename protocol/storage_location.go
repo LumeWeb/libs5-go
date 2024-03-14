@@ -6,9 +6,9 @@ import (
 	"git.lumeweb.com/LumeWeb/libs5-go/encoding"
 	"git.lumeweb.com/LumeWeb/libs5-go/net"
 	"git.lumeweb.com/LumeWeb/libs5-go/storage"
+	"git.lumeweb.com/LumeWeb/libs5-go/structs"
 	"git.lumeweb.com/LumeWeb/libs5-go/types"
 	"git.lumeweb.com/LumeWeb/libs5-go/utils"
-	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.uber.org/zap"
 )
@@ -89,12 +89,12 @@ func (s *StorageLocation) HandleMessage(message IncomingMessageData) error {
 		return err
 	}
 
-	var list *hashset.Set
+	var list *structs.SetImpl
 	listVal, ok := mediator.HashQueryRoutingTable().Get(hashStr) // Implement HashQueryRoutingTable method
 	if !ok {
-		list = hashset.New()
+		list = structs.NewSet()
 	} else {
-		list = listVal.(*hashset.Set)
+		list = listVal.(*structs.SetImpl)
 	}
 
 	for _, peerIdVal := range list.Values() {
